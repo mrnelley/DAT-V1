@@ -3,11 +3,10 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
-import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import UserAvatar from '../shared/UserAvatar';
+import PropertyManagementDashboard from './PropertyManagementDashboard';
 
 const profiles = {
   financials: {
@@ -107,90 +106,12 @@ const profiles = {
   },
 };
 
-const propertyProfile = {
-  icon: HomeWorkOutlinedIcon,
-  title: 'Property Management Dashboard',
-  subtitle: 'Leasing, maintenance, and a frequently shifting portfolio view tied directly to individual and org-wide priorities.',
-  stats: [
-    ['Occupancy', '94.2%', 'Portfolio-wide'],
-    ['Open Work Orders', '186', '42 over target'],
-    ['Lease-Up Units', '31', 'Active pipeline'],
-    ['Priority Properties', '6', 'Need leadership visibility'],
-  ],
-  primaryTitle: 'Portfolio Priorities',
-  primaryRows: [
-    { name: 'Reduce high-aging maintenance backlog', status: 'Needs Attention', progress: 52, detail: 'Four properties have work orders over 30 days.' },
-    { name: 'Stabilize lease-up at new communities', status: 'On Course', progress: 66, detail: 'Weekly leasing follow-up rhythm is active.' },
-    { name: 'Refresh property risk review', status: 'On Course', progress: 71, detail: 'Regional managers validating property notes.' },
-  ],
-  secondaryTitle: 'Portfolio Signals',
-  secondaryRows: ['Vacancy swings', 'Maintenance aging', 'Compliance readiness'],
-};
-
-const propertyPins = [
-  { name: 'HDC Community East', x: 68, y: 38, status: 'On Course', priority: 'Lease-up' },
-  { name: 'Walnut Street Homes', x: 42, y: 52, status: 'Needs Attention', priority: 'Maintenance backlog' },
-  { name: 'Northside Commons', x: 55, y: 25, status: 'On Course', priority: 'Compliance readiness' },
-  { name: 'Riverbend', x: 30, y: 66, status: 'Needs Attention', priority: 'Resident communication' },
-  { name: 'Maple Court', x: 76, y: 70, status: 'On Course', priority: 'Turnover pace' },
-];
-
 const statusColor = {
   'On Course': 'success',
   'Needs Attention': 'warning',
   'Off Course': 'error',
   Completed: 'success',
 };
-
-const PortfolioMap = () => (
-    <Box aria-label="Portfolio map with priority-linked property pins" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 330 }}>
-    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-      <Stack direction="row" alignItems="center" gap={1}>
-        <MapOutlinedIcon color="primary" />
-        <Typography variant="h3">Portfolio Map</Typography>
-      </Stack>
-      <Chip label="Priority-linked properties" color="primary" variant="outlined" size="small" />
-    </Stack>
-    <Box
-      role="list"
-      aria-label="Priority-linked properties"
-      sx={{
-        position: 'relative',
-        height: 238,
-        borderRadius: 1,
-        overflow: 'hidden',
-        bgcolor: '#eef3f4',
-        backgroundImage: 'linear-gradient(90deg, rgba(7,44,94,0.05) 1px, transparent 1px), linear-gradient(rgba(7,44,94,0.05) 1px, transparent 1px)',
-        backgroundSize: '36px 36px',
-        border: '1px solid',
-        borderColor: 'divider',
-      }}
-    >
-      {propertyPins.map((pin) => (
-        <Box
-          key={pin.name}
-          role="listitem"
-          aria-label={`${pin.name}. ${pin.status}. Priority: ${pin.priority}.`}
-          sx={{
-            position: 'absolute',
-            left: `${pin.x}%`,
-            top: `${pin.y}%`,
-            transform: 'translate(-50%, -50%)',
-            display: 'grid',
-            placeItems: 'center',
-            gap: 0.5,
-          }}
-        >
-          <Box aria-hidden="true" sx={{ width: 18, height: 18, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)', bgcolor: pin.status === 'On Course' ? 'success.main' : 'warning.main', border: '2px solid white', boxShadow: 2 }} />
-          <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: 0.75, py: 0.25, boxShadow: 1, minWidth: 118 }}>
-            <Typography variant="caption" color="text.primary" fontWeight={700}>{pin.name}</Typography>
-            <Typography variant="caption" display="block">{pin.priority}</Typography>
-          </Box>
-        </Box>
-      ))}
-    </Box>
-  </Box>
-);
 
 const StatCard = ({ label, value, helper }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 104 }}>
@@ -201,7 +122,11 @@ const StatCard = ({ label, value, helper }) => (
 );
 
 const FocusedDashboard = ({ user }) => {
-  const profile = user.dashboardFocus === 'property_management' ? propertyProfile : profiles[user.dashboardFocus];
+  if (user.dashboardFocus === 'property_management') {
+    return <PropertyManagementDashboard user={user} />;
+  }
+
+  const profile = profiles[user.dashboardFocus];
   if (!profile) return null;
   const Icon = profile.icon;
 
@@ -230,7 +155,7 @@ const FocusedDashboard = ({ user }) => {
         ))}
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: user.dashboardFocus === 'property_management' ? '1fr 1fr' : '1.4fr 0.8fr' }, gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.4fr 0.8fr' }, gap: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
           <Typography variant="h3" sx={{ mb: 1 }}>{profile.primaryTitle}</Typography>
           <Stack gap={1}>
@@ -247,21 +172,17 @@ const FocusedDashboard = ({ user }) => {
           </Stack>
         </Box>
 
-        {user.dashboardFocus === 'property_management' ? (
-          <PortfolioMap />
-        ) : (
-          <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-            <Typography variant="h3" sx={{ mb: 1 }}>{profile.secondaryTitle}</Typography>
-            <Stack gap={1}>
-              {profile.secondaryRows.map((row) => (
-                <Box key={row} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
-                  <HandshakeOutlinedIcon color="secondary" fontSize="small" />
-                  <Typography variant="body1">{row}</Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        )}
+        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+          <Typography variant="h3" sx={{ mb: 1 }}>{profile.secondaryTitle}</Typography>
+          <Stack gap={1}>
+            {profile.secondaryRows.map((row) => (
+              <Box key={row} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
+                <HandshakeOutlinedIcon color="secondary" fontSize="small" />
+                <Typography variant="body1">{row}</Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
       </Box>
     </Box>
   );
