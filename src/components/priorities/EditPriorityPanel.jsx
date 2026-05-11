@@ -15,7 +15,7 @@ const EditPriorityPanel = ({ open, onClose }) => {
       <Box component={motion.div} initial={{ x: 420 }} animate={{ x: 0 }} transition={{ type: 'spring', stiffness: 280, damping: 26 }} sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h3">Edit Priority</Typography>
-          <IconButton onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton aria-label="Close priority panel" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
         <Stack gap={2}>
           <TextField label="Priority Name" required fullWidth />

@@ -27,7 +27,7 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
               <Typography variant="body2">{metric.owner.name}</Typography>
             </Stack>
           </Box>
-          <IconButton onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton aria-label="Close KPI details" onClick={onClose}><CloseIcon /></IconButton>
         </Box>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 3 }}>
           <Box>

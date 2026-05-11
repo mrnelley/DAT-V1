@@ -310,7 +310,7 @@ const AdvocacyDashboard = () => {
           <Typography variant="h2">CEO Advocacy Dashboard</Typography>
           <Typography variant="body2">Relationship touchpoints, weekly priorities, departmental workplans, and quarterly initiatives.</Typography>
         </Box>
-        <ToggleButtonGroup exclusive value={period} onChange={(_, value) => value && setPeriod(value)} size="small">
+        <ToggleButtonGroup exclusive value={period} aria-label="Advocacy reporting period" onChange={(_, value) => value && setPeriod(value)} size="small">
           {periods.map((item) => <ToggleButton key={item.value} value={item.value}>{item.label}</ToggleButton>)}
         </ToggleButtonGroup>
       </Stack>
@@ -331,7 +331,7 @@ const AdvocacyDashboard = () => {
             </Stack>
             <Chip label="Lead view" color="primary" variant="outlined" />
           </Stack>
-          <Table>
+          <Table aria-label="Advocacy relationships">
             <TableHead>
               <TableRow>
                 <TableCell>Relationship</TableCell>
@@ -409,8 +409,8 @@ const AdvocacyDashboard = () => {
                     <Stack direction="row" justifyContent="space-between" gap={1}>
                       <Typography variant="body1" fontWeight={700}>{priority.title}</Typography>
                       <Stack direction="row">
-                        <Tooltip title="Edit priority"><IconButton size="small" onClick={() => openDialog('priority', 'edit', priority)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Delete priority"><IconButton size="small" onClick={() => deleteEntity('priority', priority.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Edit priority"><IconButton size="small" aria-label={`Edit priority ${priority.title}`} onClick={() => openDialog('priority', 'edit', priority)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Delete priority"><IconButton size="small" aria-label={`Delete priority ${priority.title}`} onClick={() => deleteEntity('priority', priority.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
                       </Stack>
                     </Stack>
                     <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ my: 1 }}>
@@ -436,8 +436,8 @@ const AdvocacyDashboard = () => {
                   <Stack direction="row" justifyContent="space-between" gap={1}>
                     <Typography variant="body1" fontWeight={700}>{workplan.title}</Typography>
                     <Stack direction="row">
-                      <Tooltip title="Edit workplan"><IconButton size="small" onClick={() => openDialog('workplan', 'edit', workplan)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
-                      <Tooltip title="Delete workplan"><IconButton size="small" onClick={() => deleteEntity('workplan', workplan.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
+                      <Tooltip title="Edit workplan"><IconButton size="small" aria-label={`Edit workplan ${workplan.title}`} onClick={() => openDialog('workplan', 'edit', workplan)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
+                      <Tooltip title="Delete workplan"><IconButton size="small" aria-label={`Delete workplan ${workplan.title}`} onClick={() => deleteEntity('workplan', workplan.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
                     </Stack>
                   </Stack>
                   <Typography variant="body2">{workplan.department} - due {workplan.due}</Typography>
@@ -466,8 +466,8 @@ const AdvocacyDashboard = () => {
                     <Stack direction="row" justifyContent="space-between" gap={1}>
                       <Typography variant="body1" fontWeight={700}>{initiative.title}</Typography>
                       <Stack direction="row">
-                        <Tooltip title="Edit initiative"><IconButton size="small" onClick={() => openDialog('initiative', 'edit', initiative)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Delete initiative"><IconButton size="small" onClick={() => deleteEntity('initiative', initiative.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Edit initiative"><IconButton size="small" aria-label={`Edit initiative ${initiative.title}`} onClick={() => openDialog('initiative', 'edit', initiative)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
+                        <Tooltip title="Delete initiative"><IconButton size="small" aria-label={`Delete initiative ${initiative.title}`} onClick={() => deleteEntity('initiative', initiative.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
                       </Stack>
                     </Stack>
                     <Stack direction="row" gap={1} flexWrap="wrap" sx={{ my: 1 }}>

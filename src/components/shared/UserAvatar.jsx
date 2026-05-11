@@ -7,6 +7,7 @@ const UserAvatar = ({ user, size = 'md' }) => {
   return (
     <Tooltip title={user?.name || 'Unknown user'}>
       <Avatar
+        aria-label={user?.name || 'Unknown user'}
         src={user?.photoUrl}
         sx={{
           width: dimension,

@@ -4,7 +4,19 @@ import { Card, CardContent, Chip, IconButton, LinearProgress, Stack, Tooltip, Ty
 import PermissionGate from '../shared/PermissionGate';
 
 const InitiativeCard = ({ initiative, onClick }) => (
-  <Card onClick={onClick} sx={{ cursor: 'pointer' }}>
+  <Card
+    onClick={onClick}
+    onKeyDown={(event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onClick?.();
+      }
+    }}
+    role="button"
+    tabIndex={0}
+    aria-label={`Open initiative ${initiative.title}`}
+    sx={{ cursor: 'pointer' }}
+  >
     <CardContent>
       <Stack direction="row" gap={1} sx={{ mb: 1 }}>
         <Chip label={initiative.year} color="primary" size="small" />
@@ -17,10 +29,10 @@ const InitiativeCard = ({ initiative, onClick }) => (
       <Stack direction="row" alignItems="center" sx={{ mt: 1 }}>
         <Chip label={`${initiative.connected} connected priorities`} size="small" variant="outlined" />
         <Stack direction="row" sx={{ ml: 'auto' }}>
-          <IconButton><EditIcon fontSize="small" /></IconButton>
+          <IconButton aria-label={`Edit initiative ${initiative.title}`} onClick={(event) => event.stopPropagation()}><EditIcon fontSize="small" /></IconButton>
           <PermissionGate roles={['ELT']}>
             <Tooltip title="Cannot delete until all connected priorities are completed or removed.">
-              <span><IconButton disabled={initiative.connected > 0}><DeleteIcon fontSize="small" /></IconButton></span>
+              <span><IconButton aria-label={`Delete initiative ${initiative.title}`} disabled={initiative.connected > 0} onClick={(event) => event.stopPropagation()}><DeleteIcon fontSize="small" /></IconButton></span>
             </Tooltip>
           </PermissionGate>
         </Stack>

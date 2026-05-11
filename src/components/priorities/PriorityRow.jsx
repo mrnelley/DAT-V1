@@ -11,11 +11,25 @@ import PriorityHeatmap from './PriorityHeatmap';
 const PriorityRow = ({ priority, depth = 0, expandedAll = false }) => {
   const [expanded, setExpanded] = useState(expandedAll);
   const [tab, setTab] = useState(0);
+  const toggleExpanded = () => setExpanded((value) => !value);
 
   return (
     <Box sx={{ ml: depth ? 3 : 0, mb: 0.5 }}>
       <Card sx={{ overflow: 'hidden' }}>
-        <Box onClick={() => setExpanded((value) => !value)} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '32px 40px minmax(220px, 1fr) 110px minmax(180px, 260px) 64px 44px' }, gap: 1, alignItems: 'center', p: 1.5, cursor: 'pointer' }}>
+        <Box
+          onClick={toggleExpanded}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              toggleExpanded();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-expanded={expanded}
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} priority ${priority.name}`}
+          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '32px 40px minmax(220px, 1fr) 110px minmax(180px, 260px) 64px 44px' }, gap: 1, alignItems: 'center', p: 1.5, cursor: 'pointer' }}
+        >
           <DragIndicatorIcon color="disabled" />
           <UserAvatar user={priority.owner} size="md" />
           <Box>
@@ -31,7 +45,7 @@ const PriorityRow = ({ priority, depth = 0, expandedAll = false }) => {
             <Typography variant="caption">{priority.start} · {priority.current} · {priority.target}</Typography>
           </Box>
           <Typography variant="h4" color={statusColorMap[priority.status]}>{priority.percent}%</Typography>
-          <IconButton onClick={(event) => event.stopPropagation()}><MoreHorizOutlinedIcon /></IconButton>
+          <IconButton aria-label={`More options for priority ${priority.name}`} onClick={(event) => event.stopPropagation()}><MoreHorizOutlinedIcon /></IconButton>
         </Box>
         <AnimatePresence>
           {expanded && (

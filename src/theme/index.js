@@ -8,8 +8,8 @@ baseShadows[3] = '0px 8px 24px rgba(7, 44, 94, 0.15)';
 const theme = createTheme({
   palette: {
     primary: { main: '#072c5e', light: '#1a4a80', dark: '#041e42', contrastText: '#ffffff' },
-    secondary: { main: '#5eb8a8', light: '#88cfc2', dark: '#3d9585', contrastText: '#ffffff' },
-    error: { main: '#db534c', light: '#e47d78', dark: '#b03a34' },
+    secondary: { main: '#5eb8a8', light: '#88cfc2', dark: '#3d9585', contrastText: '#1a1a2e' },
+    error: { main: '#b03a34', light: '#e47d78', dark: '#84241f', contrastText: '#ffffff' },
     warning: { main: '#f1ac49', light: '#f5c478', dark: '#c98a2a' },
     success: { main: '#006e5c', light: '#339980', dark: '#004d40' },
     background: { default: '#f5f7fa', paper: '#ffffff', accent: '#efdc9c' },
@@ -24,7 +24,7 @@ const theme = createTheme({
     h4: { fontSize: '1rem', fontWeight: 600, letterSpacing: 0 },
     body1: { fontSize: '0.875rem', letterSpacing: 0 },
     body2: { fontSize: '0.8rem', color: '#5a6475', letterSpacing: 0 },
-    caption: { fontSize: '0.72rem', color: '#5a6475', letterSpacing: 0 },
+    caption: { fontSize: '0.75rem', color: '#5a6475', letterSpacing: 0 },
   },
   shape: { borderRadius: 10 },
   shadows: baseShadows,

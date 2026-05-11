@@ -30,7 +30,7 @@ const StucksPage = () => {
       </Stack>
       <EmptyState icon={<CheckCircleOutlineIcon color="success" />} title="You are not holding anyone up right now." body="No active requests are waiting on you." />
       <Typography variant="h4" sx={{ mt: 3, mb: 1 }}>Things I Am Stuck On</Typography>
-      <Table>
+      <Table aria-label="Things I am stuck on">
         <TableHead><TableRow><TableCell>Stuck Description</TableCell><TableCell>Need Help From</TableCell><TableCell>Stuck Since</TableCell><TableCell>Actions</TableCell></TableRow></TableHead>
         <TableBody>
           {stucks.map((stuck) => (
@@ -38,7 +38,11 @@ const StucksPage = () => {
               <TableCell>{stuck.description}</TableCell>
               <TableCell><Stack direction="row" gap={1} alignItems="center"><UserAvatar user={stuck.helpFrom} size="sm" />{stuck.helpFrom.name}</Stack></TableCell>
               <TableCell>{formatDateTime(stuck.since)}</TableCell>
-              <TableCell>{[PushPinIcon, EditOutlinedIcon, ChatBubbleOutlineIcon].map((Icon, index) => <IconButton key={index}><Icon fontSize="small" /></IconButton>)}</TableCell>
+              <TableCell>{[
+                [PushPinIcon, 'Pin stuck'],
+                [EditOutlinedIcon, 'Edit stuck'],
+                [ChatBubbleOutlineIcon, 'Comment on stuck'],
+              ].map(([Icon, label]) => <IconButton aria-label={`${label}: ${stuck.description}`} key={label}><Icon fontSize="small" /></IconButton>)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

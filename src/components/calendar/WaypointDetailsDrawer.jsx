@@ -46,7 +46,7 @@ const WaypointDetailsDrawer = ({
             <Typography variant="h2">{waypoint.title}</Typography>
             <Typography variant="body2">{formatDateLabel(waypoint.date)}</Typography>
           </Box>
-          <IconButton onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton aria-label="Close waypoint details" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
 
         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>

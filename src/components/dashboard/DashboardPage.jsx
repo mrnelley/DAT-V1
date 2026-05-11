@@ -47,9 +47,9 @@ const DashboardPage = ({ company = false }) => {
             {edit ? 'Save Order' : 'Edit'}
           </Button>
           <Stack direction="row" alignItems="center">
-            <IconButton><ChevronLeftIcon /></IconButton>
+            <IconButton aria-label="Previous dashboard period"><ChevronLeftIcon /></IconButton>
             <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
-            <IconButton><ChevronRightIcon /></IconButton>
+            <IconButton aria-label="Next dashboard period"><ChevronRightIcon /></IconButton>
           </Stack>
           <FormControl size="small" sx={{ minWidth: 230 }}>
             <InputLabel>Team Filter</InputLabel>

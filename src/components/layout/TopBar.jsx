@@ -26,7 +26,7 @@ const TopBar = ({ onMenuClick }) => {
   return (
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
       <Toolbar sx={{ minHeight: 64, gap: 1.5 }}>
-        <IconButton onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
+        <IconButton aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
         <Typography variant="h3" color="primary" sx={{ mr: 2, whiteSpace: 'nowrap' }}>HDC Compass</Typography>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
           {Object.keys(navMenus).map((label) => (
@@ -35,7 +35,7 @@ const TopBar = ({ onMenuClick }) => {
             </Button>
           ))}
         </Box>
-        <IconButton color="primary"><AddCircleOutlineIcon /></IconButton>
+        <IconButton aria-label="Open quick add menu" color="primary"><AddCircleOutlineIcon /></IconButton>
         <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
           <InputLabel>Demo User</InputLabel>
           <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
@@ -45,7 +45,7 @@ const TopBar = ({ onMenuClick }) => {
           </Select>
         </FormControl>
         <Tooltip title={user.name}>
-          <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
+          <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>
         <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>{user.organization}</Typography>
         <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>

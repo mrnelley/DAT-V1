@@ -42,6 +42,7 @@ const WaypointPill = ({ compact = false, onClick, waypoint }) => {
   return (
     <ButtonBase
       onClick={onClick}
+      aria-label={`${waypoint.representation}: ${waypoint.title}. Status ${status.label}${pending ? '. Pending approval' : ''}.`}
       sx={{
         width: '100%',
         display: 'block',
@@ -50,8 +51,7 @@ const WaypointPill = ({ compact = false, onClick, waypoint }) => {
         borderColor: pending ? 'divider' : 'transparent',
         borderStyle: pending ? 'dashed' : 'solid',
         borderRadius: 1,
-        bgcolor: representationBackgrounds[waypoint.representation] || 'background.default',
-        opacity: pending ? 0.58 : 1,
+        bgcolor: pending ? 'rgba(90, 100, 117, 0.08)' : representationBackgrounds[waypoint.representation] || 'background.default',
         overflow: 'hidden',
       }}
     >
@@ -64,7 +64,7 @@ const WaypointPill = ({ compact = false, onClick, waypoint }) => {
             </Typography>
             {pending && <Chip label="Pending" size="small" variant="outlined" sx={{ height: 20 }} />}
           </Stack>
-          <Typography variant="body2" color="text.primary" noWrap>{waypoint.title}</Typography>
+          <Typography variant="body2" color="text.primary" title={waypoint.title} noWrap>{waypoint.title}</Typography>
         </Box>
       </Box>
     </ButtonBase>
@@ -132,7 +132,7 @@ const CompassCalendar = ({
           <IconButton onClick={() => shiftMonth(-1)} aria-label="Previous month"><ChevronLeftIcon /></IconButton>
           <Chip label={formatMonthLabel(monthCursor)} color="primary" />
           <IconButton onClick={() => shiftMonth(1)} aria-label="Next month"><ChevronRightIcon /></IconButton>
-          <ToggleButtonGroup exclusive value={view} size="small" onChange={(_, value) => value && setView(value)}>
+          <ToggleButtonGroup exclusive value={view} size="small" aria-label="Calendar view mode" onChange={(_, value) => value && setView(value)}>
             <ToggleButton value="calendar" aria-label="Calendar view"><CalendarMonthIcon fontSize="small" /></ToggleButton>
             <ToggleButton value="upcoming" aria-label="Upcoming view"><ViewAgendaOutlinedIcon fontSize="small" /></ToggleButton>
           </ToggleButtonGroup>
@@ -178,14 +178,14 @@ const CompassCalendar = ({
                 return (
                   <Box
                     key={dateValue}
+                    aria-label={`${dateValue}${muted ? ', outside current month' : ''}`}
                     sx={{
                       minHeight: 132,
                       p: 0.75,
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: 1,
-                      bgcolor: 'background.paper',
-                      opacity: muted ? 0.55 : 1,
+                      bgcolor: muted ? 'rgba(245, 247, 250, 0.78)' : 'background.paper',
                     }}
                   >
                     <Typography variant="caption" color={muted ? 'text.secondary' : 'text.primary'} fontWeight={700}>

@@ -21,15 +21,24 @@ const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
       whileHover={{ y: -4, boxShadow: '0px 8px 24px rgba(7,44,94,0.15)' }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick?.();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open details for ${metric.title}. Current value ${formatCompact(metric.current)} of target ${formatCompact(metric.target)}.`}
       sx={{ minWidth: dense ? 180 : 220, cursor: 'pointer' }}
     >
       <CardContent sx={{ p: dense ? 2 : 2.25 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h4" noWrap>{metric.title}</Typography>
-            <Typography variant="caption" noWrap display="block">{metric.subtitle}</Typography>
+            <Typography variant="h4" title={metric.title} noWrap>{metric.title}</Typography>
+            <Typography variant="caption" title={metric.subtitle} noWrap display="block">{metric.subtitle}</Typography>
           </Box>
-          <IconButton size="small" onClick={(event) => event.stopPropagation()}>
+          <IconButton size="small" aria-label={`More options for ${metric.title}`} onClick={(event) => event.stopPropagation()}>
             <MoreHorizOutlinedIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -74,7 +83,7 @@ const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
         <Typography variant="caption">Updated: {metric.updated}</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.25, gap: 1 }}>
           <UserAvatar user={metric.owner} size="sm" />
-          <Typography variant="caption" sx={{ flex: 1 }} noWrap>{metric.owner.name}</Typography>
+          <Typography variant="caption" title={metric.owner.name} sx={{ flex: 1 }} noWrap>{metric.owner.name}</Typography>
           <Tooltip title={metric.source}>
             <SourceIcon fontSize="small" color="primary" />
           </Tooltip>

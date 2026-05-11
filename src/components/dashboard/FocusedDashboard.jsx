@@ -143,7 +143,7 @@ const statusColor = {
 };
 
 const PortfolioMap = () => (
-  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 330 }}>
+    <Box aria-label="Portfolio map with priority-linked property pins" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 330 }}>
     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
       <Stack direction="row" alignItems="center" gap={1}>
         <MapOutlinedIcon color="primary" />
@@ -152,6 +152,8 @@ const PortfolioMap = () => (
       <Chip label="Priority-linked properties" color="primary" variant="outlined" size="small" />
     </Stack>
     <Box
+      role="list"
+      aria-label="Priority-linked properties"
       sx={{
         position: 'relative',
         height: 238,
@@ -167,6 +169,8 @@ const PortfolioMap = () => (
       {propertyPins.map((pin) => (
         <Box
           key={pin.name}
+          role="listitem"
+          aria-label={`${pin.name}. ${pin.status}. Priority: ${pin.priority}.`}
           sx={{
             position: 'absolute',
             left: `${pin.x}%`,
@@ -177,7 +181,7 @@ const PortfolioMap = () => (
             gap: 0.5,
           }}
         >
-          <Box sx={{ width: 18, height: 18, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)', bgcolor: pin.status === 'On Course' ? 'success.main' : 'warning.main', border: '2px solid white', boxShadow: 2 }} />
+          <Box aria-hidden="true" sx={{ width: 18, height: 18, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)', bgcolor: pin.status === 'On Course' ? 'success.main' : 'warning.main', border: '2px solid white', boxShadow: 2 }} />
           <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: 0.75, py: 0.25, boxShadow: 1, minWidth: 118 }}>
             <Typography variant="caption" color="text.primary" fontWeight={700}>{pin.name}</Typography>
             <Typography variant="caption" display="block">{pin.priority}</Typography>

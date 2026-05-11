@@ -33,7 +33,7 @@ const ActionItemsPage = () => {
         {actionItems.map((item) => {
           const done = completed.includes(item.id);
           return (
-            <ListItem key={item.id} divider secondaryAction={<IconButton><MoreHorizOutlinedIcon /></IconButton>} sx={{ opacity: done ? 0.5 : 1 }}>
+            <ListItem key={item.id} divider secondaryAction={<IconButton aria-label={`More options for action item ${item.description}`}><MoreHorizOutlinedIcon /></IconButton>} sx={{ bgcolor: done ? 'rgba(90, 100, 117, 0.08)' : 'transparent' }}>
               <Checkbox checked={done} onChange={() => setCompleted((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id])} />
               <ListItemText primary={<Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>} />
               <Stack direction="row" gap={1} alignItems="center">

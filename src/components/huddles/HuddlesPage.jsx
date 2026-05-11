@@ -39,7 +39,7 @@ const HuddlesPage = () => {
           <TextField multiline minRows={5} fullWidth placeholder="Click or Tap to enter something..." sx={{ mb: 3 }} />
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Typography variant="h4" sx={{ flex: 1 }}>Documents</Typography>
-            <IconButton><AddOutlinedIcon /></IconButton>
+            <IconButton aria-label="Add huddle document"><AddOutlinedIcon /></IconButton>
           </Box>
           <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary', bgcolor: 'background.paper', borderRadius: 2 }}>
             <DescriptionOutlinedIcon />
