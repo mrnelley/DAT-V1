@@ -12,6 +12,7 @@ import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
 import { WaypointProvider } from './context/WaypointContext';
+import { AuthProvider } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
 import theme from './theme';
 
@@ -44,11 +45,13 @@ const App = () => (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <WaypointProvider>
-          <AppShell>
-            <AnimatedRoutes />
-          </AppShell>
-        </WaypointProvider>
+        <AuthProvider>
+          <WaypointProvider>
+            <AppShell>
+              <AnimatedRoutes />
+            </AppShell>
+          </WaypointProvider>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </QueryClientProvider>

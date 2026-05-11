@@ -1,7 +1,7 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Avatar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,7 +14,7 @@ const navMenus = {
 };
 
 const TopBar = ({ onMenuClick }) => {
-  const { user } = useAuth();
+  const { demoUsers, setUserId, user, userId } = useAuth();
   const [anchor, setAnchor] = useState(null);
   const [menu, setMenu] = useState('');
 
@@ -36,6 +36,14 @@ const TopBar = ({ onMenuClick }) => {
           ))}
         </Box>
         <IconButton color="primary"><AddCircleOutlineIcon /></IconButton>
+        <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
+          <InputLabel>Demo User</InputLabel>
+          <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
+            {demoUsers.map((demoUser) => (
+              <MenuItem key={demoUser.id} value={demoUser.id}>{demoUser.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Tooltip title={user.name}>
           <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>

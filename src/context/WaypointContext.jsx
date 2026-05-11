@@ -5,7 +5,7 @@ import { createNativeWaypoint } from '../utils/waypoints';
 
 const WaypointContext = createContext(null);
 
-const adminRoles = ['Administrator', 'ELT'];
+const adminRoles = ['Administrator', 'CEO', 'ELT'];
 
 export const WaypointProvider = ({ children }) => {
   const { user } = useAuth();
