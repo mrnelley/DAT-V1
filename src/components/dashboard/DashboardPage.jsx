@@ -5,6 +5,7 @@ import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Selec
 import { useState } from 'react';
 import { metrics } from '../../data/mockData';
 import { useWaypoints } from '../../context/WaypointContext';
+import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
 import CompassCalendar from '../calendar/CompassCalendar';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
@@ -50,6 +51,7 @@ const DashboardPage = ({ company = false }) => {
           </FormControl>
         </Stack>
       </Stack>
+      {!company && <AdvocacyDashboard />}
       <CriticalNumbersSection metrics={metrics} teamName={team} onMetricClick={setSelectedMetric} />
       {company ? (
         <CompassCalendar
