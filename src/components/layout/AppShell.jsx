@@ -18,7 +18,7 @@ const AppShell = ({ children }) => {
       }} />
       <SideNav open={navOpen} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} onHuddlesClick={() => setHuddlesOpen((value) => !value)} />
       <HuddleSidePopout open={huddlesOpen} navOpen={navOpen} />
-      <Box component="main" sx={{ flex: 1, ml: { md: `${drawerWidth}px` }, minWidth: 0, height: '100vh', overflow: 'auto', transition: 'margin-left 180ms ease' }}>
+      <Box component="main" sx={{ flex: 1, ml: { md: huddlesOpen ? '260px' : 0 }, minWidth: 0, height: '100vh', overflow: 'auto', transition: 'margin-left 180ms ease' }}>
         <Toolbar />
         <Box sx={{ p: { xs: 2, md: 3 } }}>{children}</Box>
       </Box>
