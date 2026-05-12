@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/curb-appeal/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/workplans",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/priorities",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/initiatives/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}

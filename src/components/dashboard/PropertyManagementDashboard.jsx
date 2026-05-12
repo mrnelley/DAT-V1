@@ -7,6 +7,7 @@ import { Box, ButtonBase, Checkbox, Chip, FormControl, InputLabel, LinearProgres
 import { useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import CurbAppealWorkflowPanel from '../curb-appeal/CurbAppealWorkflowPanel';
 import { getPropertyRisk, getPropertyTasks, portfolioOrganization, portfolioProperties, portfolioRegions } from '../../data/propertyPortfolio';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -84,6 +85,8 @@ const PropertyManagementDashboard = ({ user }) => {
         <StatCard icon={WarningAmberOutlinedIcon} label="Needs Attention" value={needsAttention.length} helper="Properties with risk, leasing, or aging work order signals." />
         <StatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={openWorkOrders} helper={`${agedWorkOrders} aged exceptions in this view.`} />
       </Box>
+
+      <CurbAppealWorkflowPanel />
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.25fr 0.9fr' }, gap: 2, mb: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>

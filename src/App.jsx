@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import ActionItemsPage from './components/action-items/ActionItemsPage';
+import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
 import DashboardPage from './components/dashboard/DashboardPage';
 import HuddlesPage from './components/huddles/HuddlesPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
@@ -12,6 +13,7 @@ import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
+import { CurbAppealProvider } from './context/CurbAppealContext';
 import { WaypointProvider } from './context/WaypointContext';
 import { AuthProvider } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
@@ -25,6 +27,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Navigate to="/dashboard/me" replace />} />
         <Route path="/dashboard/me" element={<DashboardPage />} />
         <Route path="/dashboard/company" element={<DashboardPage company />} />
+        <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<PrioritiesPage />} />
         <Route path="/workplans" element={<WorkplansPage />} />
         <Route path="/initiatives" element={<InitiativesPage />} />
@@ -48,11 +51,13 @@ const App = () => (
       <CssBaseline />
       <BrowserRouter>
         <AuthProvider>
-          <WaypointProvider>
-            <AppShell>
-              <AnimatedRoutes />
-            </AppShell>
-          </WaypointProvider>
+          <CurbAppealProvider>
+            <WaypointProvider>
+              <AppShell>
+                <AnimatedRoutes />
+              </AppShell>
+            </WaypointProvider>
+          </CurbAppealProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

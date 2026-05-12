@@ -576,9 +576,9 @@ export const departmentWorkplans = [
     status: 'Needs Attention',
     due: '2026-06-18',
     progress: 58,
-    outcome: 'Leasing, maintenance aging, and high-risk property needs are tracked from the same operating view.',
+    outcome: 'Leasing, maintenance aging, curb appeal completion, and high-risk property needs are tracked from the same operating view.',
     ownerIds: [users[3].id],
-    priorityLinks: ['Reduce aged work orders', 'Tighten lease-up follow-through'],
+    priorityLinks: ['Curb appeal checklist completion', 'Reduce aged work orders', 'Tighten lease-up follow-through'],
   },
   {
     id: 'dw-hr-1',
