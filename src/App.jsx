@@ -11,6 +11,7 @@ import DataTablePage from './components/metrics/DataTablePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
+import WorkplansPage from './components/workplans/WorkplansPage';
 import { WaypointProvider } from './context/WaypointContext';
 import { AuthProvider } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
@@ -25,6 +26,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard/me" element={<DashboardPage />} />
         <Route path="/dashboard/company" element={<DashboardPage company />} />
         <Route path="/priorities" element={<PrioritiesPage />} />
+        <Route path="/workplans" element={<WorkplansPage />} />
         <Route path="/initiatives" element={<InitiativesPage />} />
         <Route path="/initiatives/:id" element={<InitiativesPage />} />
         <Route path="/huddles" element={<HuddlesPage />} />

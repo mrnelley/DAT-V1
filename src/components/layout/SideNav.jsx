@@ -2,6 +2,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -16,6 +17,7 @@ import UserAvatar from '../shared/UserAvatar';
 const navItems = [
   { icon: DashboardOutlinedIcon, label: 'Dashboards', submenu: true },
   { icon: TrendingUpIcon, label: 'Priorities', path: '/priorities' },
+  { icon: FactCheckOutlinedIcon, label: 'Workplans', path: '/workplans' },
   { icon: GroupsIcon, label: 'Huddles', popout: true },
   { icon: CheckCircleOutlineIcon, label: 'Action Items', path: '/action-items' },
   { icon: BarChartIcon, label: 'Metrics', path: '/metrics' },
