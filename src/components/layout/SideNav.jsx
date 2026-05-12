@@ -68,11 +68,40 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
               {item.submenu && (
                 <Collapse in={dashOpen && (open || mobile)} timeout="auto">
                   <List dense sx={{ pl: 4 }}>
-                    {dashboardLinks.map(([label, path]) => (
-                      <ListItemButton key={path} onClick={() => navigate(path)} selected={location.pathname === path} sx={{ color: 'common.white', borderRadius: 1 }}>
-                        <ListItemText primary={label} />
-                      </ListItemButton>
-                    ))}
+                    {dashboardLinks.map(([label, path]) => {
+                      const selected = location.pathname === path;
+
+                      return (
+                        <ListItemButton
+                          key={path}
+                          onClick={() => navigate(path)}
+                          selected={selected}
+                          sx={{
+                            borderRadius: 1,
+                            color: selected ? '#ffffff' : 'rgba(255,255,255,0.86)',
+                            '&:hover': {
+                              bgcolor: 'rgba(255,255,255,0.1)',
+                              color: '#ffffff',
+                            },
+                            '&.Mui-selected': {
+                              bgcolor: 'rgba(94,184,168,0.24)',
+                              color: '#ffffff',
+                            },
+                            '&.Mui-selected:hover': {
+                              bgcolor: 'rgba(94,184,168,0.32)',
+                            },
+                          }}
+                        >
+                          <ListItemText
+                            primary={label}
+                            primaryTypographyProps={{
+                              fontWeight: selected ? 700 : 500,
+                              sx: { color: 'inherit' },
+                            }}
+                          />
+                        </ListItemButton>
+                      );
+                    })}
                   </List>
                 </Collapse>
               )}
