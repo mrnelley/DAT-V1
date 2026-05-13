@@ -24,7 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import { departmentWorkplans, users } from '../../data/mockData';
+import { departmentWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -59,8 +59,9 @@ const defaultForm = (user) => ({
   scope: user.department,
   quarter: 'Q2 2026',
   quarterlyInitiative: '',
-  strategicPlan: 'HDC Strategic Plan 2030',
-  strategicPillar: '',
+  strategicPlan: strategicPlan2030.name,
+  strategicPillarId: strategicPlan2030.pillars[0].id,
+  strategicPillar: strategicPlan2030.pillars[0].name,
   status: 'On Course',
   due: '2026-06-30',
   progress: 25,
@@ -72,13 +73,23 @@ const defaultForm = (user) => ({
 const toForm = (workplan, user) => {
   if (!workplan) return defaultForm(user);
 
+  const strategicPillarId = workplan.strategicPillarId
+    || strategicPlan2030.pillars.find((pillar) => pillar.name === workplan.strategicPillar)?.id
+    || strategicPlan2030.pillars[0].id;
+
   return {
     ...workplan,
     leadId: workplan.lead?.id || user.id,
     ownerIds: workplan.ownerIds || [workplan.lead?.id || user.id],
+    strategicPillarId,
+    strategicPillar: strategicPillarById[strategicPillarId]?.name || workplan.strategicPillar,
     priorityLinksText: (workplan.priorityLinks || []).join('\n'),
   };
 };
+
+const canManageWorkplan = (workplan, user) => (
+  workplan.lead?.id === user.id || workplan.ownerIds?.includes(user.id)
+);
 
 const StatTile = ({ label, value, helper }) => (
   <Box
@@ -110,6 +121,7 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
   const save = () => {
     const lead = users.find((candidate) => candidate.id === form.leadId) || user;
     const { leadId, priorityLinksText, ...rest } = form;
+    const strategicPillar = strategicPillarById[form.strategicPillarId] || strategicPlan2030.pillars[0];
     const priorityLinks = priorityLinksText
       .split('\n')
       .map((value) => value.trim())
@@ -121,6 +133,9 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
       progress: clampProgress(form.progress),
       ownerIds: Array.from(new Set([lead.id, ...(form.ownerIds || [])])),
       priorityLinks,
+      strategicPlan: strategicPlan2030.name,
+      strategicPillarId: strategicPillar.id,
+      strategicPillar: strategicPillar.name,
     });
   };
 
@@ -150,8 +165,12 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
             <TextField label="Quarterly Initiative" value={form.quarterlyInitiative} onChange={update('quarterlyInitiative')} fullWidth />
           </Stack>
           <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
-            <TextField label="Strategic Plan" value={form.strategicPlan} onChange={update('strategicPlan')} fullWidth />
-            <TextField label="Strategic Pillar" value={form.strategicPillar} onChange={update('strategicPillar')} fullWidth />
+            <TextField label="Strategic Plan" value={strategicPlan2030.name} fullWidth InputProps={{ readOnly: true }} />
+            <TextField select label="Strategic Pillar" value={form.strategicPillarId} onChange={update('strategicPillarId')} fullWidth>
+              {strategicPlan2030.pillars.map((pillar) => (
+                <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>
+              ))}
+            </TextField>
           </Stack>
           <TextField label="Expected Outcome" value={form.outcome} onChange={update('outcome')} fullWidth multiline minRows={3} />
           <TextField
@@ -172,7 +191,7 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
   );
 };
 
-const WorkplanCard = ({ onDelete, onEdit, workplan }) => (
+const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
   <Card variant="outlined" sx={{ borderRadius: 1 }}>
     <CardContent>
       <Stack direction={{ xs: 'column', md: 'row' }} gap={2} justifyContent="space-between">
@@ -181,6 +200,7 @@ const WorkplanCard = ({ onDelete, onEdit, workplan }) => (
             <Chip label={workplan.department} color="primary" size="small" />
             <Chip label={workplan.status} color={statusColor[workplan.status] || 'default'} size="small" />
             <Chip label={`Due ${formatDate(workplan.due)}`} variant="outlined" size="small" />
+            {!canManage && <Chip label="View only" size="small" variant="outlined" />}
           </Stack>
           <Typography variant="h3">{workplan.title}</Typography>
           <Typography variant="body2" sx={{ mt: 0.75 }}>{workplan.outcome}</Typography>
@@ -191,16 +211,20 @@ const WorkplanCard = ({ onDelete, onEdit, workplan }) => (
             <Typography variant="body2" color="text.primary" fontWeight={700}>{workplan.lead.name}</Typography>
             <Typography variant="caption">{workplan.lead.role}</Typography>
           </Box>
-          <Tooltip title="Edit workplan">
-            <IconButton aria-label={`Edit workplan ${workplan.title}`} onClick={() => onEdit(workplan)}>
-              <EditOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete workplan">
-            <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={() => onDelete(workplan.id)}>
-              <DeleteOutlineIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {canManage && (
+            <>
+              <Tooltip title="Edit workplan">
+                <IconButton aria-label={`Edit workplan ${workplan.title}`} onClick={() => onEdit(workplan)}>
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete workplan">
+                <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={() => onDelete(workplan.id)}>
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Stack>
       </Stack>
 
@@ -273,6 +297,11 @@ const WorkplansPage = () => {
   }, [visibleWorkplans]);
 
   const saveWorkplan = (workplan) => {
+    if (workplan.id) {
+      const existing = workplans.find((item) => item.id === workplan.id);
+      if (existing && !canManageWorkplan(existing, user)) return;
+    }
+
     setWorkplans((current) => {
       const next = workplan.id ? workplan : { ...workplan, id: `dw-${Date.now()}` };
       return workplan.id
@@ -283,6 +312,8 @@ const WorkplansPage = () => {
   };
 
   const deleteWorkplan = (id) => {
+    const existing = workplans.find((workplan) => workplan.id === id);
+    if (existing && !canManageWorkplan(existing, user)) return;
     setWorkplans((current) => current.filter((workplan) => workplan.id !== id));
   };
 
@@ -324,8 +355,9 @@ const WorkplansPage = () => {
           visibleWorkplans.map((workplan) => (
             <WorkplanCard
               key={workplan.id}
+              canManage={canManageWorkplan(workplan, user)}
               onDelete={deleteWorkplan}
-              onEdit={(item) => setDialog({ item, open: true })}
+              onEdit={(item) => canManageWorkplan(item, user) && setDialog({ item, open: true })}
               workplan={workplan}
             />
           ))

@@ -1,6 +1,6 @@
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Box, Card, Chip, IconButton, LinearProgress, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Card, Chip, IconButton, LinearProgress, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { statusColorMap } from '../../utils/statusColors';
@@ -8,10 +8,11 @@ import UserAvatar from '../shared/UserAvatar';
 import PriorityGraph from './PriorityGraph';
 import PriorityHeatmap from './PriorityHeatmap';
 
-const PriorityRow = ({ priority, depth = 0, expandedAll = false }) => {
+const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) => {
   const [expanded, setExpanded] = useState(expandedAll);
   const [tab, setTab] = useState(0);
   const toggleExpanded = () => setExpanded((value) => !value);
+  const canManage = priority.owner?.id === currentUser?.id || priority.ownerIds?.includes(currentUser?.id);
 
   return (
     <Box sx={{ ml: depth ? 3 : 0, mb: 0.5 }}>
@@ -36,16 +37,25 @@ const PriorityRow = ({ priority, depth = 0, expandedAll = false }) => {
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
               <Typography variant="body1" fontWeight={700}>{priority.name}</Typography>
               {priority.company && <Chip label="COMPANY PRIORITY" size="small" sx={{ bgcolor: 'rgba(7,44,94,0.12)', color: 'primary.main' }} />}
-              {priority.mine && <Chip label="MY PRIORITY" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.15)', color: 'secondary.dark' }} />}
+              {canManage ? (
+                <Chip label="MY PRIORITY" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.15)', color: 'secondary.dark' }} />
+              ) : (
+                <Chip label="VIEW ONLY" size="small" variant="outlined" />
+              )}
+              {priority.strategicPillar && <Chip label={priority.strategicPillar} size="small" variant="outlined" />}
             </Stack>
           </Box>
           <Chip label={priority.type} size="small" variant="outlined" color={priority.type === 'TASK' ? 'secondary' : priority.type === 'ROLLUP' ? 'warning' : 'primary'} />
           <Box>
             <LinearProgress variant="determinate" value={priority.percent} sx={{ '& .MuiLinearProgress-bar': { bgcolor: statusColorMap[priority.status] } }} />
-            <Typography variant="caption">{priority.start} · {priority.current} · {priority.target}</Typography>
+            <Typography variant="caption">{priority.start} / {priority.current} / {priority.target}</Typography>
           </Box>
           <Typography variant="h4" color={statusColorMap[priority.status]}>{priority.percent}%</Typography>
-          <IconButton aria-label={`More options for priority ${priority.name}`} onClick={(event) => event.stopPropagation()}><MoreHorizOutlinedIcon /></IconButton>
+          <Tooltip title={canManage ? 'Priority options' : 'Only tied owners can update this priority'}>
+            <span>
+              <IconButton disabled={!canManage} aria-label={`More options for priority ${priority.name}`} onClick={(event) => event.stopPropagation()}><MoreHorizOutlinedIcon /></IconButton>
+            </span>
+          </Tooltip>
         </Box>
         <AnimatePresence>
           {expanded && (
@@ -59,7 +69,7 @@ const PriorityRow = ({ priority, depth = 0, expandedAll = false }) => {
                   <Tab label="HEATMAP" />
                 </Tabs>
                 {tab === 0 ? <PriorityGraph priority={priority} /> : <PriorityHeatmap values={priority.heatmap} />}
-                {priority.children?.map((child) => <PriorityRow key={child.id} priority={child} depth={depth + 1} />)}
+                {priority.children?.map((child) => <PriorityRow key={child.id} currentUser={currentUser} priority={child} depth={depth + 1} />)}
               </Box>
             </Box>
           )}

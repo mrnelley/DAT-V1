@@ -1,12 +1,14 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { initiatives, priorities } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import PermissionGate from '../shared/PermissionGate';
 import PriorityRow from '../priorities/PriorityRow';
 import InitiativeCard from './InitiativeCard';
 
 const InitiativesPage = () => {
+  const { user } = useAuth();
   const [selected, setSelected] = useState(null);
   return (
     <PageWrapper>
@@ -22,7 +24,7 @@ const InitiativesPage = () => {
           <Typography variant="h4" sx={{ mt: 2, mb: 1 }}>Quarterly Milestones</Typography>
           <Typography variant="body2">Q1 baseline, Q2 execution, Q3 adoption, Q4 sustainment.</Typography>
           <Typography variant="h4" sx={{ mt: 2, mb: 1 }}>Connected Priorities</Typography>
-          {priorities.map((priority) => <PriorityRow key={priority.id} priority={priority} />)}
+          {priorities.map((priority) => <PriorityRow key={priority.id} currentUser={user} priority={priority} />)}
         </Box>
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>

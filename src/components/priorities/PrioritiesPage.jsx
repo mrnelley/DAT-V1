@@ -5,12 +5,14 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Button, Chip, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { priorities } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EditPriorityPanel from './EditPriorityPanel';
 import FilterPanel from './FilterPanel';
 import PriorityRow from './PriorityRow';
 
 const PrioritiesPage = () => {
+  const { user } = useAuth();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [expandedAll, setExpandedAll] = useState(false);
@@ -34,7 +36,7 @@ const PrioritiesPage = () => {
         <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
       </Stack>
       <FilterPanel open={filtersOpen} />
-      <Box>{priorities.map((priority) => <PriorityRow key={`${priority.id}-${expandedAll}`} priority={priority} expandedAll={expandedAll} />)}</Box>
+      <Box>{priorities.map((priority) => <PriorityRow key={`${priority.id}-${expandedAll}`} currentUser={user} priority={priority} expandedAll={expandedAll} />)}</Box>
       <EditPriorityPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
     </PageWrapper>
   );

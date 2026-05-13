@@ -155,6 +155,25 @@ create table if not exists public.strategic_pillars (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.strategic_success_metrics (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid not null references public.strategic_plans(id) on delete cascade,
+  strategic_pillar_id uuid not null references public.strategic_pillars(id) on delete cascade,
+  title text not null,
+  target_label text not null,
+  metric_kind text not null default 'outcome',
+  start_value numeric,
+  current_value numeric,
+  target_value numeric,
+  unit text,
+  source text,
+  notes text,
+  display_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.initiatives (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -178,6 +197,8 @@ create table if not exists public.initiatives (
 create table if not exists public.workplans (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
+  strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
   department_id uuid references public.departments(id) on delete set null,
   lead_id uuid references public.profiles(id) on delete set null,
   initiative_id uuid references public.initiatives(id) on delete set null,
@@ -195,6 +216,8 @@ create table if not exists public.workplans (
 create table if not exists public.priorities (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
+  strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
   department_id uuid references public.departments(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   workplan_id uuid references public.workplans(id) on delete set null,
@@ -266,6 +289,8 @@ create table if not exists public.huddle_members (
 create table if not exists public.action_items (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
+  strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   created_by uuid references public.profiles(id) on delete set null,
   priority_id uuid references public.priorities(id) on delete set null,
@@ -501,8 +526,13 @@ create table if not exists public.brand_assets (
 
 create index if not exists idx_profiles_org on public.profiles(organization_id);
 create index if not exists idx_properties_org on public.properties(organization_id);
+create index if not exists idx_strategic_success_metrics_pillar on public.strategic_success_metrics(strategic_pillar_id);
+create index if not exists idx_initiatives_pillar on public.initiatives(strategic_pillar_id);
+create index if not exists idx_workplans_pillar on public.workplans(strategic_pillar_id);
+create index if not exists idx_priorities_pillar on public.priorities(strategic_pillar_id);
 create index if not exists idx_priorities_owner on public.priorities(owner_id);
 create index if not exists idx_priorities_workplan on public.priorities(workplan_id);
+create index if not exists idx_action_items_pillar on public.action_items(strategic_pillar_id);
 create index if not exists idx_waypoints_owner_scope on public.waypoints(owner_id, scope);
 create index if not exists idx_waypoints_date on public.waypoints(starts_on);
 create index if not exists idx_checklist_submissions_due on public.checklist_submissions(due_on, status);
@@ -516,7 +546,7 @@ declare
 begin
   foreach table_name in array array[
     'organizations', 'departments', 'profiles', 'properties', 'strategic_plans',
-    'strategic_pillars', 'initiatives', 'workplans', 'priorities', 'metrics',
+    'strategic_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'metrics',
     'huddles', 'action_items', 'stucks', 'waypoints', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
     'workflow_definitions', 'teams_accounts', 'contacts', 'touchpoints',
@@ -539,6 +569,7 @@ alter table public.properties enable row level security;
 alter table public.property_assignments enable row level security;
 alter table public.strategic_plans enable row level security;
 alter table public.strategic_pillars enable row level security;
+alter table public.strategic_success_metrics enable row level security;
 alter table public.initiatives enable row level security;
 alter table public.workplans enable row level security;
 alter table public.priorities enable row level security;
@@ -597,6 +628,37 @@ with check (public.is_admin());
 create policy "org members read strategic plans"
 on public.strategic_plans for select
 using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "admins manage strategic plans"
+on public.strategic_plans for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "org members read strategic pillars"
+on public.strategic_pillars for select
+using (
+  public.is_admin()
+  or exists (
+    select 1
+    from public.strategic_plans sp
+    where sp.id = strategic_pillars.strategic_plan_id
+      and public.is_org_member(sp.organization_id)
+  )
+);
+
+create policy "admins manage strategic pillars"
+on public.strategic_pillars for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "org members read strategic success metrics"
+on public.strategic_success_metrics for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "admins manage strategic success metrics"
+on public.strategic_success_metrics for all
+using (public.is_admin())
+with check (public.is_admin());
 
 create policy "org members read initiatives"
 on public.initiatives for select

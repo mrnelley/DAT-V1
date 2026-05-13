@@ -4,11 +4,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Autocomplete, Box, Button, Checkbox, Divider, Drawer, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Radio, RadioGroup, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { users } from '../../data/mockData';
+import { strategicPlan2030, users } from '../../data/mockData';
 
 const EditPriorityPanel = ({ open, onClose }) => {
   const [measurement, setMeasurement] = useState('Number');
   const [advanced, setAdvanced] = useState(false);
+  const [pillarId, setPillarId] = useState(strategicPlan2030.pillars[0].id);
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 420 }, bgcolor: 'background.paper' } }}>
@@ -20,6 +21,17 @@ const EditPriorityPanel = ({ open, onClose }) => {
         <Stack gap={2}>
           <TextField label="Priority Name" required fullWidth />
           <Autocomplete options={users} getOptionLabel={(option) => option.name} renderInput={(params) => <TextField {...params} label="Owner" required />} />
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
+            <TextField label="Strategic Plan" value={strategicPlan2030.name} fullWidth InputProps={{ readOnly: true }} />
+            <FormControl fullWidth>
+              <InputLabel>Strategic Pillar</InputLabel>
+              <Select label="Strategic Pillar" value={pillarId} onChange={(event) => setPillarId(event.target.value)}>
+                {strategicPlan2030.pillars.map((pillar) => (
+                  <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
           <Box>
             <Typography variant="h4" sx={{ mb: 1 }}>Success Measurement</Typography>
             <ToggleButtonGroup exclusive value={measurement} onChange={(_, value) => value && setMeasurement(value)} fullWidth>

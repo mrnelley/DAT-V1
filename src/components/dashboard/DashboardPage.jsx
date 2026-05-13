@@ -17,6 +17,7 @@ import PageWrapper from '../layout/PageWrapper';
 import CriticalNumbersSection from './CriticalNumbersSection';
 import FocusedDashboard from './FocusedDashboard';
 import MyKpisSection from './MyKpisSection';
+import StrategicPlanSection from './StrategicPlanSection';
 
 const getStoredWidgetOrder = (storageKey, fallback) => {
   if (typeof window === 'undefined') return fallback;
@@ -63,9 +64,10 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
   const teamOptions = company ? ['Critical Numbers for Leadership', 'Operations', 'Resident Services', 'Asset Management'] : user.teams;
+  const opensCalendarFirst = !company && user.id === 'u1';
   const [team, setTeam] = useState(teamOptions[0]);
   const [edit, setEdit] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(opensCalendarFirst);
   const [selectedMetric, setSelectedMetric] = useState(null);
   const {
     addWaypoint,
@@ -78,15 +80,15 @@ const DashboardPage = ({ company = false }) => {
     updateWaypoint,
   } = useWaypoints();
   const defaultWidgetOrder = useMemo(() => (
-    company ? ['critical', 'organizationCalendar'] : ['focus', 'critical', 'kpis']
+    company ? ['strategicPlan', 'critical', 'organizationCalendar'] : ['focus', 'critical', 'kpis']
   ), [company]);
-  const layoutStorageKey = `hdc_compass_dashboard_layout_${company ? 'company' : user.id}`;
+  const layoutStorageKey = `hdc_compass_dashboard_layout_${company ? 'company_v2' : user.id}`;
   const [widgetOrder, setWidgetOrder] = useState(() => getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
 
   useEffect(() => {
     setTeam(teamOptions[0]);
-    setCalendarOpen(false);
-  }, [user.id, company]);
+    setCalendarOpen(opensCalendarFirst);
+  }, [company, opensCalendarFirst, user.id]);
 
   useEffect(() => {
     setWidgetOrder(getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
@@ -122,6 +124,10 @@ const DashboardPage = ({ company = false }) => {
       return user.dashboardFocus === 'advocacy' ? <AdvocacyDashboard /> : <FocusedDashboard user={user} />;
     }
 
+    if (widgetId === 'strategicPlan') {
+      return <StrategicPlanSection />;
+    }
+
     if (widgetId === 'critical') {
       return <CriticalNumbersSection metrics={metrics} teamName={team} onMetricClick={setSelectedMetric} />;
     }
@@ -154,6 +160,7 @@ const DashboardPage = ({ company = false }) => {
     focus: user.dashboardFocus === 'advocacy' ? 'Advocacy Dashboard' : 'Focused Dashboard',
     kpis: 'My KPIs',
     organizationCalendar: 'Compass Calendar',
+    strategicPlan: 'Strategic Plan',
   };
 
   const dashboardWidgets = (

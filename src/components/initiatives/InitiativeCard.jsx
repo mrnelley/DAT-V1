@@ -21,6 +21,7 @@ const InitiativeCard = ({ initiative, onClick }) => (
       <Stack direction="row" gap={1} sx={{ mb: 1 }}>
         <Chip label={initiative.year} color="primary" size="small" />
         <Chip label={initiative.status} color={initiative.status === 'Active' ? 'success' : 'default'} size="small" />
+        {initiative.strategicPillar && <Chip label={initiative.strategicPillar} variant="outlined" size="small" />}
       </Stack>
       <Typography variant="h3">{initiative.title}</Typography>
       <Typography variant="body2" sx={{ my: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{initiative.description}</Typography>
