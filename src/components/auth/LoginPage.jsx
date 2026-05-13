@@ -8,6 +8,7 @@ import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { brandAssets } from '../../theme/brandAssets';
 
 const demoNames = ['Dana', 'Sam', 'Kim', 'Jaime', 'Michele', 'Meg', 'Michael'];
 
@@ -52,10 +53,13 @@ const LoginPage = () => {
         }}
       >
         <Box>
-          <Stack direction="row" gap={1} alignItems="center" sx={{ mb: { xs: 5, md: 8 } }}>
-            <Box sx={{ width: 42, height: 42, borderRadius: 1, bgcolor: 'secondary.main', display: 'grid', placeItems: 'center', color: 'secondary.contrastText', fontWeight: 800 }}>
-              H
-            </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: { xs: 5, md: 8 } }}>
+            <Box
+              component="img"
+              src={brandAssets.logoHorizontalReverse}
+              alt="HDC MidAtlantic"
+              sx={{ width: { xs: 210, md: 270 }, height: 'auto', display: 'block' }}
+            />
             <Box>
               <Typography variant="h3" color="inherit">HDC Compass</Typography>
               <Typography variant="caption" color="secondary.light">Accountability without extra drag</Typography>
@@ -96,6 +100,12 @@ const LoginPage = () => {
 
       <Box sx={{ minHeight: { xs: 'auto', lg: '100vh' }, display: 'grid', placeItems: 'center', p: { xs: 2, md: 5 } }}>
         <Box sx={{ width: '100%', maxWidth: 470, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 2, md: 3 } }}>
+          <Box
+            component="img"
+            src={brandAssets.logoVerticalFullColor}
+            alt="HDC MidAtlantic"
+            sx={{ width: 118, height: 'auto', display: 'block', mb: 2 }}
+          />
           <Typography variant="h2">Sign in</Typography>
           <Typography variant="body2" sx={{ mt: 0.75, mb: 2 }}>
             Choose a dashboard for the demo. Microsoft sign-in will use the same landing page once OAuth is wired.

@@ -2,10 +2,11 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Toolbar, Tooltip, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { brandAssets } from '../../theme/brandAssets';
 
 const navMenus = {
   Strategy: ['Annual Initiatives', 'Company Dashboard', 'Priority Map'],
@@ -28,7 +29,16 @@ const TopBar = ({ onMenuClick }) => {
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
       <Toolbar sx={{ minHeight: 64, gap: 1.5 }}>
         <IconButton aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
-        <Typography variant="h3" color="primary" sx={{ mr: 2, whiteSpace: 'nowrap' }}>HDC Compass</Typography>
+        <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 2, minWidth: 0 }}>
+          <Box
+            component="img"
+            src={brandAssets.logoIcon}
+            alt=""
+            aria-hidden="true"
+            sx={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
+          />
+          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
+        </Stack>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
           {Object.keys(navMenus).map((label) => (
             <Button key={label} color="primary" endIcon={<ArrowDropDownIcon />} onClick={(event) => openMenu(event, label)}>
