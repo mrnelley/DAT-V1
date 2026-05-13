@@ -1,6 +1,7 @@
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
+import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import CloudQueueOutlinedIcon from '@mui/icons-material/CloudQueueOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
@@ -29,6 +30,25 @@ const profiles = {
     ],
     secondaryTitle: 'Financial Watchlist',
     secondaryRows: ['Insurance renewal impact', 'Development draw timing', 'Property-level variance exceptions'],
+  },
+  operations: {
+    icon: ChecklistOutlinedIcon,
+    title: 'Operations Dashboard',
+    subtitle: 'Cross-functional operating priorities, blocked work, and organizational execution support.',
+    stats: [
+      ['Active Workplans', '9', 'Across Finance, PM, RS, RED, HR, and Advancement'],
+      ['Open Stucks', '6', 'Need cross-department support'],
+      ['Q2 Priorities', '5', 'Company priorities in motion'],
+      ['At-Risk Items', '3', 'Need ELT/OLT attention'],
+    ],
+    primaryTitle: 'Operations Priorities',
+    primaryRows: [
+      { name: 'Operational Efficiency rollup review', status: 'On Course', progress: 62, detail: 'Departmental workplans are being connected to Q2 org priorities.' },
+      { name: 'Third-party PM exit closeout', status: 'Completed', progress: 100, detail: 'Newtowne, Hartley, and Providence exits completed as of 5/1/26.' },
+      { name: 'Quarterly accountability rhythm', status: 'Needs Attention', progress: 48, detail: 'Pending final alignment from Finance and Resident Services workplans.' },
+    ],
+    secondaryTitle: 'Operational Watchlist',
+    secondaryRows: ['PM fee dependency support', 'Assigned stucks', 'Quarterly carry-forward decisions'],
   },
   development: {
     icon: ApartmentOutlinedIcon,

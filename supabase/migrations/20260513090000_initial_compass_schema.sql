@@ -237,6 +237,46 @@ create table if not exists public.priorities (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.key_objectives (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
+  strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
+  priority_id uuid references public.priorities(id) on delete cascade,
+  owner_id uuid references public.profiles(id) on delete set null,
+  department_id uuid references public.departments(id) on delete set null,
+  workplan_id uuid references public.workplans(id) on delete set null,
+  title text not null,
+  description text,
+  status text not null default 'on_course',
+  lifecycle_status text not null default 'active',
+  progress numeric(5, 2) not null default 0,
+  due_on date,
+  metadata jsonb not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.objective_kpis (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  key_objective_id uuid not null references public.key_objectives(id) on delete cascade,
+  owner_id uuid references public.profiles(id) on delete set null,
+  title text not null,
+  target_label text,
+  current_label text,
+  target_value numeric,
+  current_value numeric,
+  progress numeric(5, 2) not null default 0,
+  status text not null default 'on_course',
+  due_on date,
+  source text,
+  children jsonb not null default '[]',
+  metadata jsonb not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.metrics (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -532,6 +572,9 @@ create index if not exists idx_workplans_pillar on public.workplans(strategic_pi
 create index if not exists idx_priorities_pillar on public.priorities(strategic_pillar_id);
 create index if not exists idx_priorities_owner on public.priorities(owner_id);
 create index if not exists idx_priorities_workplan on public.priorities(workplan_id);
+create index if not exists idx_key_objectives_priority on public.key_objectives(priority_id);
+create index if not exists idx_key_objectives_owner on public.key_objectives(owner_id);
+create index if not exists idx_objective_kpis_objective on public.objective_kpis(key_objective_id);
 create index if not exists idx_action_items_pillar on public.action_items(strategic_pillar_id);
 create index if not exists idx_waypoints_owner_scope on public.waypoints(owner_id, scope);
 create index if not exists idx_waypoints_date on public.waypoints(starts_on);
@@ -546,7 +589,7 @@ declare
 begin
   foreach table_name in array array[
     'organizations', 'departments', 'profiles', 'properties', 'strategic_plans',
-    'strategic_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'metrics',
+    'strategic_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
     'huddles', 'action_items', 'stucks', 'waypoints', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
     'workflow_definitions', 'teams_accounts', 'contacts', 'touchpoints',
@@ -573,6 +616,8 @@ alter table public.strategic_success_metrics enable row level security;
 alter table public.initiatives enable row level security;
 alter table public.workplans enable row level security;
 alter table public.priorities enable row level security;
+alter table public.key_objectives enable row level security;
+alter table public.objective_kpis enable row level security;
 alter table public.metrics enable row level security;
 alter table public.metric_values enable row level security;
 alter table public.huddles enable row level security;
@@ -686,6 +731,51 @@ create policy "owners and admins manage priorities"
 on public.priorities for all
 using (public.is_admin() or owner_id = auth.uid())
 with check (public.is_admin() or owner_id = auth.uid());
+
+create policy "org members read key objectives"
+on public.key_objectives for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "owners and admins manage key objectives"
+on public.key_objectives for all
+using (public.is_admin() or owner_id = auth.uid())
+with check (public.is_admin() or owner_id = auth.uid());
+
+create policy "org members read objective kpis"
+on public.objective_kpis for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "owners and objective owners manage objective kpis"
+on public.objective_kpis for all
+using (
+  public.is_admin()
+  or owner_id = auth.uid()
+  or exists (
+    select 1
+    from public.key_objectives ko
+    where ko.id = objective_kpis.key_objective_id
+      and ko.owner_id = auth.uid()
+  )
+)
+with check (
+  public.is_admin()
+  or owner_id = auth.uid()
+  or exists (
+    select 1
+    from public.key_objectives ko
+    where ko.id = objective_kpis.key_objective_id
+      and ko.owner_id = auth.uid()
+  )
+);
+
+create policy "org members read action items"
+on public.action_items for select
+using (public.is_org_member(organization_id) or owner_id = auth.uid() or created_by = auth.uid() or public.is_admin());
+
+create policy "assigned users and admins manage action items"
+on public.action_items for all
+using (public.is_admin() or owner_id = auth.uid() or created_by = auth.uid())
+with check (public.is_admin() or owner_id = auth.uid() or created_by = auth.uid());
 
 create policy "org members read review requests"
 on public.review_requests for select
