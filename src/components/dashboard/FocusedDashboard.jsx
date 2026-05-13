@@ -8,6 +8,7 @@ import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivism
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
+import ResidentServicesMap from './ResidentServicesMap';
 
 const profiles = {
   financials: {
@@ -183,6 +184,8 @@ const FocusedDashboard = ({ user }) => {
           <StatCard key={label} label={label} value={value} helper={helper} source={source} />
         ))}
       </Box>
+
+      {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.4fr 0.8fr' }, gap: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>

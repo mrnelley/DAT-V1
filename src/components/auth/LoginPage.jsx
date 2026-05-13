@@ -6,12 +6,14 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import MicrosoftIcon from '@mui/icons-material/Microsoft';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const demoNames = ['Dana', 'Sam', 'Kim', 'Jaime', 'Michele', 'Meg', 'Michael'];
 
 const LoginPage = () => {
   const { signInByName } = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = useState('');
 
   const signInAs = (value) => {
@@ -23,6 +25,7 @@ const LoginPage = () => {
     }
 
     setError('');
+    navigate('/dashboard/me');
   };
 
   return (
@@ -95,7 +98,7 @@ const LoginPage = () => {
         <Box sx={{ width: '100%', maxWidth: 470, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 2, md: 3 } }}>
           <Typography variant="h2">Sign in</Typography>
           <Typography variant="body2" sx={{ mt: 0.75, mb: 2 }}>
-            Demo mode accepts a first name. Microsoft sign-in will use the same landing page once OAuth is wired.
+            Choose a dashboard for the demo. Microsoft sign-in will use the same landing page once OAuth is wired.
           </Typography>
 
           <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>

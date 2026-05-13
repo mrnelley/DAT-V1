@@ -46,11 +46,11 @@ const AnimatedRoutes = () => {
   );
 };
 
-const AuthenticatedApp = () => {
+const ProtectedApp = () => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -64,13 +64,20 @@ const AuthenticatedApp = () => {
   );
 };
 
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<LoginPage />} />
+    <Route path="/*" element={<ProtectedApp />} />
+  </Routes>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
         <AuthProvider>
-          <AuthenticatedApp />
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

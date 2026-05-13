@@ -4,8 +4,8 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Checkbox, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet';
+import { useEffect, useMemo, useState } from 'react';
+import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import CurbAppealWorkflowPanel from '../curb-appeal/CurbAppealWorkflowPanel';
 import { getPropertyRisk, getPropertyTasks, portfolioOrganization, portfolioProperties, portfolioRegions } from '../../data/propertyPortfolio';
@@ -37,10 +37,25 @@ const StatCard = ({ helper, icon: Icon, label, value }) => (
   </Box>
 );
 
+const MapFocusController = ({ enabled, property }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!enabled || !property?.coordinates) return;
+    map.flyTo([property.coordinates.lat, property.coordinates.lng], 12, {
+      animate: true,
+      duration: 0.75,
+    });
+  }, [enabled, map, property]);
+
+  return null;
+};
+
 const PropertyManagementDashboard = ({ user }) => {
   const [region, setRegion] = useState('All Regions');
   const [selectedPropertyId, setSelectedPropertyId] = useState(portfolioProperties[0].id);
   const [completedTaskIds, setCompletedTaskIds] = useState([]);
+  const [mapFocusEnabled, setMapFocusEnabled] = useState(false);
   const [portfolioStatusByProperty, setPortfolioStatusByProperty] = useState(() => (
     Object.fromEntries(portfolioProperties.map((property) => [property.id, property.isActivePortfolio]))
   ));
@@ -106,8 +121,6 @@ const PropertyManagementDashboard = ({ user }) => {
         <StatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={openWorkOrders} helper={`${agedWorkOrders} aged exceptions in this view.`} />
       </Box>
 
-      <CurbAppealWorkflowPanel />
-
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.25fr 0.9fr' }, gap: 2, mb: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
@@ -122,8 +135,11 @@ const PropertyManagementDashboard = ({ user }) => {
               <InputLabel>Region</InputLabel>
               <Select label="Region" value={region} onChange={(event) => {
                 setRegion(event.target.value);
-                const nextProperty = portfolioProperties.find((property) => event.target.value === 'All Regions' || property.state === event.target.value);
-                if (nextProperty) setSelectedPropertyId(nextProperty.id);
+                const nextProperty = propertiesWithPortfolioStatus.find((property) => event.target.value === 'All Regions' || property.state === event.target.value);
+                if (nextProperty) {
+                  setSelectedPropertyId(nextProperty.id);
+                  setMapFocusEnabled(true);
+                }
               }}>
                 {portfolioRegions.map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}
               </Select>
@@ -132,6 +148,7 @@ const PropertyManagementDashboard = ({ user }) => {
 
           <Box aria-label="Interactive portfolio map" sx={{ height: { xs: 360, md: 430 }, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
             <MapContainer center={[39.45, -76.15]} zoom={7} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+              <MapFocusController enabled={mapFocusEnabled} property={selectedProperty} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -145,7 +162,10 @@ const PropertyManagementDashboard = ({ user }) => {
                     center={[property.coordinates.lat, property.coordinates.lng]}
                     pathOptions={{ color: markerColor[risk], fillColor: markerColor[risk], fillOpacity: property.isActivePortfolio ? (selected ? 0.85 : 0.58) : 0.24, weight: selected ? 4 : 2 }}
                     radius={selected ? 11 : property.isActivePortfolio ? 8 : 6}
-                    eventHandlers={{ click: () => setSelectedPropertyId(property.id) }}
+                    eventHandlers={{ click: () => {
+                      setSelectedPropertyId(property.id);
+                      setMapFocusEnabled(true);
+                    } }}
                   >
                     <Tooltip>{property.propertyName}</Tooltip>
                     <Popup>
@@ -204,21 +224,27 @@ const PropertyManagementDashboard = ({ user }) => {
         </Box>
       </Box>
 
+      <CurbAppealWorkflowPanel />
+
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '0.95fr 1.3fr' }, gap: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
           <Typography variant="h3" sx={{ mb: 1 }}>Property List</Typography>
           <Stack gap={0.75} sx={{ maxHeight: 426, overflow: 'auto', pr: 0.5 }}>
             {filteredProperties.map((property) => {
-              const risk = getPropertyRisk(property);
+              const risk = property.isActivePortfolio ? getPropertyRisk(property) : 'Inactive';
               const selected = property.id === selectedProperty.id;
               return (
                 <Box
                   key={property.id}
-                  onClick={() => setSelectedPropertyId(property.id)}
+                  onClick={() => {
+                    setSelectedPropertyId(property.id);
+                    setMapFocusEnabled(true);
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
                       setSelectedPropertyId(property.id);
+                      setMapFocusEnabled(true);
                     }
                   }}
                   role="button"

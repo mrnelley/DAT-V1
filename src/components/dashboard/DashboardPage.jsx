@@ -1,8 +1,12 @@
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import { metrics } from '../../data/mockData';
 import { useWaypoints } from '../../context/WaypointContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,11 +18,54 @@ import CriticalNumbersSection from './CriticalNumbersSection';
 import FocusedDashboard from './FocusedDashboard';
 import MyKpisSection from './MyKpisSection';
 
+const getStoredWidgetOrder = (storageKey, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(storageKey));
+    if (!Array.isArray(parsed)) return fallback;
+    const valid = parsed.filter((item) => fallback.includes(item));
+    const missing = fallback.filter((item) => !valid.includes(item));
+    return [...valid, ...missing];
+  } catch {
+    return fallback;
+  }
+};
+
+const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp, title }) => (
+  <Box sx={{ mb: 2 }}>
+    {edit && (
+      <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+        <DragIndicatorIcon color="primary" fontSize="small" />
+        <Typography variant="caption" color="primary" fontWeight={700}>{title}</Typography>
+        <Stack direction="row" gap={0.5} sx={{ ml: 'auto' }}>
+          <Tooltip title="Move up">
+            <span>
+              <IconButton size="small" aria-label={`Move ${title} up`} disabled={isFirst} onClick={onMoveUp}>
+                <KeyboardArrowUpIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Move down">
+            <span>
+              <IconButton size="small" aria-label={`Move ${title} down`} disabled={isLast} onClick={onMoveDown}>
+                <KeyboardArrowDownIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
+      </Stack>
+    )}
+    {children}
+  </Box>
+);
+
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
   const teamOptions = company ? ['Critical Numbers for Leadership', 'Operations', 'Resident Services', 'Asset Management'] : user.teams;
   const [team, setTeam] = useState(teamOptions[0]);
   const [edit, setEdit] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState(null);
   const {
     addWaypoint,
@@ -30,10 +77,102 @@ const DashboardPage = ({ company = false }) => {
     sendToOrg,
     updateWaypoint,
   } = useWaypoints();
+  const defaultWidgetOrder = useMemo(() => (
+    company ? ['critical', 'organizationCalendar'] : ['focus', 'critical', 'kpis']
+  ), [company]);
+  const layoutStorageKey = `hdc_compass_dashboard_layout_${company ? 'company' : user.id}`;
+  const [widgetOrder, setWidgetOrder] = useState(() => getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
 
   useEffect(() => {
     setTeam(teamOptions[0]);
+    setCalendarOpen(false);
   }, [user.id, company]);
+
+  useEffect(() => {
+    setWidgetOrder(getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
+  }, [defaultWidgetOrder, layoutStorageKey]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(layoutStorageKey, JSON.stringify(widgetOrder));
+    }
+  }, [layoutStorageKey, widgetOrder]);
+
+  const moveWidget = (widgetId, direction) => {
+    setWidgetOrder((current) => {
+      const index = current.indexOf(widgetId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  };
+
+  const calendarProps = {
+    onApprove: approveWaypoint,
+    onCreateWaypoint: addWaypoint,
+    onDecline: declineWaypoint,
+    onSendToOrg: sendToOrg,
+    onUpdateWaypoint: updateWaypoint,
+  };
+
+  const renderWidget = (widgetId) => {
+    if (widgetId === 'focus') {
+      return user.dashboardFocus === 'advocacy' ? <AdvocacyDashboard /> : <FocusedDashboard user={user} />;
+    }
+
+    if (widgetId === 'critical') {
+      return <CriticalNumbersSection metrics={metrics} teamName={team} onMetricClick={setSelectedMetric} />;
+    }
+
+    if (widgetId === 'kpis') {
+      return (
+        <MyKpisSection
+          metrics={metrics.filter((metric) => metric.owner.id === user.id).length ? metrics.filter((metric) => metric.owner.id === user.id) : metrics.slice(0, 2)}
+          onMetricClick={setSelectedMetric}
+        />
+      );
+    }
+
+    if (widgetId === 'organizationCalendar') {
+      return (
+        <CompassCalendar
+          {...calendarProps}
+          isAdmin={isAdmin}
+          scope="organization"
+          waypoints={organizationWaypoints}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  const widgetLabels = {
+    critical: 'Critical Numbers',
+    focus: user.dashboardFocus === 'advocacy' ? 'Advocacy Dashboard' : 'Focused Dashboard',
+    kpis: 'My KPIs',
+    organizationCalendar: 'Compass Calendar',
+  };
+
+  const dashboardWidgets = (
+    <>
+      {widgetOrder.map((widgetId, index) => (
+        <DashboardWidget
+          key={widgetId}
+          edit={edit}
+          isFirst={index === 0}
+          isLast={index === widgetOrder.length - 1}
+          onMoveDown={() => moveWidget(widgetId, 1)}
+          onMoveUp={() => moveWidget(widgetId, -1)}
+          title={widgetLabels[widgetId]}
+        >
+          {renderWidget(widgetId)}
+        </DashboardWidget>
+      ))}
+    </>
+  );
 
   return (
     <PageWrapper>
@@ -46,6 +185,16 @@ const DashboardPage = ({ company = false }) => {
           <Button variant={edit ? 'contained' : 'outlined'} startIcon={<DragIndicatorIcon />} onClick={() => setEdit((value) => !value)}>
             {edit ? 'Save Order' : 'Edit'}
           </Button>
+          {!company && (
+            <Button
+              variant={calendarOpen ? 'contained' : 'outlined'}
+              startIcon={<CalendarMonthIcon />}
+              endIcon={calendarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+              onClick={() => setCalendarOpen((value) => !value)}
+            >
+              {calendarOpen ? 'Back to Dashboard' : 'Calendar'}
+            </Button>
+          )}
           <Stack direction="row" alignItems="center">
             <IconButton aria-label="Previous dashboard period"><ChevronLeftIcon /></IconButton>
             <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
@@ -59,35 +208,28 @@ const DashboardPage = ({ company = false }) => {
           </FormControl>
         </Stack>
       </Stack>
-      {!company && (user.dashboardFocus === 'advocacy' ? <AdvocacyDashboard /> : <FocusedDashboard user={user} />)}
-      <CriticalNumbersSection metrics={metrics} teamName={team} onMetricClick={setSelectedMetric} />
       {company ? (
-        <CompassCalendar
-          isAdmin={isAdmin}
-          onApprove={approveWaypoint}
-          onCreateWaypoint={addWaypoint}
-          onDecline={declineWaypoint}
-          onSendToOrg={sendToOrg}
-          onUpdateWaypoint={updateWaypoint}
-          scope="organization"
-          waypoints={organizationWaypoints}
-        />
+        dashboardWidgets
       ) : (
-        <>
-          <MyKpisSection
-            metrics={metrics.filter((metric) => metric.owner.id === user.id).length ? metrics.filter((metric) => metric.owner.id === user.id) : metrics.slice(0, 2)}
-            onMetricClick={setSelectedMetric}
-          />
-          <CompassCalendar
-            onApprove={approveWaypoint}
-            onCreateWaypoint={addWaypoint}
-            onDecline={declineWaypoint}
-            onSendToOrg={sendToOrg}
-            onUpdateWaypoint={updateWaypoint}
-            scope="personal"
-            waypoints={personalWaypoints}
-          />
-        </>
+        <Box sx={{ overflow: 'hidden' }}>
+          <Box
+            component={motion.div}
+            animate={{ x: calendarOpen ? '-100%' : '0%' }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            sx={{ display: 'flex', width: '100%' }}
+          >
+            <Box sx={{ width: '100%', flexShrink: 0, pr: { xs: 0, md: 1 } }}>
+              {dashboardWidgets}
+            </Box>
+            <Box sx={{ width: '100%', flexShrink: 0, pl: { xs: 0, md: 1 } }}>
+              <CompassCalendar
+                {...calendarProps}
+                scope="personal"
+                waypoints={personalWaypoints}
+              />
+            </Box>
+          </Box>
+        </Box>
       )}
       <KpiDetailModal metric={selectedMetric} open={Boolean(selectedMetric)} onClose={() => setSelectedMetric(null)} />
     </PageWrapper>
