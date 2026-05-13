@@ -1,6 +1,6 @@
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Checkbox, Chip, IconButton, List, ListItem, ListItemText, MenuItem, Select, Stack, ToggleButton, ToggleButtonGroup, Typography, Button } from '@mui/material';
+import { Box, Button, Checkbox, Chip, IconButton, List, ListItem, MenuItem, Select, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useState } from 'react';
 import { actionItems } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
@@ -8,7 +8,7 @@ import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 
 const chipColor = (due) => {
-  const today = '2026-05-05';
+  const today = '2026-05-13';
   if (due < today) return 'error';
   if (due === today) return 'warning';
   return 'default';
@@ -41,17 +41,19 @@ const ActionItemsPage = () => {
             <ListItem
               key={item.id}
               divider
-              secondaryAction={<IconButton disabled={!canManage} aria-label={`More options for action item ${item.description}`}><MoreHorizOutlinedIcon /></IconButton>}
-              sx={{ bgcolor: done ? 'rgba(90, 100, 117, 0.08)' : 'transparent' }}
+              sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(90, 100, 117, 0.08)' : 'transparent' }}
             >
-              <Checkbox disabled={!canManage} checked={done} onChange={() => setCompleted((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id])} />
-              <ListItemText primary={<Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>} />
-              <Stack direction="row" gap={1} alignItems="center">
-                <UserAvatar user={item.owner} size="sm" />
-                <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
-                <Chip label={item.priority} color="primary" variant="outlined" size="small" />
-                <Chip label={item.strategicPillar} variant="outlined" size="small" />
-              </Stack>
+              <Checkbox disabled={!canManage} checked={done} onChange={() => setCompleted((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id])} sx={{ mt: 0.25 }} />
+              <Box sx={{ flex: 1, minWidth: 240 }}>
+                <Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>
+                <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
+                  <UserAvatar user={item.owner} size="sm" />
+                  <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
+                  <Chip label={item.priority} color="primary" variant="outlined" size="small" />
+                  <Chip label={item.strategicPillar} variant="outlined" size="small" />
+                </Stack>
+              </Box>
+              <IconButton disabled={!canManage} aria-label={`More options for action item ${item.description}`}><MoreHorizOutlinedIcon /></IconButton>
             </ListItem>
           );
         })}

@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 
-const demoNames = ['Dana', 'Sam', 'Kim', 'Jaime', 'Michele', 'Meg', 'Michael'];
+const demoNames = ['Dana', 'Sam', 'Shar', 'Ann', 'Kim', 'Chris', 'Jaime', 'Angie', 'Michele', 'Meg', 'Tammie', 'Michael'];
 
 const LoginPage = () => {
   const { signInByName } = useAuth();
@@ -21,7 +21,7 @@ const LoginPage = () => {
     const match = signInByName(value);
 
     if (!match) {
-      setError('Try Dana, Sam, Kim, Jaime, Michele, Meg, or Michael.');
+      setError(`Try one of these demo dashboards: ${demoNames.join(', ')}.`);
       return;
     }
 

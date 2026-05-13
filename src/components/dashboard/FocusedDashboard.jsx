@@ -7,7 +7,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
-import { financeWeeklyPriorities } from '../../data/mockData';
+import { weeklyPriorities } from '../../data/mockData';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
@@ -142,6 +142,16 @@ const statusColor = {
   'Needs Attention': 'warning',
   'Off Course': 'error',
   Completed: 'success',
+  Open: 'info',
+};
+
+const weeklyPriorityLeadershipLanes = {
+  u2: { label: 'Finance', departments: ['Finance'] },
+  u3: { label: 'Real Estate Development', departments: ['Real Estate Development'] },
+  u4: { label: 'Property Management', departments: ['Property Management', 'Property Management & Compliance'] },
+  u5: { label: 'HR', departments: ['Human Resources'] },
+  u6: { label: 'Impact and Advancement', departments: ['Impact and Advancement', 'Community Relations'] },
+  u8: { label: 'Operations', departments: ['Operations', 'Resident Services'] },
 };
 
 const SalesforceFlag = ({ source }) => (
@@ -172,16 +182,18 @@ const StatCard = ({ helper, label, source, value }) => (
   </Box>
 );
 
-const FinanceWeeklyPriorities = ({ user }) => {
-  if (user.dashboardFocus !== 'financials') return null;
-
-  const isSam = user.id === 'u2';
-  const visiblePriorities = financeWeeklyPriorities.filter((priority) => (
-    isSam
-    || priority.owner.id === user.id
-    || priority.supportUsers.some((supportUser) => supportUser.id === user.id)
-    || priority.tasks.some((task) => task.owner.id === user.id)
-  ));
+const WeeklyPrioritiesSection = ({ user }) => {
+  const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
+  const isLeadershipView = Boolean(leadershipLane);
+  const visiblePriorities = weeklyPriorities.filter((priority) => {
+    const priorityDepartment = priority.department || priority.owner.department;
+    return (
+      priority.owner.id === user.id
+      || priority.supportUsers.some((supportUser) => supportUser.id === user.id)
+      || priority.tasks.some((task) => task.owner.id === user.id)
+      || leadershipLane?.departments.includes(priorityDepartment)
+    );
+  });
 
   if (!visiblePriorities.length) return null;
 
@@ -189,15 +201,16 @@ const FinanceWeeklyPriorities = ({ user }) => {
     <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
         <Box>
-          <Typography variant="h3">{isSam ? 'Finance Weekly Priorities' : `${user.name.split(' ')[0]}'s Priority Task List`}</Typography>
+          <Typography variant="h3">{isLeadershipView ? `${leadershipLane.label} Weekly Priorities` : `${user.name.split(' ')[0]}'s Priority Task List`}</Typography>
           <Typography variant="body2">Week of Monday, May 11, 2026</Typography>
         </Box>
-        <Chip label={isSam ? 'Sam owner view' : 'Related to me'} color="primary" variant="outlined" />
+        <Chip label={isLeadershipView ? 'Department owner view' : 'Related to me'} color="primary" variant="outlined" />
       </Stack>
 
       <Stack gap={1}>
         {visiblePriorities.map((priority) => {
-          const relatedTasks = priority.tasks.filter((task) => isSam || task.owner.id === user.id);
+          const showAllTasks = isLeadershipView || priority.owner.id === user.id;
+          const relatedTasks = priority.tasks.filter((task) => showAllTasks || task.owner.id === user.id);
           return (
             <Box key={priority.id} sx={{ border: '1px solid', borderColor: priority.isMostImportant ? 'primary.light' : 'divider', borderRadius: 1, p: 1.25 }}>
               <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
@@ -250,7 +263,12 @@ const FinanceWeeklyPriorities = ({ user }) => {
 
 const FocusedDashboard = ({ user }) => {
   if (user.dashboardFocus === 'property_management') {
-    return <PropertyManagementDashboard user={user} />;
+    return (
+      <Box sx={{ mb: 3 }}>
+        <WeeklyPrioritiesSection user={user} />
+        <PropertyManagementDashboard user={user} />
+      </Box>
+    );
   }
 
   const profile = profiles[user.dashboardFocus];
@@ -282,7 +300,7 @@ const FocusedDashboard = ({ user }) => {
         ))}
       </Box>
 
-      <FinanceWeeklyPriorities user={user} />
+      <WeeklyPrioritiesSection user={user} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
 
