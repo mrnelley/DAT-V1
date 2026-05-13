@@ -809,6 +809,69 @@ export const priorities = [
   }),
 ];
 
+export const financeWeeklyPriorities = [
+  {
+    id: 'finance-2026-05-11-ap-process',
+    rank: 1,
+    isMostImportant: true,
+    weekOf: '2026-05-11',
+    owner: userById.u2,
+    outcome: 'A/P process timeline and ownership structure from Ann to Sam by 5/15',
+    due: '2026-05-15',
+    alignedTo: 'Finance',
+    organizationalPriority: 'Enterprise Revenue',
+    strategicPillarId: 'sustainable-growth',
+    strategicPillar: strategicPillarById['sustainable-growth'].name,
+    supportUsers: [userById.u10],
+    supportLabel: 'Ann',
+    status: 'Needs Attention',
+    tasks: [
+      {
+        id: 'finance-2026-05-11-ann-ap-handoff',
+        owner: userById.u10,
+        title: 'Provide A/P process timeline and ownership structure handoff to Sam',
+        due: '2026-05-15',
+        status: 'Open',
+      },
+    ],
+  },
+  {
+    id: 'finance-2026-05-11-asset-manager-plan',
+    rank: 2,
+    isMostImportant: false,
+    weekOf: '2026-05-11',
+    owner: userById.u2,
+    outcome: 'Asset Manager 90 day plan to be completed 5/12',
+    due: '2026-05-12',
+    alignedTo: 'Asset Management as a line of business',
+    organizationalPriority: 'Enterprise Revenue',
+    keyObjective: 'Develop and launch Asset Management Strategy',
+    strategicPillarId: 'sustainable-growth',
+    strategicPillar: strategicPillarById['sustainable-growth'].name,
+    supportUsers: [],
+    supportLabel: 'None',
+    status: 'On Course',
+    tasks: [],
+  },
+  {
+    id: 'finance-2026-05-11-performance-incentive',
+    rank: 3,
+    isMostImportant: false,
+    weekOf: '2026-05-11',
+    owner: userById.u2,
+    outcome: 'Department meetings to discuss Performance Incentive Program',
+    due: '2026-05-16',
+    alignedTo: 'Workforce Relief Strategy',
+    organizationalPriority: 'Employee Retention & Satisfaction',
+    strategicPillarId: 'agility-capacity',
+    strategicPillar: strategicPillarById['agility-capacity'].name,
+    supportUsers: [userById.u5, userById.u8],
+    supportLabel: 'Michele / Tammie',
+    status: 'Needs Attention',
+    tasks: [],
+  },
+];
+
 export const huddles = [
   { id: 'daily-ops', name: 'Daily Operations', recurrence: 'Every weekday', when: 'today' },
   { id: 'resident-services', name: 'Resident Services Weekly', recurrence: 'Tuesdays', when: 'future' },
@@ -824,6 +887,7 @@ export const actionItems = [
   { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], due: '2026-05-05', status: 'Open', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
   { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], due: '2026-05-03', status: 'In Progress', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
   { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], due: '2026-05-10', status: 'Open', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
+  { id: 'a-fin-ann-ap-handoff', description: 'Provide A/P process timeline and ownership structure handoff to Sam', owner: userById.u10, due: '2026-05-15', status: 'Open', priority: 'Finance weekly priority: A/P process timeline', strategicPillarId: 'sustainable-growth', strategicPillar: strategicPillarById['sustainable-growth'].name },
 ];
 
 export const initiatives = [

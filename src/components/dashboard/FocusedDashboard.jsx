@@ -7,6 +7,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
+import { financeWeeklyPriorities } from '../../data/mockData';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
@@ -171,6 +172,82 @@ const StatCard = ({ helper, label, source, value }) => (
   </Box>
 );
 
+const FinanceWeeklyPriorities = ({ user }) => {
+  if (user.dashboardFocus !== 'financials') return null;
+
+  const isSam = user.id === 'u2';
+  const visiblePriorities = financeWeeklyPriorities.filter((priority) => (
+    isSam
+    || priority.owner.id === user.id
+    || priority.supportUsers.some((supportUser) => supportUser.id === user.id)
+    || priority.tasks.some((task) => task.owner.id === user.id)
+  ));
+
+  if (!visiblePriorities.length) return null;
+
+  return (
+    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
+        <Box>
+          <Typography variant="h3">{isSam ? 'Finance Weekly Priorities' : `${user.name.split(' ')[0]}'s Priority Task List`}</Typography>
+          <Typography variant="body2">Week of Monday, May 11, 2026</Typography>
+        </Box>
+        <Chip label={isSam ? 'Sam owner view' : 'Related to me'} color="primary" variant="outlined" />
+      </Stack>
+
+      <Stack gap={1}>
+        {visiblePriorities.map((priority) => {
+          const relatedTasks = priority.tasks.filter((task) => isSam || task.owner.id === user.id);
+          return (
+            <Box key={priority.id} sx={{ border: '1px solid', borderColor: priority.isMostImportant ? 'primary.light' : 'divider', borderRadius: 1, p: 1.25 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
+                <Box>
+                  <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
+                    <Chip label={`#${priority.rank}`} color={priority.isMostImportant ? 'primary' : 'default'} size="small" />
+                    {priority.isMostImportant && <Chip label="Most Important Priority" color="secondary" size="small" />}
+                    <Chip label={priority.status} color={statusColor[priority.status] || 'default'} size="small" />
+                    <Chip label={`Due ${priority.due}`} variant="outlined" size="small" />
+                  </Stack>
+                  <Typography variant="body1" fontWeight={800} sx={{ mt: 1 }}>{priority.outcome}</Typography>
+                  <Typography variant="body2" color="text.primary">Aligned to: {priority.alignedTo}</Typography>
+                </Box>
+                <Stack direction="row" gap={1} alignItems="center" sx={{ flexShrink: 0 }}>
+                  <UserAvatar user={priority.owner} size="sm" />
+                  <Box>
+                    <Typography variant="body2" color="text.primary" fontWeight={700}>{priority.owner.name}</Typography>
+                    <Typography variant="caption">Support: {priority.supportLabel}</Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+
+              <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
+                <Chip label={priority.organizationalPriority} color="primary" variant="outlined" size="small" />
+                <Chip label={priority.strategicPillar} variant="outlined" size="small" />
+                {priority.keyObjective && <Chip label={priority.keyObjective} variant="outlined" size="small" />}
+              </Stack>
+
+              {relatedTasks.length > 0 && (
+                <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1, mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Task list</Typography>
+                  {relatedTasks.map((task) => (
+                    <Stack key={task.id} direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="space-between" sx={{ mt: 0.5 }}>
+                      <Typography variant="body2" color="text.primary">{task.title}</Typography>
+                      <Stack direction="row" gap={1}>
+                        <Chip label={task.owner.name} size="small" variant="outlined" />
+                        <Chip label={`Due ${task.due}`} size="small" variant="outlined" />
+                      </Stack>
+                    </Stack>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          );
+        })}
+      </Stack>
+    </Box>
+  );
+};
+
 const FocusedDashboard = ({ user }) => {
   if (user.dashboardFocus === 'property_management') {
     return <PropertyManagementDashboard user={user} />;
@@ -204,6 +281,8 @@ const FocusedDashboard = ({ user }) => {
           <StatCard key={label} label={label} value={value} helper={helper} source={source} />
         ))}
       </Box>
+
+      <FinanceWeeklyPriorities user={user} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
 
