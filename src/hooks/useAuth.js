@@ -8,7 +8,13 @@ const getInitialUserId = () => {
   return window.localStorage.getItem('hdc_compass_demo_user_id') || 'u1';
 };
 
+const getInitialAuthState = () => {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem('hdc_compass_demo_authenticated') === 'true';
+};
+
 export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(getInitialAuthState);
   const [userId, setUserId] = useState(getInitialUserId);
   const user = users.find((candidate) => candidate.id === userId) || users[0];
 
@@ -35,19 +41,32 @@ export const AuthProvider = ({ children }) => {
 
     if (match) {
       selectUserId(match.id);
+      setIsAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
+      }
     }
 
     return match || null;
   };
 
+  const signOut = () => {
+    setIsAuthenticated(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('hdc_compass_demo_authenticated');
+    }
+  };
+
   const value = useMemo(() => ({
     demoUsers: users,
     getToken: async () => 'development-token',
+    isAuthenticated,
     setUserId: selectUserId,
     signInByName,
+    signOut,
     user,
     userId,
-  }), [user, userId]);
+  }), [isAuthenticated, user, userId]);
 
   return createElement(AuthContext.Provider, { value }, children);
 };

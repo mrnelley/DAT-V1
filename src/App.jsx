@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import ActionItemsPage from './components/action-items/ActionItemsPage';
+import LoginPage from './components/auth/LoginPage';
 import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
 import DashboardPage from './components/dashboard/DashboardPage';
 import HuddlesPage from './components/huddles/HuddlesPage';
@@ -15,7 +16,7 @@ import StucksPage from './components/stucks/StucksPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { WaypointProvider } from './context/WaypointContext';
-import { AuthProvider } from './hooks/useAuth';
+import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
 import theme from './theme';
 
@@ -45,19 +46,31 @@ const AnimatedRoutes = () => {
   );
 };
 
+const AuthenticatedApp = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return (
+    <CurbAppealProvider>
+      <WaypointProvider>
+        <AppShell>
+          <AnimatedRoutes />
+        </AppShell>
+      </WaypointProvider>
+    </CurbAppealProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
         <AuthProvider>
-          <CurbAppealProvider>
-            <WaypointProvider>
-              <AppShell>
-                <AnimatedRoutes />
-              </AppShell>
-            </WaypointProvider>
-          </CurbAppealProvider>
+          <AuthenticatedApp />
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
