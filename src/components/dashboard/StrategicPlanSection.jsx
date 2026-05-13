@@ -186,6 +186,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
                         <Typography variant="body1" fontWeight={800}>{objective.title}</Typography>
                         <Chip label={objective.status} color={statusColor[objective.status] || 'default'} size="small" />
                         <Chip label={objective.department} size="small" variant="outlined" />
+                        <Chip label={`${objective.kpis?.length || 0} KPI${(objective.kpis?.length || 0) === 1 ? '' : 's'}`} size="small" variant="outlined" />
                       </Stack>
                       <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 0.75 }}>
                         <UserAvatar user={objective.owner} size="sm" />
@@ -439,7 +440,10 @@ const StrategicPlanSection = () => {
                     <Box key={priority.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
                         <Typography variant="body2" color="text.primary" fontWeight={800}>{priority.name}</Typography>
-                        <Chip label={priority.period} size="small" variant="outlined" />
+                        <Stack direction="row" gap={0.5}>
+                          <Chip label={priority.period} size="small" variant="outlined" />
+                          <Chip label={`${priority.keyObjectives?.length || 0} objectives`} size="small" variant="outlined" />
+                        </Stack>
                       </Stack>
                       <Typography variant="caption">{priority.owner.name}</Typography>
                     </Box>
