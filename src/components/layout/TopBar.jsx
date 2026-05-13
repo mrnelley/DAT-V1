@@ -1,7 +1,7 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Toolbar, Tooltip, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Button, IconButton, Menu, MenuItem, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,13 +14,28 @@ const navMenus = {
 };
 
 const TopBar = ({ onMenuClick }) => {
-  const { demoUsers, setUserId, user, userId } = useAuth();
+  const { signInByName, user } = useAuth();
   const [anchor, setAnchor] = useState(null);
+  const [demoName, setDemoName] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [menu, setMenu] = useState('');
 
   const openMenu = (event, label) => {
     setAnchor(event.currentTarget);
     setMenu(label);
+  };
+
+  const handleDemoLogin = (event) => {
+    event.preventDefault();
+    const match = signInByName(demoName);
+
+    if (!match) {
+      setLoginError('Try Dana, Sam, Kim, Jaime, Michele, Meg, or Michael');
+      return;
+    }
+
+    setLoginError('');
+    setDemoName('');
   };
 
   return (
@@ -36,14 +51,21 @@ const TopBar = ({ onMenuClick }) => {
           ))}
         </Box>
         <IconButton aria-label="Open quick add menu" color="primary"><AddCircleOutlineIcon /></IconButton>
-        <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
-          <InputLabel>Demo User</InputLabel>
-          <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
-            {demoUsers.map((demoUser) => (
-              <MenuItem key={demoUser.id} value={demoUser.id}>{demoUser.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box component="form" onSubmit={handleDemoLogin} sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 0.75 }}>
+          <TextField
+            error={Boolean(loginError)}
+            label="Demo Login"
+            onChange={(event) => {
+              setDemoName(event.target.value);
+              if (loginError) setLoginError('');
+            }}
+            placeholder={loginError || 'sam'}
+            size="small"
+            value={demoName}
+            sx={{ width: 190 }}
+          />
+          <Button type="submit" variant="outlined" size="small">Enter</Button>
+        </Box>
         <Tooltip title={user.name}>
           <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>

@@ -1,6 +1,7 @@
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
+import CloudQueueOutlinedIcon from '@mui/icons-material/CloudQueueOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
@@ -71,38 +72,46 @@ const profiles = {
     title: 'Impact and Advancement Dashboard',
     subtitle: 'Grant writing, fundraising, community relationships, and advancement pipeline visibility.',
     stats: [
-      ['Active Grants', '14', 'Submitted or in development'],
-      ['Pipeline Value', '$3.7M', 'Across public and private funders'],
-      ['Community Touchpoints', '26', 'This quarter'],
+      ['Active Grants', '14', 'Submitted or in development', 'Salesforce CRM'],
+      ['Pipeline Value', '$3.7M', 'Across public and private funders', 'Salesforce CRM'],
+      ['Community Touchpoints', '26', 'This quarter', 'Salesforce CRM'],
       ['Reports Due', '5', 'Next 30 days'],
     ],
     primaryTitle: 'Fundraising Hub Priorities',
     primaryRows: [
-      { name: 'Submit housing stability foundation proposal', status: 'On Course', progress: 84, detail: 'Narrative complete; budget attachments pending.' },
-      { name: 'Refresh donor impact story packet', status: 'Needs Attention', progress: 45, detail: 'Needs resident voice review before release.' },
-      { name: 'Prepare community partner cultivation list', status: 'On Course', progress: 72, detail: 'Top 20 contacts identified.' },
+      { name: 'Submit housing stability foundation proposal', status: 'On Course', progress: 84, detail: 'Narrative complete; budget attachments pending.', source: 'Salesforce CRM' },
+      { name: 'Refresh donor impact story packet', status: 'Needs Attention', progress: 45, detail: 'Needs resident voice review before release.', source: 'Salesforce CRM' },
+      { name: 'Prepare community partner cultivation list', status: 'On Course', progress: 72, detail: 'Top 20 contacts identified.', source: 'Salesforce CRM' },
     ],
     secondaryTitle: 'Grant and Funder Watchlist',
-    secondaryRows: ['County housing fund', 'Foundation renewal', 'Corporate volunteer partner'],
+    secondaryRows: [
+      { label: 'County housing fund', source: 'Salesforce CRM' },
+      { label: 'Foundation renewal', source: 'Salesforce CRM' },
+      { label: 'Corporate volunteer partner' },
+    ],
   },
   resident_services: {
     icon: FavoriteBorderOutlinedIcon,
     title: 'Resident Services Dashboard',
     subtitle: 'Trauma-informed resident journey support, referrals, needs assessments, and coordinator follow-up.',
     stats: [
-      ['Needs Assessments', '43', 'Completed this month'],
-      ['Open Referrals', '128', 'Across service categories'],
-      ['Urgent Follow-Ups', '9', 'Need coordinator action'],
-      ['Resolved Supports', '71%', 'Closed within target window'],
+      ['Needs Assessments', '43', 'Completed this month', 'Salesforce CRM'],
+      ['Open Referrals', '128', 'Across service categories', 'Salesforce CRM'],
+      ['Urgent Follow-Ups', '9', 'Need coordinator action', 'Salesforce CRM'],
+      ['Resolved Supports', '71%', 'Closed within target window', 'Salesforce CRM'],
     ],
     primaryTitle: 'Resident Journey Priorities',
     primaryRows: [
-      { name: 'Standardize referral follow-up rhythm', status: 'On Course', progress: 74, detail: 'Coordinator review template piloting now.' },
-      { name: 'Escalate food security referral backlog', status: 'Needs Attention', progress: 38, detail: 'Nine households need provider confirmation.' },
-      { name: 'Resident services intake dashboard', status: 'On Course', progress: 62, detail: 'Needs categories and urgency levels mapped.' },
+      { name: 'Standardize referral follow-up rhythm', status: 'On Course', progress: 74, detail: 'Coordinator review template piloting now.', source: 'Salesforce CRM' },
+      { name: 'Escalate food security referral backlog', status: 'Needs Attention', progress: 38, detail: 'Nine households need provider confirmation.', source: 'Salesforce CRM' },
+      { name: 'Resident services intake dashboard', status: 'On Course', progress: 62, detail: 'Needs categories and urgency levels mapped.', source: 'Salesforce CRM' },
     ],
     secondaryTitle: 'Referral Categories',
-    secondaryRows: ['Food security', 'Behavioral health', 'Employment and benefits navigation'],
+    secondaryRows: [
+      { label: 'Food security', source: 'Salesforce CRM' },
+      { label: 'Behavioral health', source: 'Salesforce CRM' },
+      { label: 'Employment and benefits navigation' },
+    ],
   },
 };
 
@@ -113,9 +122,29 @@ const statusColor = {
   Completed: 'success',
 };
 
-const StatCard = ({ label, value, helper }) => (
+const SalesforceFlag = ({ source }) => (
+  source ? (
+    <Chip
+      icon={<CloudQueueOutlinedIcon />}
+      label={source}
+      size="small"
+      variant="outlined"
+      sx={{
+        borderColor: '#0176d3',
+        color: '#0176d3',
+        fontWeight: 700,
+        '& .MuiChip-icon': { color: '#0176d3' },
+      }}
+    />
+  ) : null
+);
+
+const StatCard = ({ helper, label, source, value }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 104 }}>
-    <Typography variant="caption">{label}</Typography>
+    <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+      <Typography variant="caption">{label}</Typography>
+      <SalesforceFlag source={source} />
+    </Stack>
     <Typography variant="h2" sx={{ my: 0.5 }}>{value}</Typography>
     <Typography variant="body2">{helper}</Typography>
   </Box>
@@ -150,8 +179,8 @@ const FocusedDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        {profile.stats.map(([label, value, helper]) => (
-          <StatCard key={label} label={label} value={value} helper={helper} />
+        {profile.stats.map(([label, value, helper, source]) => (
+          <StatCard key={label} label={label} value={value} helper={helper} source={source} />
         ))}
       </Box>
 
@@ -163,7 +192,10 @@ const FocusedDashboard = ({ user }) => {
               <Box key={row.name} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
                   <Typography variant="body1" fontWeight={700}>{row.name}</Typography>
-                  <Chip label={row.status} color={statusColor[row.status]} size="small" />
+                  <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="flex-end">
+                    <SalesforceFlag source={row.source} />
+                    <Chip label={row.status} color={statusColor[row.status]} size="small" />
+                  </Stack>
                 </Stack>
                 <LinearProgress value={row.progress} variant="determinate" sx={{ mb: 0.75 }} />
                 <Typography variant="body2" color="text.primary">{row.detail}</Typography>
@@ -175,12 +207,18 @@ const FocusedDashboard = ({ user }) => {
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
           <Typography variant="h3" sx={{ mb: 1 }}>{profile.secondaryTitle}</Typography>
           <Stack gap={1}>
-            {profile.secondaryRows.map((row) => (
-              <Box key={row} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
+            {profile.secondaryRows.map((row) => {
+              const label = typeof row === 'string' ? row : row.label;
+              const source = typeof row === 'string' ? null : row.source;
+
+              return (
+              <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
                 <HandshakeOutlinedIcon color="secondary" fontSize="small" />
-                <Typography variant="body1">{row}</Typography>
+                <Typography variant="body1" sx={{ flex: 1 }}>{label}</Typography>
+                <SalesforceFlag source={source} />
               </Box>
-            ))}
+              );
+            })}
           </Stack>
         </Box>
       </Box>

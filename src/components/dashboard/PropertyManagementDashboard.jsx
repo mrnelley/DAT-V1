@@ -3,7 +3,7 @@ import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, ButtonBase, Checkbox, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Checkbox, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,12 +16,14 @@ const statusColor = {
   Watch: 'warning',
   'Needs Attention': 'warning',
   Completed: 'success',
+  Inactive: 'default',
 };
 
 const markerColor = {
   'On Course': '#006e5c',
   Watch: '#f1ac49',
   'Needs Attention': '#b03a34',
+  Inactive: '#6b7280',
 };
 
 const StatCard = ({ helper, icon: Icon, label, value }) => (
@@ -39,25 +41,43 @@ const PropertyManagementDashboard = ({ user }) => {
   const [region, setRegion] = useState('All Regions');
   const [selectedPropertyId, setSelectedPropertyId] = useState(portfolioProperties[0].id);
   const [completedTaskIds, setCompletedTaskIds] = useState([]);
+  const [portfolioStatusByProperty, setPortfolioStatusByProperty] = useState(() => (
+    Object.fromEntries(portfolioProperties.map((property) => [property.id, property.isActivePortfolio]))
+  ));
+
+  const propertiesWithPortfolioStatus = useMemo(() => (
+    portfolioProperties.map((property) => ({
+      ...property,
+      isActivePortfolio: portfolioStatusByProperty[property.id] ?? property.isActivePortfolio,
+    }))
+  ), [portfolioStatusByProperty]);
 
   const filteredProperties = useMemo(() => (
-    portfolioProperties.filter((property) => region === 'All Regions' || property.state === region)
-  ), [region]);
+    propertiesWithPortfolioStatus.filter((property) => region === 'All Regions' || property.state === region)
+  ), [propertiesWithPortfolioStatus, region]);
 
   const selectedProperty = filteredProperties.find((property) => property.id === selectedPropertyId) || filteredProperties[0] || portfolioProperties[0];
   const selectedTasks = getPropertyTasks(selectedProperty);
-  const allTasks = filteredProperties.flatMap((property) => getPropertyTasks(property).map((task) => ({ ...task, property })));
-  const needsAttention = filteredProperties.filter((property) => getPropertyRisk(property) === 'Needs Attention');
-  const totalUnits = filteredProperties.reduce((sum, property) => sum + (property.estimatedUnits || 0), 0);
-  const thirdPartyCount = filteredProperties.filter((property) => property.managementType).length;
-  const openWorkOrders = filteredProperties.reduce((sum, property) => sum + property.operations.openWorkOrders, 0);
-  const agedWorkOrders = filteredProperties.reduce((sum, property) => sum + property.operations.agedWorkOrders, 0);
-  const selectedRisk = getPropertyRisk(selectedProperty);
+  const activeProperties = filteredProperties.filter((property) => property.isActivePortfolio);
+  const inactiveProperties = filteredProperties.filter((property) => !property.isActivePortfolio);
+  const allTasks = activeProperties.flatMap((property) => getPropertyTasks(property).map((task) => ({ ...task, property })));
+  const needsAttention = activeProperties.filter((property) => getPropertyRisk(property) === 'Needs Attention');
+  const totalUnits = activeProperties.reduce((sum, property) => sum + (property.estimatedUnits || 0), 0);
+  const openWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.openWorkOrders, 0);
+  const agedWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.agedWorkOrders, 0);
+  const selectedRisk = selectedProperty.isActivePortfolio ? getPropertyRisk(selectedProperty) : 'Inactive';
 
   const toggleTask = (taskId) => {
     setCompletedTaskIds((current) => (
       current.includes(taskId) ? current.filter((id) => id !== taskId) : [...current, taskId]
     ));
+  };
+
+  const togglePortfolioStatus = (propertyId) => {
+    setPortfolioStatusByProperty((current) => ({
+      ...current,
+      [propertyId]: !current[propertyId],
+    }));
   };
 
   return (
@@ -80,8 +100,8 @@ const PropertyManagementDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <StatCard icon={MapOutlinedIcon} label="Mapped Communities" value={filteredProperties.length} helper={`${portfolioOrganization.estimatedCommunities} estimated communities overall.`} />
-        <StatCard icon={HomeWorkOutlinedIcon} label="Represented Units" value={totalUnits.toLocaleString()} helper="Units in the current mapped dataset." />
+        <StatCard icon={MapOutlinedIcon} label="Active Communities" value={activeProperties.length} helper={`${inactiveProperties.length} inactive records still retained.`} />
+        <StatCard icon={HomeWorkOutlinedIcon} label="Active Units" value={totalUnits.toLocaleString()} helper="Units counted in active portfolio status." />
         <StatCard icon={WarningAmberOutlinedIcon} label="Needs Attention" value={needsAttention.length} helper="Properties with risk, leasing, or aging work order signals." />
         <StatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={openWorkOrders} helper={`${agedWorkOrders} aged exceptions in this view.`} />
       </Box>
@@ -117,14 +137,14 @@ const PropertyManagementDashboard = ({ user }) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {filteredProperties.map((property) => {
-                const risk = getPropertyRisk(property);
+                const risk = property.isActivePortfolio ? getPropertyRisk(property) : 'Inactive';
                 const selected = property.id === selectedProperty.id;
                 return (
                   <CircleMarker
                     key={property.id}
                     center={[property.coordinates.lat, property.coordinates.lng]}
-                    pathOptions={{ color: markerColor[risk], fillColor: markerColor[risk], fillOpacity: selected ? 0.85 : 0.58, weight: selected ? 4 : 2 }}
-                    radius={selected ? 11 : 8}
+                    pathOptions={{ color: markerColor[risk], fillColor: markerColor[risk], fillOpacity: property.isActivePortfolio ? (selected ? 0.85 : 0.58) : 0.24, weight: selected ? 4 : 2 }}
+                    radius={selected ? 11 : property.isActivePortfolio ? 8 : 6}
                     eventHandlers={{ click: () => setSelectedPropertyId(property.id) }}
                   >
                     <Tooltip>{property.propertyName}</Tooltip>
@@ -146,7 +166,10 @@ const PropertyManagementDashboard = ({ user }) => {
               <Typography variant="h3">{selectedProperty.propertyName}</Typography>
               <Typography variant="body2">{selectedProperty.address}</Typography>
             </Box>
-            <Chip label={selectedRisk} color={statusColor[selectedRisk]} size="small" />
+            <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="flex-end">
+              <Chip label={selectedProperty.isActivePortfolio ? 'Active portfolio' : 'Inactive portfolio'} color={selectedProperty.isActivePortfolio ? 'success' : 'default'} size="small" />
+              <Chip label={selectedRisk} color={statusColor[selectedRisk]} size="small" />
+            </Stack>
           </Stack>
           <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 1.5 }}>
             <Chip label={`${selectedProperty.estimatedUnits || 'Unknown'} units`} color="primary" size="small" variant="outlined" />
@@ -189,9 +212,17 @@ const PropertyManagementDashboard = ({ user }) => {
               const risk = getPropertyRisk(property);
               const selected = property.id === selectedProperty.id;
               return (
-                <ButtonBase
+                <Box
                   key={property.id}
                   onClick={() => setSelectedPropertyId(property.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedPropertyId(property.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   aria-label={`Select ${property.propertyName}. ${risk}.`}
                   sx={{
                     display: 'block',
@@ -200,8 +231,9 @@ const PropertyManagementDashboard = ({ user }) => {
                     border: '1px solid',
                     borderColor: selected ? 'primary.main' : 'divider',
                     borderRadius: 1,
-                    bgcolor: selected ? 'rgba(7, 44, 94, 0.06)' : 'background.paper',
+                    bgcolor: selected ? 'rgba(7, 44, 94, 0.06)' : property.isActivePortfolio ? 'background.paper' : 'rgba(90,100,117,0.08)',
                     p: 1,
+                    cursor: 'pointer',
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" gap={1}>
@@ -209,9 +241,18 @@ const PropertyManagementDashboard = ({ user }) => {
                       <Typography variant="body1" fontWeight={700}>{property.propertyName}</Typography>
                       <Typography variant="caption">{property.city || property.county || property.state} - {property.estimatedUnits} units</Typography>
                     </Box>
-                    <Chip label={risk} color={statusColor[risk]} size="small" />
+                    <Stack direction="row" gap={0.75} alignItems="center" onClick={(event) => event.stopPropagation()}>
+                      <Chip label={property.isActivePortfolio ? 'Active' : 'Inactive'} color={property.isActivePortfolio ? 'success' : 'default'} size="small" />
+                      <Chip label={risk} color={statusColor[risk]} size="small" />
+                      <Switch
+                        checked={property.isActivePortfolio}
+                        onChange={() => togglePortfolioStatus(property.id)}
+                        inputProps={{ 'aria-label': `Toggle active portfolio status for ${property.propertyName}` }}
+                        size="small"
+                      />
+                    </Stack>
                   </Stack>
-                </ButtonBase>
+                </Box>
               );
             })}
           </Stack>

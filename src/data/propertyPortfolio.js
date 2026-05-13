@@ -7,7 +7,12 @@ export const portfolioOrganization = {
   notes: 'Portfolio dataset reconstructed from public references and operational assumptions for demo use. Validate internally before production use.',
 };
 
-export const portfolioProperties = [
+const withActivePortfolioFlag = (properties) => properties.map((property) => ({
+  isActivePortfolio: true,
+  ...property,
+}));
+
+export const portfolioProperties = withActivePortfolioFlag([
   {
     id: 'college-avenue',
     propertyName: 'The Apartments at College Avenue',
@@ -288,7 +293,7 @@ export const portfolioProperties = [
     operations: { occupancy: 91, openWorkOrders: 21, agedWorkOrders: 9, leasingExposure: 8, residentServiceOpen: 8, complianceRisk: 'High' },
     priorityLink: 'Third-party management SLA',
   },
-];
+]);
 
 export const portfolioRegions = ['All Regions', 'Pennsylvania', 'Maryland', 'Delaware'];
 
