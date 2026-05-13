@@ -4,7 +4,7 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import MicrosoftIcon from '@mui/icons-material/Microsoft';
-import { Box, Button, Chip, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -12,23 +12,16 @@ const demoNames = ['Dana', 'Sam', 'Kim', 'Jaime', 'Michele', 'Meg', 'Michael'];
 
 const LoginPage = () => {
   const { signInByName } = useAuth();
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
 
-  const submit = (event) => {
-    event.preventDefault();
-    const match = signInByName(name);
+  const signInAs = (value) => {
+    const match = signInByName(value);
 
     if (!match) {
       setError('Try Dana, Sam, Kim, Jaime, Michele, Meg, or Michael.');
       return;
     }
 
-    setError('');
-  };
-
-  const fillName = (value) => {
-    setName(value);
     setError('');
   };
 
@@ -105,35 +98,27 @@ const LoginPage = () => {
             Demo mode accepts a first name. Microsoft sign-in will use the same landing page once OAuth is wired.
           </Typography>
 
-          <Box component="form" onSubmit={submit}>
-            <Stack gap={1.5}>
-              <TextField
-                autoFocus
-                error={Boolean(error)}
-                helperText={error || 'Try “sam” for finance or “jaime” for property management.'}
-                label="Name"
-                onChange={(event) => {
-                  setName(event.target.value);
-                  if (error) setError('');
-                }}
-                placeholder="sam"
-                value={name}
-              />
-              <Button type="submit" variant="contained" endIcon={<ArrowForwardIcon />}>Enter Compass</Button>
-              <Button variant="outlined" startIcon={<MicrosoftIcon />} disabled>Sign in with Microsoft</Button>
-            </Stack>
-          </Box>
-
-          <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 2 }}>
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            Choose a demo dashboard:
+          </Typography>
+          <Stack direction="row" gap={1} flexWrap="wrap">
             {demoNames.map((demoName) => (
               <Chip
                 key={demoName}
                 label={demoName}
-                onClick={() => fillName(demoName)}
+                onClick={() => signInAs(demoName)}
+                onDelete={() => signInAs(demoName)}
+                deleteIcon={<ArrowForwardIcon />}
+                color="primary"
                 variant="outlined"
               />
             ))}
           </Stack>
+          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
+
+          <Button variant="outlined" startIcon={<MicrosoftIcon />} disabled fullWidth sx={{ mt: 2 }}>
+            Sign in with Microsoft
+          </Button>
         </Box>
       </Box>
     </Box>
