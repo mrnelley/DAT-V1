@@ -57,6 +57,7 @@ create table if not exists public.profiles (
   initials text,
   email text unique,
   role_title text,
+  working_group text,
   dashboard_focus text,
   avatar_url text,
   is_admin boolean not null default false,
@@ -466,10 +467,23 @@ create table if not exists public.checklist_responses (
 create table if not exists public.workflow_definitions (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  owner_id uuid references public.profiles(id) on delete set null,
+  reviewer_id uuid references public.profiles(id) on delete set null,
   name text not null,
   workflow_key text not null,
   frequency public.workflow_frequency not null,
+  cadence_label text,
   source_type text,
+  source_id uuid,
+  channel text not null default 'teams',
+  prompt_offset_days integer,
+  reminder_offset_days integer,
+  due_offset_days integer,
+  grace_period_days integer not null default 0,
+  expected_completion_rate numeric(5, 2),
+  escalation_policy jsonb not null default '{}',
+  success_metrics jsonb not null default '[]',
   config jsonb not null default '{}',
   active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -581,6 +595,9 @@ create index if not exists idx_waypoints_date on public.waypoints(starts_on);
 create index if not exists idx_checklist_submissions_due on public.checklist_submissions(due_on, status);
 create index if not exists idx_checklist_submissions_property on public.checklist_submissions(property_id);
 create index if not exists idx_review_requests_reviewer on public.review_requests(reviewer_id, status);
+create index if not exists idx_workflow_definitions_department on public.workflow_definitions(department_id, active);
+create index if not exists idx_workflow_definitions_owner on public.workflow_definitions(owner_id, active);
+create index if not exists idx_workflow_definitions_reviewer on public.workflow_definitions(reviewer_id, active);
 create index if not exists idx_adaptive_card_deliveries_source on public.adaptive_card_deliveries(source_type, source_id);
 
 do $$
