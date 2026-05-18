@@ -1396,10 +1396,12 @@ export const calendarWaypoints = [
     title: 'HUD file audit readiness review',
     date: '2026-05-14',
     endDate: null,
-    representation: 'Commitment',
+    label: 'Commitment',
+    rhythm: 'once',
+    lifecycle: 'scheduled',
     scope: 'organization',
     reviewState: 'approved',
-    compassStatus: 'needs_attention',
+    sourceStatus: 'watch',
     owner: users[0],
     submittedBy: users[0],
     source: { type: 'initiative', id: 'i1', label: 'Operational Excellence' },
@@ -1416,10 +1418,11 @@ export const calendarWaypoints = [
     title: 'Resident summer cookout',
     date: '2026-05-22',
     endDate: null,
-    representation: 'Touchpoint',
+    label: 'Touchpoint',
+    rhythm: 'once',
+    lifecycle: 'scheduled',
     scope: 'organization',
     reviewState: 'approved',
-    compassStatus: 'on_course',
     owner: users[3],
     submittedBy: users[3],
     source: { type: 'native', id: null, label: 'Community calendar' },
@@ -1436,10 +1439,12 @@ export const calendarWaypoints = [
     title: 'Lease-up pipeline checkpoint',
     date: '2026-05-28',
     endDate: null,
-    representation: 'Waypoint',
+    label: 'Beat',
+    rhythm: 'weekly',
+    lifecycle: 'scheduled',
     scope: 'organization',
     reviewState: 'approved',
-    compassStatus: 'on_course',
+    sourceStatus: 'steady',
     owner: users[1],
     submittedBy: users[1],
     source: { type: 'priority', id: 'p1', label: 'Stabilize lease-up pipeline for new communities' },
@@ -1449,17 +1454,19 @@ export const calendarWaypoints = [
     whoItImpacts: 'Operations, Compliance, future residents',
     connectedWork: 'Connected to Priority',
     supportNeeded: 'Updated prospect list and blockers from property teams.',
-    outcomeExpected: 'Leadership can see whether the lease-up rhythm is still on course.',
+    outcomeExpected: 'Leadership can see whether the lease-up rhythm is still steady.',
   },
   {
     id: 'cw4',
     title: 'Resident services intake workflow pilot',
     date: '2026-05-19',
     endDate: null,
-    representation: 'Marker',
+    label: 'Marker',
+    rhythm: 'once',
+    lifecycle: 'scheduled',
     scope: 'organization',
     reviewState: 'pending',
-    compassStatus: 'needs_attention',
+    sourceStatus: 'watch',
     owner: users[2],
     submittedBy: users[2],
     source: { type: 'huddle', id: 'resident-services', label: 'Resident Services Weekly' },
@@ -1476,11 +1483,13 @@ export const calendarWaypoints = [
     title: 'Resolve lease packet approval stuck',
     date: '2026-05-12',
     endDate: null,
-    representation: 'Waypoint',
+    label: 'Beat',
+    rhythm: 'once',
+    lifecycle: 'scheduled',
     scope: 'personal',
     reviewState: 'private',
     orgSubmissionState: 'none',
-    compassStatus: 'needs_attention',
+    sourceStatus: 'watch',
     owner: users[0],
     submittedBy: users[0],
     source: { type: 'stuck', id: 's1', label: 'Waiting on final lease packet approvals' },
@@ -1497,11 +1506,13 @@ export const calendarWaypoints = [
     title: 'Prepare ELT priority notes',
     date: '2026-05-16',
     endDate: null,
-    representation: 'Commitment',
+    label: 'Commitment',
+    rhythm: 'once',
+    lifecycle: 'scheduled',
     scope: 'personal',
     reviewState: 'private',
     orgSubmissionState: 'none',
-    compassStatus: 'on_course',
+    sourceStatus: 'steady',
     owner: users[0],
     submittedBy: users[0],
     source: { type: 'priority', id: 'p1', label: 'Stabilize lease-up pipeline for new communities' },
@@ -1888,3 +1899,42 @@ export const departmentWorkplans = [
     priorityLinks: ['Resident Experience / Customer Service'],
   },
 ];
+
+const pulseStatusLabels = {
+  'On Course': 'Steady',
+  'Needs Attention': 'Watch',
+  'Off Course': 'Alert',
+};
+
+const normalizePulseStatuses = (value) => {
+  if (Array.isArray(value)) {
+    value.forEach(normalizePulseStatuses);
+    return;
+  }
+
+  if (!value || typeof value !== 'object') {
+    return;
+  }
+
+  Object.entries(value).forEach(([key, item]) => {
+    if ((key === 'status' || key === 'roadmapStatus') && pulseStatusLabels[item]) {
+      value[key] = pulseStatusLabels[item];
+      return;
+    }
+
+    normalizePulseStatuses(item);
+  });
+};
+
+[
+  actionItems,
+  advocacyInitiatives,
+  advocacyPriorities,
+  advocacyWorkplans,
+  departmentWorkplans,
+  initiatives,
+  priorities,
+  weeklyPriorities,
+].forEach(normalizePulseStatuses);
+
+q2Roadmap.statusOptions = q2Roadmap.statusOptions.map((status) => pulseStatusLabels[status] || status);

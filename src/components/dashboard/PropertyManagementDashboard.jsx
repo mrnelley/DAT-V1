@@ -12,17 +12,17 @@ import { getPropertyRisk, getPropertyTasks, portfolioOrganization, portfolioProp
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
-  'On Course': 'success',
+  Steady: 'success',
   Watch: 'warning',
-  'Needs Attention': 'warning',
+  Alert: 'error',
   Completed: 'success',
   Inactive: 'default',
 };
 
 const markerColor = {
-  'On Course': '#006e5c',
+  Steady: '#006e5c',
   Watch: '#f1ac49',
-  'Needs Attention': '#b03a34',
+  Alert: '#b03a34',
   Inactive: '#6b7280',
 };
 
@@ -76,7 +76,7 @@ const PropertyManagementDashboard = ({ user }) => {
   const activeProperties = filteredProperties.filter((property) => property.isActivePortfolio);
   const inactiveProperties = filteredProperties.filter((property) => !property.isActivePortfolio);
   const allTasks = activeProperties.flatMap((property) => getPropertyTasks(property).map((task) => ({ ...task, property })));
-  const needsAttention = activeProperties.filter((property) => getPropertyRisk(property) === 'Needs Attention');
+  const needsAttention = activeProperties.filter((property) => getPropertyRisk(property) === 'Alert');
   const totalUnits = activeProperties.reduce((sum, property) => sum + (property.estimatedUnits || 0), 0);
   const openWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.openWorkOrders, 0);
   const agedWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.agedWorkOrders, 0);
@@ -117,7 +117,7 @@ const PropertyManagementDashboard = ({ user }) => {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
         <StatCard icon={MapOutlinedIcon} label="Active Communities" value={activeProperties.length} helper={`${inactiveProperties.length} inactive records still retained.`} />
         <StatCard icon={HomeWorkOutlinedIcon} label="Active Units" value={totalUnits.toLocaleString()} helper="Units counted in active portfolio status." />
-        <StatCard icon={WarningAmberOutlinedIcon} label="Needs Attention" value={needsAttention.length} helper="Properties with risk, leasing, or aging work order signals." />
+        <StatCard icon={WarningAmberOutlinedIcon} label="Alert" value={needsAttention.length} helper="Properties with risk, leasing, or aging work order signals." />
         <StatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={openWorkOrders} helper={`${agedWorkOrders} aged exceptions in this view.`} />
       </Box>
 
@@ -293,7 +293,7 @@ const PropertyManagementDashboard = ({ user }) => {
               </Stack>
               <Typography variant="body2">Tasks are generated from leasing, maintenance, preservation, third-party, accessibility, and resident service signals.</Typography>
             </Box>
-            <Chip label={`${allTasks.filter((task) => task.status === 'Needs Attention').length} need attention`} color="warning" />
+            <Chip label={`${allTasks.filter((task) => ['Watch', 'Alert'].includes(task.status)).length} on watch`} color="warning" />
           </Stack>
 
           <Stack gap={1.25} sx={{ mb: 2 }}>

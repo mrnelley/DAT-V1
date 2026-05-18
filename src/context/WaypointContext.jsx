@@ -21,7 +21,7 @@ export const WaypointProvider = ({ children }) => {
   const sendToOrg = useCallback((waypointId) => {
     setWaypoints((current) => {
       const source = current.find((waypoint) => waypoint.id === waypointId);
-      const existing = current.find((waypoint) => waypoint.originWaypointId === waypointId && waypoint.scope === 'organization');
+      const existing = current.find((waypoint) => waypoint.originCalendarEventId === waypointId && waypoint.scope === 'organization');
 
       if (!source) {
         return current;
@@ -40,7 +40,7 @@ export const WaypointProvider = ({ children }) => {
               id: existing.id,
               scope: 'organization',
               reviewState: 'pending',
-              originWaypointId: waypointId,
+              originCalendarEventId: waypointId,
               submittedBy: user,
             };
           }
@@ -54,7 +54,7 @@ export const WaypointProvider = ({ children }) => {
         id: `${waypointId}-org-${Date.now()}`,
         scope: 'organization',
         reviewState: 'pending',
-        originWaypointId: waypointId,
+        originCalendarEventId: waypointId,
         submittedBy: user,
         supportNeeded: source.supportNeeded || 'Admin review before this appears on the organization-wide calendar.',
       };
@@ -76,7 +76,7 @@ export const WaypointProvider = ({ children }) => {
       }
 
       const submitted = current.find((item) => item.id === waypointId);
-      if (submitted?.originWaypointId === waypoint.id) {
+      if (submitted?.originCalendarEventId === waypoint.id) {
         return { ...waypoint, orgSubmissionState: 'approved' };
       }
 
@@ -91,7 +91,7 @@ export const WaypointProvider = ({ children }) => {
       }
 
       const submitted = current.find((item) => item.id === waypointId);
-      if (submitted?.originWaypointId === waypoint.id) {
+      if (submitted?.originCalendarEventId === waypoint.id) {
         return { ...waypoint, orgSubmissionState: 'declined' };
       }
 

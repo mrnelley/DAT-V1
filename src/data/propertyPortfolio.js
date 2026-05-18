@@ -299,9 +299,9 @@ export const portfolioRegions = ['All Regions', 'Pennsylvania', 'Maryland', 'Del
 
 export const getPropertyRisk = (property) => {
   const { operations } = property;
-  if (operations.complianceRisk === 'High' || operations.occupancy < 91 || operations.agedWorkOrders >= 8) return 'Needs Attention';
+  if (operations.complianceRisk === 'High' || operations.occupancy < 91 || operations.agedWorkOrders >= 8) return 'Alert';
   if (operations.openWorkOrders >= 18 || operations.leasingExposure >= 8) return 'Watch';
-  return 'On Course';
+  return 'Steady';
 };
 
 export const getPropertyTasks = (property) => {
@@ -312,7 +312,7 @@ export const getPropertyTasks = (property) => {
     tasks.push({
       id: `${property.id}-sla`,
       title: 'Review third-party management SLA and escalation log',
-      status: risk === 'Needs Attention' ? 'Needs Attention' : 'On Course',
+      status: risk === 'Alert' ? 'Alert' : 'Steady',
       priority: 'Third-party management',
       due: 'This week',
     });
@@ -322,7 +322,7 @@ export const getPropertyTasks = (property) => {
     tasks.push({
       id: `${property.id}-lease-up`,
       title: 'Confirm lease-up pace and applicant follow-up rhythm',
-      status: property.operations.occupancy < 92 ? 'Needs Attention' : 'On Course',
+      status: property.operations.occupancy < 92 ? 'Alert' : 'Steady',
       priority: 'Leasing',
       due: 'Next huddle',
     });
@@ -332,7 +332,7 @@ export const getPropertyTasks = (property) => {
     tasks.push({
       id: `${property.id}-capital`,
       title: 'Validate capital improvement schedule and resident communication',
-      status: property.operations.agedWorkOrders >= 5 ? 'Needs Attention' : 'On Course',
+      status: property.operations.agedWorkOrders >= 5 ? 'Watch' : 'Steady',
       priority: 'Capital work',
       due: 'This month',
     });
@@ -342,7 +342,7 @@ export const getPropertyTasks = (property) => {
     tasks.push({
       id: `${property.id}-maintenance`,
       title: 'Clear aged maintenance work order exceptions',
-      status: property.operations.agedWorkOrders >= 8 ? 'Needs Attention' : 'Watch',
+      status: property.operations.agedWorkOrders >= 8 ? 'Alert' : 'Watch',
       priority: 'Maintenance',
       due: 'Friday',
     });
@@ -352,7 +352,7 @@ export const getPropertyTasks = (property) => {
     tasks.push({
       id: `${property.id}-accessibility`,
       title: 'Check accessibility-sensitive resident service follow-ups',
-      status: property.operations.residentServiceOpen >= 8 ? 'Needs Attention' : 'On Course',
+      status: property.operations.residentServiceOpen >= 8 ? 'Watch' : 'Steady',
       priority: 'Resident services',
       due: 'This week',
     });

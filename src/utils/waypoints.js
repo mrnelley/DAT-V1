@@ -1,11 +1,20 @@
-export const waypointRepresentations = ['Waypoint', 'Marker', 'Commitment', 'Touchpoint'];
+export const calendarLabels = ['Beat', 'Marker', 'Commitment', 'Touchpoint'];
 
-export const compassStatuses = {
-  on_course: { label: 'On Course', color: 'success', tone: 'success.main' },
-  needs_attention: { label: 'Needs Attention', color: 'warning', tone: 'warning.main' },
-  off_course: { label: 'Off Course', color: 'error', tone: 'error.main' },
-  completed: { label: 'Completed', color: 'success', tone: 'success.dark' },
-  rescheduled: { label: 'Rescheduled', color: 'default', tone: 'text.secondary' },
+export const calendarRhythms = ['once', 'weekly', 'monthly', 'quarterly', 'annual', 'custom'];
+
+export const calendarLifecycles = {
+  scheduled: { label: 'Scheduled', color: 'default' },
+  completed: { label: 'Completed', color: 'success' },
+  rescheduled: { label: 'Rescheduled', color: 'warning' },
+  cancelled: { label: 'Cancelled', color: 'error' },
+};
+
+export const sourceStatuses = {
+  steady: { label: 'Steady', color: 'success', tone: 'success.main' },
+  watch: { label: 'Watch', color: 'warning', tone: 'warning.main' },
+  alert: { label: 'Alert', color: 'error', tone: 'error.main' },
+  complete: { label: 'Complete', color: 'success', tone: 'success.dark' },
+  no_data: { label: 'No Data', color: 'default', tone: 'text.secondary' },
 };
 
 export const reviewStates = {
@@ -24,8 +33,29 @@ export const connectedLabels = {
   native: 'Native calendar item',
 };
 
+const statusAliases = {
+  on_track: 'steady',
+  on_course: 'steady',
+  Steady: 'steady',
+  'On Course': 'steady',
+  at_risk: 'watch',
+  needs_attention: 'watch',
+  Watch: 'watch',
+  'Needs Attention': 'watch',
+  off_track: 'alert',
+  off_course: 'alert',
+  Alert: 'alert',
+  'Off Course': 'alert',
+  completed: 'complete',
+  complete: 'complete',
+  Complete: 'complete',
+  Completed: 'complete',
+};
+
+export const normalizeSourceStatus = (status) => statusAliases[status] || status || null;
+
 export const formatDateLabel = (date) => {
-  const parsed = parseWaypointDate(date);
+  const parsed = parseCalendarDate(date);
   return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
@@ -33,7 +63,7 @@ export const formatMonthLabel = (date) => (
   date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 );
 
-export const parseWaypointDate = (date) => new Date(`${date}T12:00:00`);
+export const parseCalendarDate = (date) => new Date(`${date}T12:00:00`);
 
 export const toDateInputValue = (date) => {
   const year = date.getFullYear();
@@ -55,8 +85,14 @@ export const getCalendarDays = (monthDate) => {
   });
 };
 
-export const sortWaypointsByDate = (waypoints) => (
-  [...waypoints].sort((a, b) => parseWaypointDate(a.date) - parseWaypointDate(b.date))
+export const getEventDate = (event) => event.date || event.startsOn;
+
+export const sortCalendarEventsByDate = (events) => (
+  [...events].sort((a, b) => parseCalendarDate(getEventDate(a)) - parseCalendarDate(getEventDate(b)))
+);
+
+export const formatRhythmLabel = (rhythm = 'once') => (
+  rhythm === 'once' ? 'One-time' : rhythm.charAt(0).toUpperCase() + rhythm.slice(1)
 );
 
 export const createNativeWaypoint = (values, user, scope) => ({
@@ -64,11 +100,13 @@ export const createNativeWaypoint = (values, user, scope) => ({
   title: values.title,
   date: values.date,
   endDate: values.endDate || null,
-  representation: values.representation || 'Waypoint',
+  label: values.label || 'Beat',
+  rhythm: values.rhythm || 'once',
+  lifecycle: values.lifecycle || 'scheduled',
   scope,
   reviewState: scope === 'organization' ? 'approved' : 'private',
   orgSubmissionState: 'none',
-  compassStatus: values.compassStatus || 'on_course',
+  sourceStatus: normalizeSourceStatus(values.sourceStatus),
   owner: user,
   submittedBy: user,
   source: { type: 'native', id: null, label: 'Calendar' },
@@ -86,10 +124,12 @@ export const waypointFromPriority = (priority, overrides = {}) => ({
   title: priority.name,
   date: overrides.date || '2026-05-28',
   endDate: null,
-  representation: overrides.representation || 'Waypoint',
+  label: overrides.label || 'Beat',
+  rhythm: overrides.rhythm || 'once',
+  lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
   reviewState: overrides.reviewState || 'approved',
-  compassStatus: priority.status === 'on_track' ? 'on_course' : priority.status === 'off_track' ? 'off_course' : 'needs_attention',
+  sourceStatus: normalizeSourceStatus(priority.status),
   owner: priority.owner,
   submittedBy: overrides.submittedBy || priority.owner,
   source: { type: 'priority', id: priority.id, label: priority.name },
@@ -99,7 +139,7 @@ export const waypointFromPriority = (priority, overrides = {}) => ({
   whoItImpacts: overrides.whoItImpacts || 'Teams connected to this priority',
   connectedWork: connectedLabels.priority,
   supportNeeded: overrides.supportNeeded || 'Review progress and blockers before this date.',
-  outcomeExpected: overrides.outcomeExpected || 'Priority owner confirms the work remains on course.',
+  outcomeExpected: overrides.outcomeExpected || 'Priority owner confirms the work remains steady.',
 });
 
 export const waypointFromInitiative = (initiative, overrides = {}) => ({
@@ -107,10 +147,12 @@ export const waypointFromInitiative = (initiative, overrides = {}) => ({
   title: initiative.title,
   date: overrides.date || '2026-06-05',
   endDate: null,
-  representation: overrides.representation || 'Marker',
+  label: overrides.label || 'Marker',
+  rhythm: overrides.rhythm || 'once',
+  lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
   reviewState: overrides.reviewState || 'approved',
-  compassStatus: initiative.status === 'Active' ? 'on_course' : 'needs_attention',
+  sourceStatus: normalizeSourceStatus(initiative.status),
   owner: overrides.owner,
   submittedBy: overrides.submittedBy || overrides.owner,
   source: { type: 'initiative', id: initiative.id, label: initiative.title },
@@ -128,10 +170,12 @@ export const waypointFromHuddle = (huddle, owner, overrides = {}) => ({
   title: huddle.name,
   date: overrides.date || '2026-05-20',
   endDate: null,
-  representation: overrides.representation || 'Touchpoint',
+  label: overrides.label || 'Touchpoint',
+  rhythm: overrides.rhythm || 'weekly',
+  lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
   reviewState: overrides.reviewState || 'approved',
-  compassStatus: overrides.compassStatus || 'on_course',
+  sourceStatus: normalizeSourceStatus(overrides.sourceStatus),
   owner,
   submittedBy: overrides.submittedBy || owner,
   source: { type: 'huddle', id: huddle.id, label: huddle.name },

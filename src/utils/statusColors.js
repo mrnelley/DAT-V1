@@ -8,9 +8,9 @@ export const statusColorMap = {
 };
 
 export const statusLabels = {
-  on_track: 'On Course',
-  at_risk: 'Needs Attention',
-  off_track: 'Off Course',
+  on_track: 'Steady',
+  at_risk: 'Watch',
+  off_track: 'Alert',
   complete: 'Completed',
   no_data: 'No Data',
   neutral: 'Neutral',

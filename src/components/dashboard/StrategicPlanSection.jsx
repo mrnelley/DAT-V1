@@ -11,9 +11,9 @@ import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
-  'On Course': 'success',
-  'Needs Attention': 'warning',
-  'Off Course': 'error',
+  Steady: 'success',
+  Watch: 'warning',
+  Alert: 'error',
   Complete: 'success',
   Completed: 'success',
   'Rolled Into Next Quarter': 'warning',
@@ -50,8 +50,8 @@ const getBlankForm = (type, selectedPillar, user, priorityId, objectiveId) => ({
   title: '',
   ownerId: user.id,
   department: user.department,
-  roadmapStatus: 'On Course',
-  status: 'On Course',
+  roadmapStatus: 'Steady',
+  status: 'Steady',
   workplanTitle: '',
   workplanAccess: user.department,
   workplanSummary: '',
@@ -160,7 +160,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
               <Box>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
                   <Typography variant="h3">{priority.name}</Typography>
-                  <Chip label={priority.roadmapStatus || 'On Course'} color={statusColor[priority.roadmapStatus] || 'default'} size="small" />
+                  <Chip label={priority.roadmapStatus || 'Steady'} color={statusColor[priority.roadmapStatus] || 'default'} size="small" />
                   <Chip label={priority.period} variant="outlined" size="small" />
                 </Stack>
                 <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 0.75 }}>
@@ -267,7 +267,7 @@ const StrategicPlanSection = () => {
     const pillarInitiatives = initiatives.filter((initiative) => initiative.strategicPillarId === pillar.id);
     const pillarPriorities = flatPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
     const pillarActions = actionItems.filter((item) => item.strategicPillarId === pillar.id);
-    const attentionCount = pillarWorkplans.filter((workplan) => ['Needs Attention', 'Off Course'].includes(workplan.status)).length;
+    const attentionCount = pillarWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length;
 
     return {
       ...pillar,

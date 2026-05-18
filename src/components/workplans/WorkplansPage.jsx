@@ -30,14 +30,14 @@ import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
-  'On Course': 'success',
-  'Needs Attention': 'warning',
-  'Off Course': 'error',
+  Steady: 'success',
+  Watch: 'warning',
+  Alert: 'error',
   Completed: 'primary',
   Rescheduled: 'default',
 };
 
-const workplanStatuses = ['On Course', 'Needs Attention', 'Off Course', 'Completed', 'Rescheduled'];
+const workplanStatuses = ['Steady', 'Watch', 'Alert', 'Completed', 'Rescheduled'];
 
 const clampProgress = (value) => Math.min(100, Math.max(0, Number(value) || 0));
 
@@ -62,7 +62,7 @@ const defaultForm = (user) => ({
   strategicPlan: strategicPlan2030.name,
   strategicPillarId: strategicPlan2030.pillars[0].id,
   strategicPillar: strategicPlan2030.pillars[0].name,
-  status: 'On Course',
+  status: 'Steady',
   due: '2026-06-30',
   progress: 25,
   outcome: '',
@@ -291,7 +291,7 @@ const WorkplansPage = () => {
     return {
       average,
       departments: new Set(visibleWorkplans.map((workplan) => workplan.department)).size,
-      needsAttention: visibleWorkplans.filter((workplan) => ['Needs Attention', 'Off Course'].includes(workplan.status)).length,
+      needsAttention: visibleWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length,
       total: visibleWorkplans.length,
     };
   }, [visibleWorkplans]);
@@ -345,7 +345,7 @@ const WorkplansPage = () => {
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
         <StatTile label="Visible Workplans" value={summary.total} helper={scope === 'mine' ? `${user.name}'s lane` : 'All departments'} />
-        <StatTile label="Needs Focus" value={summary.needsAttention} helper="Needs Attention or Off Course" />
+        <StatTile label="Needs Focus" value={summary.needsAttention} helper="Watch or Alert" />
         <StatTile label="Average Progress" value={`${summary.average}%`} helper="Across this view" />
         <StatTile label="Departments" value={summary.departments} helper="Represented here" />
       </Box>

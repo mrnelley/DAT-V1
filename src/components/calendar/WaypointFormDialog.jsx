@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
-import { compassStatuses, toDateInputValue, waypointRepresentations } from '../../utils/waypoints';
+import { calendarLabels, calendarLifecycles, calendarRhythms, formatRhythmLabel, toDateInputValue } from '../../utils/waypoints';
 
 const emptyForm = (date) => ({
   title: '',
   date,
   endDate: '',
-  representation: 'Waypoint',
-  compassStatus: 'on_course',
+  label: 'Beat',
+  rhythm: 'once',
+  lifecycle: 'scheduled',
   department: '',
   property: '',
   whyItMatters: '',
@@ -40,29 +41,39 @@ const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add New</DialogTitle>
+      <DialogTitle>Add Calendar Event</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField label="Title" value={form.title} onChange={update('title')} required fullWidth />
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
             <TextField label="Date" type="date" value={form.date} onChange={update('date')} InputLabelProps={{ shrink: true }} fullWidth />
             <FormControl fullWidth>
-              <InputLabel>Representation</InputLabel>
-              <Select label="Representation" value={form.representation} onChange={update('representation')}>
-                {waypointRepresentations.map((representation) => (
-                  <MenuItem key={representation} value={representation}>{representation}</MenuItem>
+              <InputLabel>Label</InputLabel>
+              <Select label="Label" value={form.label} onChange={update('label')}>
+                {calendarLabels.map((label) => (
+                  <MenuItem key={label} value={label}>{label}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Stack>
-          <FormControl>
-            <InputLabel>Status</InputLabel>
-            <Select label="Status" value={form.compassStatus} onChange={update('compassStatus')}>
-              {Object.entries(compassStatuses).map(([value, status]) => (
-                <MenuItem key={value} value={value}>{status.label}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+            <FormControl fullWidth>
+              <InputLabel>Rhythm</InputLabel>
+              <Select label="Rhythm" value={form.rhythm} onChange={update('rhythm')}>
+                {calendarRhythms.map((rhythm) => (
+                  <MenuItem key={rhythm} value={rhythm}>{formatRhythmLabel(rhythm)}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Lifecycle</InputLabel>
+              <Select label="Lifecycle" value={form.lifecycle} onChange={update('lifecycle')}>
+                {Object.entries(calendarLifecycles).map(([value, lifecycle]) => (
+                  <MenuItem key={value} value={value}>{lifecycle.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
             <TextField label="Property" value={form.property} onChange={update('property')} fullWidth />
             <TextField label="Department" value={form.department} onChange={update('department')} fullWidth />

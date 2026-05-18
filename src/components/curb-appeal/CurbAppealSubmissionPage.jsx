@@ -92,7 +92,7 @@ const CurbAppealSubmissionPage = () => {
           <Typography variant="h3">Teams Prompt</Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>This is the lightweight quarterly card a property manager would open from Teams.</Typography>
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mt: 1.5, bgcolor: 'background.default' }}>
-            <Typography variant="caption">Compass quarterly reminder</Typography>
+            <Typography variant="caption">Pulse quarterly reminder</Typography>
             <Typography variant="h4" sx={{ mt: 0.5 }}>{submission.propertyName}</Typography>
             <Typography variant="body2" sx={{ mt: 0.5 }}>{checklistTemplate.dueLabel} - {checklistTemplate.cadence}</Typography>
             <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
@@ -103,7 +103,7 @@ const CurbAppealSubmissionPage = () => {
           </Box>
           <Typography variant="h4" sx={{ mt: 2, mb: 0.75 }}>After Submit</Typography>
           <Typography variant="body2">
-            Compass records this as pending review and sends Jaime her own approval card. The checklist does not credit her priority until she approves it.
+            Pulse records this as pending review and sends Jaime her own approval card. The checklist does not credit her priority until she approves it.
           </Typography>
         </Box>
 

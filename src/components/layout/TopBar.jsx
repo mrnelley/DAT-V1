@@ -26,7 +26,29 @@ const TopBar = ({ onMenuClick }) => {
   };
 
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
+    <AppBar
+      position="fixed"
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        bgcolor: 'background.paper',
+        color: 'text.primary',
+        boxShadow: 1,
+        overflow: 'hidden',
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 3,
+          opacity: 0.72,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='240' height='12' viewBox='0 0 240 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6 C 24 1, 36 11, 60 6 S 96 1, 120 6 S 156 11, 180 6 S 216 1, 240 6' fill='none' stroke='%235eb8a8' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M0 6 C 18 4, 42 8, 60 6 S 102 4, 120 6 S 162 8, 180 6 S 222 4, 240 6' fill='none' stroke='%235eb8a8' stroke-width='1' stroke-opacity='.48'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: '240px 12px',
+          animation: 'pulseWaveDrift 18s linear infinite',
+        },
+      }}
+    >
       <Toolbar sx={{ minHeight: 64, gap: 1.5 }}>
         <IconButton aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
         <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 2, minWidth: 0 }}>
@@ -37,7 +59,7 @@ const TopBar = ({ onMenuClick }) => {
             aria-hidden="true"
             sx={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
           />
-          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
+          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Pulse</Typography>
         </Stack>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
           {Object.keys(navMenus).map((label) => (

@@ -5,7 +5,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = window.localStorage.getItem('hdc_compass_token') || 'development-token';
+  const token = window.localStorage.getItem('hdc_pulse_token') || 'development-token';
   config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

@@ -21,3 +21,23 @@ button,
 [role='button'] {
   touch-action: manipulation;
 }
+
+@keyframes pulseWaveDrift {
+  from {
+    background-position-x: 0;
+  }
+
+  to {
+    background-position-x: 240px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

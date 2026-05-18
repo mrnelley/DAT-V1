@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { Box, Button, Chip, Divider, Drawer, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Typography } from '@mui/material';
-import { compassStatuses, connectedLabels, formatDateLabel, reviewStates, waypointRepresentations } from '../../utils/waypoints';
+import { calendarLabels, calendarLifecycles, calendarRhythms, connectedLabels, formatDateLabel, formatRhythmLabel, getEventDate, reviewStates, sourceStatuses } from '../../utils/waypoints';
 import UserAvatar from '../shared/UserAvatar';
 
 const meaningFields = [
@@ -33,8 +33,9 @@ const WaypointDetailsDrawer = ({
 }) => {
   if (!waypoint) return null;
 
-  const status = compassStatuses[waypoint.compassStatus] || compassStatuses.on_course;
+  const lifecycle = calendarLifecycles[waypoint.lifecycle] || calendarLifecycles.scheduled;
   const review = reviewStates[waypoint.reviewState] || reviewStates.private;
+  const sourceStatus = waypoint.sourceStatus ? sourceStatuses[waypoint.sourceStatus] : null;
   const connectedLabel = connectedLabels[waypoint.source?.type] || waypoint.connectedWork;
   const pending = waypoint.reviewState === 'pending';
 
@@ -44,13 +45,16 @@ const WaypointDetailsDrawer = ({
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" gap={1} sx={{ mb: 2 }}>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h2">{waypoint.title}</Typography>
-            <Typography variant="body2">{formatDateLabel(waypoint.date)}</Typography>
+            <Typography variant="body2">{formatDateLabel(getEventDate(waypoint))}</Typography>
           </Box>
-          <IconButton aria-label="Close waypoint details" onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton aria-label="Close calendar event details" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
 
         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
-          <Chip label={status.label} color={status.color} size="small" />
+          <Chip label={waypoint.label} color="primary" size="small" />
+          <Chip label={formatRhythmLabel(waypoint.rhythm)} color="secondary" size="small" variant="outlined" />
+          <Chip label={lifecycle.label} color={lifecycle.color} size="small" />
+          {sourceStatus && <Chip label={sourceStatus.label} color={sourceStatus.color} size="small" />}
           <Chip label={review.label} variant={pending ? 'outlined' : 'filled'} size="small" />
           {waypoint.orgSubmissionState && waypoint.scope === 'personal' && (
             <Chip label={orgSubmissionCopy[waypoint.orgSubmissionState]} variant="outlined" size="small" />
@@ -59,26 +63,39 @@ const WaypointDetailsDrawer = ({
 
         <Stack gap={2}>
           <FormControl size="small">
-            <InputLabel>Representation</InputLabel>
+            <InputLabel>Label</InputLabel>
             <Select
-              label="Representation"
-              value={waypoint.representation}
-              onChange={(event) => onUpdate(waypoint.id, { representation: event.target.value })}
+              label="Label"
+              value={waypoint.label}
+              onChange={(event) => onUpdate(waypoint.id, { label: event.target.value })}
             >
-              {waypointRepresentations.map((representation) => (
-                <MenuItem key={representation} value={representation}>{representation}</MenuItem>
+              {calendarLabels.map((label) => (
+                <MenuItem key={label} value={label}>{label}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
           <FormControl size="small">
-            <InputLabel>Status</InputLabel>
+            <InputLabel>Rhythm</InputLabel>
             <Select
-              label="Status"
-              value={waypoint.compassStatus}
-              onChange={(event) => onUpdate(waypoint.id, { compassStatus: event.target.value })}
+              label="Rhythm"
+              value={waypoint.rhythm}
+              onChange={(event) => onUpdate(waypoint.id, { rhythm: event.target.value })}
             >
-              {Object.entries(compassStatuses).map(([value, item]) => (
+              {calendarRhythms.map((rhythm) => (
+                <MenuItem key={rhythm} value={rhythm}>{formatRhythmLabel(rhythm)}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small">
+            <InputLabel>Lifecycle</InputLabel>
+            <Select
+              label="Lifecycle"
+              value={waypoint.lifecycle}
+              onChange={(event) => onUpdate(waypoint.id, { lifecycle: event.target.value })}
+            >
+              {Object.entries(calendarLifecycles).map(([value, item]) => (
                 <MenuItem key={value} value={value}>{item.label}</MenuItem>
               ))}
             </Select>

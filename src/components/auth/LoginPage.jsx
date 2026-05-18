@@ -61,7 +61,7 @@ const LoginPage = () => {
               sx={{ width: { xs: 210, md: 270 }, height: 'auto', display: 'block' }}
             />
             <Box>
-              <Typography variant="h3" color="inherit">HDC Compass</Typography>
+              <Typography variant="h3" color="inherit">HDC Pulse</Typography>
               <Typography variant="caption" color="secondary.light">Accountability without extra drag</Typography>
             </Box>
           </Stack>
@@ -87,7 +87,7 @@ const LoginPage = () => {
           {[
             [BusinessOutlinedIcon, 'Portfolio'],
             [ChecklistOutlinedIcon, 'Workplans'],
-            [CalendarMonthOutlinedIcon, 'Waypoints'],
+            [CalendarMonthOutlinedIcon, 'Beats'],
             [GroupsOutlinedIcon, 'Huddles'],
           ].map(([Icon, label]) => (
             <Box key={label} sx={{ border: '1px solid rgba(255,255,255,0.22)', borderRadius: 1, p: 1.25, bgcolor: 'rgba(255,255,255,0.08)' }}>

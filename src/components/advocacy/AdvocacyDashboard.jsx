@@ -21,16 +21,16 @@ const periods = [
 ];
 
 const statusColor = {
-  'On Course': 'success',
-  'Needs Attention': 'warning',
-  'Off Course': 'error',
+  'Steady': 'success',
+  'Watch': 'warning',
+  'Alert': 'error',
   Completed: 'success',
 };
 
 const statusTone = {
-  'On Course': 'success.main',
-  'Needs Attention': 'warning.main',
-  'Off Course': 'error.main',
+  'Steady': 'success.main',
+  'Watch': 'warning.main',
+  'Alert': 'error.main',
   Completed: 'success.dark',
 };
 
@@ -103,7 +103,7 @@ const emptyEntity = (type) => {
   if (type === 'priority') {
     return {
       title: '',
-      status: 'On Course',
+      status: 'Steady',
       target: 5,
       current: 0,
       circle: 'Local Government',
@@ -120,7 +120,7 @@ const emptyEntity = (type) => {
       department: 'Executive Office',
       leadId: users[0].id,
       initiativeId: '',
-      status: 'On Course',
+      status: 'Steady',
       due: '2026-06-14',
       progress: 50,
       strategicPillarId: 'advocate-change',
@@ -131,7 +131,7 @@ const emptyEntity = (type) => {
   return {
     title: '',
     quarter: 'Q2 2026',
-    status: 'On Course',
+    status: 'Steady',
     target: 20,
     current: 0,
     strategicPillarId: 'advocate-change',
@@ -189,7 +189,7 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
-                  <Select label="Status" value={form.status || 'On Course'} onChange={update('status')}>
+                  <Select label="Status" value={form.status || 'Steady'} onChange={update('status')}>
                     {Object.keys(statusColor).map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                   </Select>
                 </FormControl>
@@ -234,7 +234,7 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
                 </FormControl>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
-                  <Select label="Status" value={form.status || 'On Course'} onChange={update('status')}>
+                  <Select label="Status" value={form.status || 'Steady'} onChange={update('status')}>
                     {Object.keys(statusColor).map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                   </Select>
                 </FormControl>
@@ -263,7 +263,7 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
                 <TextField label="Quarter" value={form.quarter || ''} onChange={update('quarter')} fullWidth />
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
-                  <Select label="Status" value={form.status || 'On Course'} onChange={update('status')}>
+                  <Select label="Status" value={form.status || 'Steady'} onChange={update('status')}>
                     {Object.keys(statusColor).map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                   </Select>
                 </FormControl>
@@ -626,7 +626,7 @@ const AdvocacyDashboard = () => {
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
               Primary Advocate - Chief Executive Officer
             </Typography>
-            <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Dana's Helm</Typography>
+            <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Dana's Pulse</Typography>
             <Typography variant="body2">Advocacy command center - May 2026</Typography>
           </Box>
         </Stack>

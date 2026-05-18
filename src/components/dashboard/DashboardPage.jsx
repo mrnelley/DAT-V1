@@ -82,7 +82,7 @@ const DashboardPage = ({ company = false }) => {
   const defaultWidgetOrder = useMemo(() => (
     company ? ['strategicPlan', 'critical', 'organizationCalendar'] : ['focus', 'critical', 'kpis']
   ), [company]);
-  const layoutStorageKey = `hdc_compass_dashboard_layout_${company ? 'company_v2' : user.id}`;
+  const layoutStorageKey = `hdc_pulse_dashboard_layout_${company ? 'company_v2' : user.id}`;
   const [widgetOrder, setWidgetOrder] = useState(() => getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
 
   useEffect(() => {
@@ -159,7 +159,7 @@ const DashboardPage = ({ company = false }) => {
     critical: 'Critical Numbers',
     focus: user.dashboardFocus === 'advocacy' ? 'Advocacy Dashboard' : 'Focused Dashboard',
     kpis: 'My KPIs',
-    organizationCalendar: 'Compass Calendar',
+    organizationCalendar: 'Pulse Calendar',
     strategicPlan: 'Strategic Plan',
   };
 
