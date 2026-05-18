@@ -120,7 +120,15 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
               <Typography variant="caption" color="secondary.light">{user.role}</Typography>
             </Box>
           )}
-          {(open || mobile) && <IconButton aria-label="Open user settings" sx={{ color: 'common.white' }}><SettingsIcon /></IconButton>}
+          {(open || mobile) && (
+            <IconButton
+              aria-label="Open profile settings"
+              onClick={() => navigate('/profile')}
+              sx={{ color: 'common.white' }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          )}
         </Box>
       </Box>
     </Box>

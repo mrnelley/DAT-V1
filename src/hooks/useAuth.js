@@ -13,10 +13,29 @@ const getInitialAuthState = () => {
   return window.localStorage.getItem('hdc_pulse_demo_authenticated') === 'true' || window.localStorage.getItem('hdc_compass_demo_authenticated') === 'true';
 };
 
+const getInitialProfileOverrides = () => {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    return JSON.parse(window.localStorage.getItem('hdc_pulse_profile_overrides')) || {};
+  } catch {
+    return {};
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(getInitialAuthState);
+  const [profileOverrides, setProfileOverrides] = useState(getInitialProfileOverrides);
   const [userId, setUserId] = useState(getInitialUserId);
-  const user = users.find((candidate) => candidate.id === userId) || users[0];
+  const baseUser = users.find((candidate) => candidate.id === userId) || users[0];
+  const user = { ...baseUser, ...(profileOverrides[userId] || {}) };
+
+  const saveProfileOverrides = (nextOverrides) => {
+    setProfileOverrides(nextOverrides);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('hdc_pulse_profile_overrides', JSON.stringify(nextOverrides));
+    }
+  };
 
   const selectUserId = (nextUserId) => {
     setUserId(nextUserId);
@@ -58,16 +77,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserProfile = (values) => {
+    const nextUser = {
+      ...profileOverrides[userId],
+      ...values,
+      id: userId,
+    };
+    saveProfileOverrides({ ...profileOverrides, [userId]: nextUser });
+  };
+
+  const resetUserProfile = () => {
+    const { [userId]: _removed, ...nextOverrides } = profileOverrides;
+    saveProfileOverrides(nextOverrides);
+  };
+
   const value = useMemo(() => ({
     demoUsers: users,
     getToken: async () => 'development-token',
     isAuthenticated,
+    resetUserProfile,
     setUserId: selectUserId,
     signInByName,
     signOut,
+    updateUserProfile,
     user,
     userId,
-  }), [isAuthenticated, user, userId]);
+  }), [isAuthenticated, profileOverrides, user, userId]);
 
   return createElement(AuthContext.Provider, { value }, children);
 };

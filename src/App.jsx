@@ -10,6 +10,7 @@ import HuddlesPage from './components/huddles/HuddlesPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
 import DataTablePage from './components/metrics/DataTablePage';
+import ProfilePage from './components/profile/ProfilePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
@@ -39,6 +40,7 @@ const AnimatedRoutes = () => {
         <Route path="/action-items" element={<ActionItemsPage />} />
         <Route path="/metrics" element={<PlaceholderPage title="Metrics Management" />} />
         <Route path="/metrics/table" element={<DataTablePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<PlaceholderPage title="Learn" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
       </Routes>
