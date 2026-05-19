@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { huddles } from '../../data/mockData';
 
-const HuddleSidePopout = ({ open, navOpen }) => {
+const HuddleSidePopout = ({ onClose, onInteract, open, navOpen }) => {
   const navigate = useNavigate();
   if (!open) return null;
   const renderGroup = (title, items) => (
@@ -12,7 +12,14 @@ const HuddleSidePopout = ({ open, navOpen }) => {
       <Typography variant="h4" sx={{ px: 2, py: 1 }}>{title}</Typography>
       <List dense>
         {items.map((huddle) => (
-          <ListItemButton key={huddle.id} onClick={() => navigate(`/huddles/${huddle.id}`)} sx={{ '&:hover': { bgcolor: 'rgba(94,184,168,0.1)' } }}>
+          <ListItemButton
+            key={huddle.id}
+            onClick={() => {
+              navigate(`/huddles/${huddle.id}`);
+              onClose();
+            }}
+            sx={{ '&:hover': { bgcolor: 'rgba(94,184,168,0.1)' } }}
+          >
             <ListItemText primary={huddle.name} secondary={huddle.recurrence} />
             <ChevronRightIcon fontSize="small" />
           </ListItemButton>
@@ -27,6 +34,11 @@ const HuddleSidePopout = ({ open, navOpen }) => {
       initial={{ x: -260 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      onFocus={onInteract}
+      onKeyDown={onInteract}
+      onMouseMove={onInteract}
+      onPointerDown={onInteract}
+      onTouchStart={onInteract}
       sx={{
         position: 'fixed',
         top: 64,
