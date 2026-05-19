@@ -7,6 +7,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { metrics } from '../../data/mockData';
 import { useWaypoints } from '../../context/WaypointContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -63,6 +64,7 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
+  const { unavailable } = useActionFeedback();
   const teamOptions = company ? ['Critical Numbers for Leadership', 'Operations', 'Resident Services', 'Asset Management'] : user.teams;
   const opensCalendarFirst = !company && user.id === 'u1';
   const [team, setTeam] = useState(teamOptions[0]);
@@ -203,9 +205,9 @@ const DashboardPage = ({ company = false }) => {
             </Button>
           )}
           <Stack direction="row" alignItems="center">
-            <IconButton aria-label="Previous dashboard period"><ChevronLeftIcon /></IconButton>
+            <IconButton aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
             <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
-            <IconButton aria-label="Next dashboard period"><ChevronRightIcon /></IconButton>
+            <IconButton aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
           </Stack>
           <FormControl size="small" sx={{ minWidth: 230 }}>
             <InputLabel>Team Filter</InputLabel>

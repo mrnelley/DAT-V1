@@ -332,6 +332,7 @@ create table if not exists public.action_items (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
   strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
+  department_id uuid references public.departments(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   created_by uuid references public.profiles(id) on delete set null,
   priority_id uuid references public.priorities(id) on delete set null,
@@ -339,6 +340,7 @@ create table if not exists public.action_items (
   title text not null,
   description text,
   status text not null default 'open',
+  visibility text not null default 'private' check (visibility in ('private', 'department', 'olt', 'organization')),
   due_on date,
   completed_at timestamptz,
   created_at timestamptz not null default now(),
@@ -516,9 +518,32 @@ create table if not exists public.teams_accounts (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.notification_events (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  recipient_profile_id uuid references public.profiles(id) on delete set null,
+  actor_profile_id uuid references public.profiles(id) on delete set null,
+  source_type text not null,
+  source_id uuid not null,
+  notification_type text not null,
+  priority text not null default 'normal',
+  channel text not null default 'teams',
+  card_template_key text,
+  scheduled_for timestamptz not null default now(),
+  sent_at timestamptz,
+  read_at timestamptz,
+  dismissed_at timestamptz,
+  status text not null default 'queued',
+  payload jsonb not null default '{}',
+  failure_reason text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.adaptive_card_deliveries (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
+  notification_event_id uuid references public.notification_events(id) on delete set null,
   workflow_run_id uuid references public.workflow_runs(id) on delete set null,
   teams_account_id uuid references public.teams_accounts(id) on delete set null,
   source_type text not null,
@@ -590,6 +615,7 @@ create index if not exists idx_key_objectives_priority on public.key_objectives(
 create index if not exists idx_key_objectives_owner on public.key_objectives(owner_id);
 create index if not exists idx_objective_kpis_objective on public.objective_kpis(key_objective_id);
 create index if not exists idx_action_items_pillar on public.action_items(strategic_pillar_id);
+create index if not exists idx_action_items_department_visibility on public.action_items(department_id, visibility);
 create index if not exists idx_waypoints_owner_scope on public.waypoints(owner_id, scope);
 create index if not exists idx_waypoints_date on public.waypoints(starts_on);
 create index if not exists idx_checklist_submissions_due on public.checklist_submissions(due_on, status);
@@ -598,6 +624,9 @@ create index if not exists idx_review_requests_reviewer on public.review_request
 create index if not exists idx_workflow_definitions_department on public.workflow_definitions(department_id, active);
 create index if not exists idx_workflow_definitions_owner on public.workflow_definitions(owner_id, active);
 create index if not exists idx_workflow_definitions_reviewer on public.workflow_definitions(reviewer_id, active);
+create index if not exists idx_notification_events_recipient on public.notification_events(recipient_profile_id, status, scheduled_for);
+create index if not exists idx_notification_events_source on public.notification_events(source_type, source_id);
+create index if not exists idx_notification_events_status on public.notification_events(status, scheduled_for);
 create index if not exists idx_adaptive_card_deliveries_source on public.adaptive_card_deliveries(source_type, source_id);
 
 do $$
@@ -609,7 +638,7 @@ begin
     'strategic_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
     'huddles', 'action_items', 'stucks', 'waypoints', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
-    'workflow_definitions', 'teams_accounts', 'contacts', 'touchpoints',
+    'workflow_definitions', 'teams_accounts', 'notification_events', 'contacts', 'touchpoints',
     'brand_assets'
   ]
   loop
@@ -651,6 +680,7 @@ alter table public.checklist_responses enable row level security;
 alter table public.workflow_definitions enable row level security;
 alter table public.workflow_runs enable row level security;
 alter table public.teams_accounts enable row level security;
+alter table public.notification_events enable row level security;
 alter table public.adaptive_card_deliveries enable row level security;
 alter table public.contacts enable row level security;
 alter table public.touchpoints enable row level security;
@@ -785,9 +815,34 @@ with check (
   )
 );
 
-create policy "org members read action items"
+create policy "users read visible action items"
 on public.action_items for select
-using (public.is_org_member(organization_id) or owner_id = auth.uid() or created_by = auth.uid() or public.is_admin());
+using (
+  public.is_admin()
+  or owner_id = auth.uid()
+  or created_by = auth.uid()
+  or (visibility = 'organization' and public.is_org_member(organization_id))
+  or (
+    visibility = 'department'
+    and exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and p.organization_id = action_items.organization_id
+        and p.department_id = action_items.department_id
+    )
+  )
+  or (
+    visibility = 'olt'
+    and exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and p.organization_id = action_items.organization_id
+        and p.working_group = 'OLT'
+    )
+  )
+);
 
 create policy "assigned users and admins manage action items"
 on public.action_items for all
@@ -863,6 +918,23 @@ with check (
       and (public.is_admin() or s.assigned_to = auth.uid() or s.reviewer_id = auth.uid())
   )
 );
+
+create policy "users read own notifications"
+on public.notification_events for select
+using (
+  public.is_admin()
+  or recipient_profile_id = auth.uid()
+  or actor_profile_id = auth.uid()
+);
+
+create policy "org members create notifications"
+on public.notification_events for insert
+with check (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "recipients and admins update notifications"
+on public.notification_events for update
+using (public.is_admin() or recipient_profile_id = auth.uid())
+with check (public.is_admin() or recipient_profile_id = auth.uid());
 
 create policy "org members read brand assets"
 on public.brand_assets for select

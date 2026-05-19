@@ -4,6 +4,7 @@ import { Box, IconButton, List, ListItem, ListItemIcon, ListItemText, Tab, Tabs,
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import HuddleHeader from './HuddleHeader';
@@ -12,6 +13,7 @@ import MonthlyTargets from './MonthlyTargets';
 
 const HuddlesPage = () => {
   const { id = 'daily-ops' } = useParams();
+  const { unavailable } = useActionFeedback();
   const [tab, setTab] = useState(0);
   const [metric, setMetric] = useState(null);
 
@@ -39,7 +41,7 @@ const HuddlesPage = () => {
           <TextField multiline minRows={5} fullWidth placeholder="Click or Tap to enter something..." sx={{ mb: 3 }} />
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Typography variant="h4" sx={{ flex: 1 }}>Documents</Typography>
-            <IconButton aria-label="Add huddle document"><AddOutlinedIcon /></IconButton>
+            <IconButton aria-label="Add huddle document" onClick={() => unavailable('document uploads need file storage configuration.')}><AddOutlinedIcon /></IconButton>
           </Box>
           <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary', bgcolor: 'background.paper', borderRadius: 2 }}>
             <DescriptionOutlinedIcon />

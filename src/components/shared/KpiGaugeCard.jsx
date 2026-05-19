@@ -7,9 +7,11 @@ import { Box, Card, CardContent, IconButton, LinearProgress, Tooltip, Typography
 import { motion } from 'framer-motion';
 import { getGaugeStatus, statusColorMap } from '../../utils/statusColors';
 import { formatCompact } from '../../utils/formatters';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import UserAvatar from './UserAvatar';
 
 const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
+  const { unavailable } = useActionFeedback();
   const status = getGaugeStatus(metric.current, metric.yellow, metric.green);
   const percent = Math.min(100, Math.round((metric.current / metric.target) * 100));
   const positive = metric.delta >= 0;
@@ -38,7 +40,7 @@ const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
             <Typography variant="h4" title={metric.title} noWrap>{metric.title}</Typography>
             <Typography variant="caption" title={metric.subtitle} noWrap display="block">{metric.subtitle}</Typography>
           </Box>
-          <IconButton size="small" aria-label={`More options for ${metric.title}`} onClick={(event) => event.stopPropagation()}>
+          <IconButton size="small" aria-label={`More options for ${metric.title}`} onClick={(event) => { event.stopPropagation(); unavailable('metric options are not connected to persistence yet.'); }}>
             <MoreHorizOutlinedIcon fontSize="small" />
           </IconButton>
         </Box>

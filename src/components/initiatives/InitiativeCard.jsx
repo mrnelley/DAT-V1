@@ -3,7 +3,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Card, CardContent, Chip, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import PermissionGate from '../shared/PermissionGate';
 
-const InitiativeCard = ({ initiative, onClick }) => (
+const InitiativeCard = ({ initiative, onClick, onUnavailable }) => (
   <Card
     onClick={onClick}
     onKeyDown={(event) => {
@@ -30,10 +30,10 @@ const InitiativeCard = ({ initiative, onClick }) => (
       <Stack direction="row" alignItems="center" sx={{ mt: 1 }}>
         <Chip label={`${initiative.connected} connected priorities`} size="small" variant="outlined" />
         <Stack direction="row" sx={{ ml: 'auto' }}>
-          <IconButton aria-label={`Edit initiative ${initiative.title}`} onClick={(event) => event.stopPropagation()}><EditIcon fontSize="small" /></IconButton>
+          <IconButton aria-label={`Edit initiative ${initiative.title}`} onClick={(event) => { event.stopPropagation(); onUnavailable?.('initiative editing is not connected to persistence yet.'); }}><EditIcon fontSize="small" /></IconButton>
           <PermissionGate roles={['ELT']}>
             <Tooltip title="Cannot delete until all connected priorities are completed or removed.">
-              <span><IconButton aria-label={`Delete initiative ${initiative.title}`} disabled={initiative.connected > 0} onClick={(event) => event.stopPropagation()}><DeleteIcon fontSize="small" /></IconButton></span>
+              <span><IconButton aria-label={`Delete initiative ${initiative.title}`} disabled={initiative.connected > 0} onClick={(event) => { event.stopPropagation(); onUnavailable?.('initiative deletion is protected until connected priorities are removed.'); }}><DeleteIcon fontSize="small" /></IconButton></span>
             </Tooltip>
           </PermissionGate>
         </Stack>

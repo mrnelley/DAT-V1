@@ -1,0 +1,956 @@
+{
+  "name": "HDC Pulse Data Model ERD",
+  "version": "2026-05-14",
+  "status": "formalized-from-current-supabase-migration-and-front-end-mock-shapes",
+  "notes": [
+    "This file formalizes both existing Supabase tables and implicit React mock-data objects.",
+    "Calendar events use the corrected target language: label, rhythm, lifecycle. The current database table is public.waypoints and should migrate toward this shape during the Pulse pass.",
+    "Status for work objects belongs to the source work item. Calendar events only carry lifecycle unless they need to display sourceStatus as a denormalized read hint."
+  ],
+  "enums": {
+    "workSignalStatus": ["steady", "watch", "alert", "complete", "paused", "no_data"],
+    "legacyCompassStatus": ["on_course", "needs_attention", "off_course", "completed", "rescheduled"],
+    "calendarLabel": ["Beat", "Marker", "Commitment", "Touchpoint"],
+    "calendarRhythm": ["once", "daily", "weekly", "monthly", "quarterly", "annual", "custom"],
+    "calendarLifecycle": ["scheduled", "completed", "rescheduled", "cancelled"],
+    "reviewState": ["private", "pending", "approved", "declined", "needs_follow_up", "returned"],
+    "checklistSubmissionStatus": ["scheduled", "draft", "submitted_pending_review", "needs_follow_up", "approved"],
+    "checklistResponseValue": ["", "good", "needs_correction", "na"],
+    "actionItemStatus": ["open", "in_progress", "complete", "blocked", "cancelled"],
+    "stuckStatus": ["active", "resolved"],
+    "workflowFrequency": ["once", "daily", "weekly", "monthly", "quarterly", "annual"]
+  },
+  "entities": {
+    "Organization": {
+      "table": "organizations",
+      "source": ["supabase", "src/data/propertyPortfolio.js"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "name": "string",
+        "slug": "string",
+        "website": "string|null",
+        "estimatedCommunities": "number|null",
+        "estimatedUnits": "number|null",
+        "serviceArea": "string[]|null",
+        "notes": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "departments": "Department[]",
+        "profiles": "Profile[]",
+        "properties": "Property[]",
+        "strategicPlans": "StrategicPlan[]"
+      }
+    },
+    "Department": {
+      "table": "departments",
+      "source": ["supabase", "implicit from profile.department and workplan.department strings"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "name": "string",
+        "slug": "string",
+        "description": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "Profile": {
+      "table": "profiles",
+      "source": ["supabase", "src/data/mockData.js users", "src/data/curbAppeal.js curbAppealPropertyManagers"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "fullName": "string",
+        "displayName": "string|null",
+        "initials": "string",
+        "email": "string|null",
+        "roleTitle": "string",
+        "workingGroup": "ELT|OLT|Team Member|string|null",
+        "dashboardFocus": "string|null",
+        "avatarUrl": "string|null",
+        "isAdmin": "boolean",
+        "isActive": "boolean",
+        "teams": "string[]|TeamMembership[]",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "Property": {
+      "table": "properties",
+      "source": ["supabase", "src/data/propertyPortfolio.js portfolioProperties"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "name": "string",
+        "slug": "string",
+        "status": "string",
+        "ownershipType": "string|null",
+        "managementType": "string|null",
+        "address": "string|null",
+        "city": "string|null",
+        "county": "string|null",
+        "state": "string|null",
+        "zipCode": "string|null",
+        "estimatedUnits": "number|null",
+        "isActivePortfolio": "boolean",
+        "housingType": "string|null",
+        "developmentType": "string|null",
+        "residentFocus": "string[]",
+        "amenities": "string[]|null",
+        "politicalDistricts": "object|null",
+        "fundingNotes": "string[]|null",
+        "coordinates": "{ lat: number, lng: number, quality: string }|null",
+        "operations": "PropertyOperations|null",
+        "priorityLink": "string|null",
+        "validationStatus": "string",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "assignments": "PropertyAssignment[]",
+        "checklistSubmissions": "ChecklistSubmission[]",
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "PropertyOperations": {
+      "table": "implicit_or_metrics",
+      "source": ["src/data/propertyPortfolio.js property.operations"],
+      "primaryKey": "propertyId",
+      "fields": {
+        "propertyId": "Property.id",
+        "occupancy": "number",
+        "openWorkOrders": "number",
+        "agedWorkOrders": "number",
+        "leasingExposure": "number",
+        "residentServiceOpen": "number",
+        "complianceRisk": "Low|Medium|High",
+        "derivedRisk": "steady|watch|alert"
+      }
+    },
+    "PropertyAssignment": {
+      "table": "property_assignments",
+      "source": ["supabase"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "propertyId": "Property.id",
+        "profileId": "Profile.id",
+        "assignmentRole": "string",
+        "startsOn": "date|null",
+        "endsOn": "date|null",
+        "createdAt": "datetime"
+      }
+    },
+    "StrategicPlan": {
+      "table": "strategic_plans",
+      "source": ["supabase", "src/data/mockData.js strategicPlan2030"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "title": "string",
+        "timeframe": "string|null",
+        "description": "string|null",
+        "startsOn": "date|null",
+        "endsOn": "date|null",
+        "status": "string",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "pillars": "StrategicPillar[]",
+        "successMetrics": "StrategicSuccessMetric[]",
+        "priorities": "Priority[]",
+        "initiatives": "Initiative[]",
+        "workplans": "Workplan[]"
+      }
+    },
+    "StrategicPillar": {
+      "table": "strategic_pillars",
+      "source": ["supabase", "src/data/mockData.js strategicPlan2030.pillars"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "strategicPlanId": "StrategicPlan.id",
+        "title": "string",
+        "description": "string|null",
+        "displayOrder": "number",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "successMetrics": "StrategicSuccessMetric[]",
+        "priorities": "Priority[]",
+        "initiatives": "Initiative[]",
+        "workplans": "Workplan[]"
+      }
+    },
+    "StrategicSuccessMetric": {
+      "table": "strategic_success_metrics",
+      "source": ["supabase", "src/data/mockData.js pillar.successMetrics"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id",
+        "strategicPillarId": "StrategicPillar.id",
+        "title": "string",
+        "targetLabel": "string",
+        "metricKind": "string",
+        "startValue": "number|null",
+        "currentValue": "number|null",
+        "targetValue": "number|null",
+        "unit": "string|null",
+        "source": "string|null",
+        "notes": "string|null",
+        "displayOrder": "number"
+      }
+    },
+    "Initiative": {
+      "table": "initiatives",
+      "source": ["supabase", "src/data/mockData.js initiatives", "src/data/mockData.js advocacyInitiatives"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "ownerId": "Profile.id|null",
+        "title": "string",
+        "description": "string|null",
+        "narrative": "string|null",
+        "year": "number|null",
+        "quarter": "string|null",
+        "status": "workSignalStatus|legacy|string",
+        "progress": "number",
+        "targetValue": "number|null",
+        "currentValue": "number|null",
+        "startsOn": "date|null",
+        "dueOn": "date|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "workplans": "Workplan[]",
+        "priorities": "Priority[]",
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "Workplan": {
+      "table": "workplans",
+      "source": ["supabase", "src/data/mockData.js departmentWorkplans", "src/data/mockData.js advocacyWorkplans", "nested Q2 key objective workplan fields"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "departmentId": "Department.id|null",
+        "leadId": "Profile.id|null",
+        "initiativeId": "Initiative.id|null",
+        "title": "string",
+        "scope": "string|null",
+        "quarter": "string|null",
+        "quarterlyInitiative": "string|null",
+        "outcome": "string|null",
+        "status": "workSignalStatus|legacy|string",
+        "progress": "number",
+        "startsOn": "date|null",
+        "dueOn": "date|null",
+        "ownerIds": "Profile.id[]",
+        "priorityLinks": "string[]",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "initiative": "Initiative|null",
+        "priorities": "Priority[]",
+        "keyObjectives": "KeyObjective[]"
+      }
+    },
+    "Priority": {
+      "table": "priorities",
+      "source": ["supabase", "src/data/mockData.js priorities", "src/data/mockData.js advocacyPriorities", "src/data/mockData.js weeklyPriorities"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "departmentId": "Department.id|null",
+        "ownerId": "Profile.id|null",
+        "ownerIds": "Profile.id[]",
+        "workplanId": "Workplan.id|null",
+        "initiativeId": "Initiative.id|null",
+        "title": "string",
+        "name": "string|null",
+        "description": "string|null",
+        "priorityType": "rollup|weekly|task|string",
+        "status": "workSignalStatus|legacy|string",
+        "periodLabel": "string|null",
+        "startsOn": "date|null",
+        "dueOn": "date|null",
+        "targetValue": "number|null",
+        "currentValue": "number|null",
+        "progress": "number",
+        "isCompanyPriority": "boolean",
+        "heatmap": "string[]|null",
+        "nextAction": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "keyObjectives": "KeyObjective[]",
+        "actionItems": "ActionItem[]",
+        "calendarEvents": "CalendarEvent[]",
+        "metrics": "Metric[]"
+      }
+    },
+    "KeyObjective": {
+      "table": "key_objectives",
+      "source": ["supabase", "src/data/mockData.js priority.keyObjectives"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "priorityId": "Priority.id",
+        "ownerId": "Profile.id|null",
+        "ownerIds": "Profile.id[]",
+        "departmentId": "Department.id|null",
+        "workplanId": "Workplan.id|null",
+        "title": "string",
+        "description": "string|null",
+        "status": "workSignalStatus|legacy|string",
+        "lifecycleStatus": "active|complete|paused|string",
+        "progress": "number",
+        "dueOn": "date|null",
+        "workplanTitle": "string|null",
+        "workplanAccess": "string|null",
+        "workplanSummary": "string|null",
+        "notes": "string|null",
+        "metadata": "object",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "priority": "Priority",
+        "workplan": "Workplan|null",
+        "kpis": "ObjectiveKpi[]"
+      }
+    },
+    "ObjectiveKpi": {
+      "table": "objective_kpis",
+      "source": ["supabase", "src/data/mockData.js keyObjective.kpis"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "keyObjectiveId": "KeyObjective.id",
+        "ownerId": "Profile.id|null",
+        "title": "string",
+        "targetLabel": "string|null",
+        "currentLabel": "string|null",
+        "targetValue": "number|null",
+        "currentValue": "number|null",
+        "progress": "number",
+        "status": "workSignalStatus|legacy|string",
+        "dueOn": "date|null",
+        "source": "string|null",
+        "children": "ObjectiveKpiChild[]",
+        "metadata": "object"
+      }
+    },
+    "Metric": {
+      "table": "metrics",
+      "source": ["supabase", "src/data/mockData.js metrics"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "ownerId": "Profile.id|null",
+        "departmentId": "Department.id|null",
+        "priorityId": "Priority.id|null",
+        "title": "string",
+        "subtitle": "string|null",
+        "source": "string|null",
+        "startValue": "number|null",
+        "currentValue": "number|null",
+        "targetValue": "number|null",
+        "yellowThreshold": "number|null",
+        "greenThreshold": "number|null",
+        "delta": "number|null",
+        "deltaPercent": "number|null",
+        "history": "number[]",
+        "lastUpdatedAt": "datetime|string|null"
+      },
+      "relationships": {
+        "values": "MetricValue[]"
+      }
+    },
+    "MetricValue": {
+      "table": "metric_values",
+      "source": ["supabase", "implicit from Metric.history"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "metricId": "Metric.id",
+        "value": "number",
+        "recordedFor": "date",
+        "recordedBy": "Profile.id|null",
+        "note": "string|null",
+        "createdAt": "datetime"
+      }
+    },
+    "Huddle": {
+      "table": "huddles",
+      "source": ["supabase", "src/data/mockData.js huddles"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "name": "string",
+        "recurrence": "string|null",
+        "startsAt": "datetime|null",
+        "ownerId": "Profile.id|null",
+        "when": "today|future|string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "members": "HuddleMember[]",
+        "actionItems": "ActionItem[]",
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "HuddleMember": {
+      "table": "huddle_members",
+      "source": ["supabase"],
+      "primaryKey": ["huddleId", "profileId"],
+      "fields": {
+        "huddleId": "Huddle.id",
+        "profileId": "Profile.id",
+        "memberRole": "string",
+        "createdAt": "datetime"
+      }
+    },
+    "ActionItem": {
+      "table": "action_items",
+      "source": ["supabase", "src/data/mockData.js actionItems", "generated from weeklyPriorities.tasks"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "departmentId": "Department.id|null",
+        "ownerId": "Profile.id|null",
+        "createdBy": "Profile.id|null",
+        "priorityId": "Priority.id|null",
+        "huddleId": "Huddle.id|null",
+        "title": "string",
+        "description": "string|null",
+        "status": "actionItemStatus|string",
+        "visibility": "private|department|olt|organization",
+        "dueOn": "date|string|null",
+        "completedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "Stuck": {
+      "table": "stucks",
+      "source": ["supabase", "src/data/mockData.js stucks"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "personStuckId": "Profile.id|null",
+        "helpFromId": "Profile.id|null",
+        "sourceType": "string|null",
+        "sourceId": "uuid|string|null",
+        "description": "string",
+        "status": "stuckStatus",
+        "stuckSince": "datetime",
+        "resolvedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "CalendarEvent": {
+      "table": "waypoints_current__calendar_events_target",
+      "source": ["supabase public.waypoints", "src/data/mockData.js calendarWaypoints", "src/context/WaypointContext.jsx", "src/utils/waypoints.js"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "ownerId": "Profile.id|null",
+        "submittedBy": "Profile.id|null",
+        "approvedBy": "Profile.id|null",
+        "scope": "personal|organization",
+        "title": "string",
+        "label": "calendarLabel",
+        "rhythm": "calendarRhythm",
+        "lifecycle": "calendarLifecycle",
+        "reviewState": "reviewState",
+        "orgSubmissionState": "none|pending|approved|declined|returned|null",
+        "startsOn": "date",
+        "endsOn": "date|null",
+        "departmentId": "Department.id|null",
+        "propertyId": "Property.id|null",
+        "sourceType": "priority|action_item|task|checklist_submission|checklist_template|initiative|workplan|huddle|stuck|touchpoint|native",
+        "sourceId": "uuid|string|null",
+        "sourceLabel": "string",
+        "sourceStatus": "workSignalStatus|null",
+        "originCalendarEventId": "CalendarEvent.id|null",
+        "whyItMatters": "string|null",
+        "whoItImpacts": "string|null",
+        "supportNeeded": "string|null",
+        "outcomeExpected": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "legacyFieldMap": {
+        "representation": "label",
+        "compassStatus": "sourceStatus_display_hint_or_remove",
+        "date": "startsOn",
+        "endDate": "endsOn",
+        "originWaypointId": "originCalendarEventId"
+      }
+    },
+    "ReviewRequest": {
+      "table": "review_requests",
+      "source": ["supabase", "implicit from WaypointContext org review and CurbAppealContext review workflow"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "requesterId": "Profile.id|null",
+        "reviewerId": "Profile.id|null",
+        "sourceType": "string",
+        "sourceId": "uuid|string",
+        "title": "string",
+        "status": "reviewState",
+        "summary": "string|null",
+        "requestedAt": "datetime",
+        "reviewedAt": "datetime|null",
+        "reviewNote": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "ChecklistTemplate": {
+      "table": "checklist_templates",
+      "source": ["supabase", "src/data/curbAppeal.js curbAppealChecklistTemplate"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "title": "string",
+        "cadence": "workflowFrequency",
+        "dueDay": "number|null",
+        "dueLabel": "string|null",
+        "schedule": "object|null",
+        "active": "boolean",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "sections": "ChecklistSection[]",
+        "submissions": "ChecklistSubmission[]",
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "ChecklistSection": {
+      "table": "checklist_sections",
+      "source": ["supabase", "src/data/curbAppeal.js template.sections"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "templateId": "ChecklistTemplate.id",
+        "title": "string",
+        "displayOrder": "number",
+        "createdAt": "datetime"
+      },
+      "relationships": {
+        "items": "ChecklistItem[]"
+      }
+    },
+    "ChecklistItem": {
+      "table": "checklist_items",
+      "source": ["supabase", "src/data/curbAppeal.js section.items"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "sectionId": "ChecklistSection.id",
+        "label": "string",
+        "displayOrder": "number",
+        "createdAt": "datetime"
+      }
+    },
+    "ChecklistSubmission": {
+      "table": "checklist_submissions",
+      "source": ["supabase", "src/data/curbAppeal.js initialCurbAppealSubmissions", "src/context/CurbAppealContext.jsx"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "templateId": "ChecklistTemplate.id",
+        "propertyId": "Property.id|null",
+        "assignedTo": "Profile.id|null",
+        "reviewerId": "Profile.id|null",
+        "priorityId": "Priority.id|null",
+        "periodLabel": "string",
+        "dueOn": "date",
+        "promptOn": "date|null",
+        "reminderOn": "date|null",
+        "status": "checklistSubmissionStatus",
+        "submittedAt": "datetime|null",
+        "reviewedAt": "datetime|null",
+        "creditedAt": "datetime|null",
+        "reviewNote": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "responses": "ChecklistResponse[]",
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "ChecklistResponse": {
+      "table": "checklist_responses",
+      "source": ["supabase", "src/data/curbAppeal.js submission.responses"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "submissionId": "ChecklistSubmission.id",
+        "itemId": "ChecklistItem.id",
+        "responseValue": "checklistResponseValue",
+        "comments": "string|null",
+        "correctionDueOn": "date|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "WorkflowDefinition": {
+      "table": "workflow_definitions",
+      "source": ["supabase", "implicit from checklist schedule and Teams adaptive card workflow"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "ownerId": "Profile.id|null",
+        "reviewerId": "Profile.id|null",
+        "name": "string",
+        "workflowKey": "string",
+        "frequency": "workflowFrequency",
+        "cadenceLabel": "string|null",
+        "sourceType": "string|null",
+        "sourceId": "uuid|string|null",
+        "channel": "teams|email|in_app|manual|string",
+        "promptOffsetDays": "number|null",
+        "reminderOffsetDays": "number|null",
+        "dueOffsetDays": "number|null",
+        "gracePeriodDays": "number",
+        "expectedCompletionRate": "number|null",
+        "escalationPolicy": "object",
+        "successMetrics": "object[]",
+        "config": "object",
+        "active": "boolean",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "department": "Department|null",
+        "owner": "Profile|null",
+        "reviewer": "Profile|null",
+        "runs": "WorkflowRun[]"
+      }
+    },
+    "WorkflowRun": {
+      "table": "workflow_runs",
+      "source": ["supabase"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "workflowId": "WorkflowDefinition.id",
+        "runFor": "date",
+        "status": "queued|running|complete|failed|string",
+        "startedAt": "datetime|null",
+        "finishedAt": "datetime|null",
+        "errorMessage": "string|null",
+        "createdAt": "datetime"
+      }
+    },
+    "TeamsAccount": {
+      "table": "teams_accounts",
+      "source": ["supabase", "api/teams/curb-appeal-card.js intent"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "profileId": "Profile.id|null",
+        "teamsUserId": "string|null",
+        "teamsConversationId": "string|null",
+        "teamsChannelId": "string|null",
+        "tenantId": "string|null",
+        "webhookUrl": "string|null",
+        "deliveryScope": "channel|user|string",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "NotificationEvent": {
+      "table": "notification_events",
+      "source": ["supabase", "needed for stucks, task assignment, due reminders, review routing, and Teams card queues"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "recipientProfileId": "Profile.id|null",
+        "actorProfileId": "Profile.id|null",
+        "sourceType": "stuck|action_item|priority|workflow_run|checklist_submission|calendar_event|string",
+        "sourceId": "uuid|string",
+        "notificationType": "stuck_issued|task_assigned|due_soon|overdue|review_requested|escalation|string",
+        "priority": "normal|high|urgent|string",
+        "channel": "teams|email|in_app|string",
+        "cardTemplateKey": "string|null",
+        "scheduledFor": "datetime",
+        "sentAt": "datetime|null",
+        "readAt": "datetime|null",
+        "dismissedAt": "datetime|null",
+        "status": "queued|sent|failed|dismissed|string",
+        "payload": "object",
+        "failureReason": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "recipient": "Profile|null",
+        "actor": "Profile|null",
+        "adaptiveCardDeliveries": "AdaptiveCardDelivery[]"
+      }
+    },
+    "AdaptiveCardDelivery": {
+      "table": "adaptive_card_deliveries",
+      "source": ["supabase", "api/teams/curb-appeal-card.js intent"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "notificationEventId": "NotificationEvent.id|null",
+        "workflowRunId": "WorkflowRun.id|null",
+        "teamsAccountId": "TeamsAccount.id|null",
+        "sourceType": "string",
+        "sourceId": "uuid|string",
+        "recipientProfileId": "Profile.id|null",
+        "cardPayload": "object",
+        "deliveryStatus": "queued|sent|failed|string",
+        "sentAt": "datetime|null",
+        "responsePayload": "object|null",
+        "errorMessage": "string|null",
+        "createdAt": "datetime"
+      }
+    },
+    "Contact": {
+      "table": "contacts",
+      "source": ["supabase", "src/data/mockData.js advocacyContacts"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "ownerId": "Profile.id|null",
+        "name": "string",
+        "organizationName": "string|null",
+        "circle": "string|null",
+        "relationship": "string|null",
+        "stage": "string|null",
+        "influence": "string|null",
+        "email": "string|null",
+        "phone": "string|null",
+        "lastTouchpoint": "date|null",
+        "nextStep": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "touchpoints": "Touchpoint[]"
+      }
+    },
+    "Touchpoint": {
+      "table": "touchpoints",
+      "source": ["supabase", "src/data/mockData.js advocacyTouchpoints"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "ownerId": "Profile.id|null",
+        "contactId": "Contact.id|null",
+        "sourceType": "string|null",
+        "sourceId": "uuid|string|null",
+        "occurredOn": "date",
+        "touchpointType": "string",
+        "period": "day|week|month|quarter|year|string|null",
+        "note": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "calendarEvents": "CalendarEvent[]"
+      }
+    },
+    "BrandAsset": {
+      "table": "brand_assets",
+      "source": ["supabase", "src/theme/brandAssets.js"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "assetKey": "string",
+        "label": "string",
+        "cloudinaryPublicId": "string|null",
+        "secureUrl": "string",
+        "assetType": "image|video|document|string",
+        "usageContext": "string|null",
+        "metadata": "object",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    }
+  },
+  "relationshipGraph": [
+    { "from": "Department.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Profile.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Profile.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "Property.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "PropertyAssignment.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
+    { "from": "PropertyAssignment.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "StrategicPlan.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "StrategicPillar.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "StrategicSuccessMetric.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "Initiative.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "Initiative.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.initiativeId", "to": "Initiative.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.leadId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Priority.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "Priority.initiativeId", "to": "Initiative.id", "cardinality": "many-to-one" },
+    { "from": "Priority.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "ObjectiveKpi.keyObjectiveId", "to": "KeyObjective.id", "cardinality": "many-to-one" },
+    { "from": "Metric.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
+    { "from": "MetricValue.metricId", "to": "Metric.id", "cardinality": "many-to-one" },
+    { "from": "Huddle.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "HuddleMember.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
+    { "from": "HuddleMember.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
+    { "from": "Stuck.personStuckId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Stuck.helpFromId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.sourceType+sourceId", "to": "Priority|ActionItem|ChecklistSubmission|ChecklistTemplate|Initiative|Workplan|Huddle|Stuck|Touchpoint|native", "cardinality": "polymorphic" },
+    { "from": "CalendarEvent.originCalendarEventId", "to": "CalendarEvent.id", "cardinality": "self-reference" },
+    { "from": "ReviewRequest.sourceType+sourceId", "to": "CalendarEvent|ChecklistSubmission|Priority|ActionItem|other", "cardinality": "polymorphic" },
+    { "from": "ChecklistSection.templateId", "to": "ChecklistTemplate.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistItem.sectionId", "to": "ChecklistSection.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.templateId", "to": "ChecklistTemplate.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.assignedTo", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistResponse.submissionId", "to": "ChecklistSubmission.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistResponse.itemId", "to": "ChecklistItem.id", "cardinality": "many-to-one" },
+    { "from": "WorkflowDefinition.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "WorkflowDefinition.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WorkflowDefinition.reviewerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WorkflowRun.workflowId", "to": "WorkflowDefinition.id", "cardinality": "many-to-one" },
+    { "from": "NotificationEvent.recipientProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "NotificationEvent.actorProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "NotificationEvent.sourceType+sourceId", "to": "Stuck|ActionItem|Priority|WorkflowRun|ChecklistSubmission|CalendarEvent|other", "cardinality": "polymorphic" },
+    { "from": "AdaptiveCardDelivery.notificationEventId", "to": "NotificationEvent.id", "cardinality": "many-to-one" },
+    { "from": "AdaptiveCardDelivery.workflowRunId", "to": "WorkflowRun.id", "cardinality": "many-to-one" },
+    { "from": "AdaptiveCardDelivery.teamsAccountId", "to": "TeamsAccount.id", "cardinality": "many-to-one" },
+    { "from": "Contact.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Touchpoint.contactId", "to": "Contact.id", "cardinality": "many-to-one" },
+    { "from": "BrandAsset.organizationId", "to": "Organization.id", "cardinality": "many-to-one" }
+  ],
+  "missingData": [
+    {
+      "area": "Profile identity",
+      "gap": "Mock users use string ids like u1, while Supabase profiles require auth.users UUIDs. Production seed data needs stable auth/profile UUID mapping."
+    },
+    {
+      "area": "Departments",
+      "gap": "Departments are mostly strings in mock data. They need seeded Department records and every Profile, Workplan, Priority, Metric, Huddle, and CalendarEvent should reference departmentId."
+    },
+    {
+      "area": "Q2 objectives normalization",
+      "gap": "Actual Q2 key objectives are nested under mock priorities. They need their own KeyObjective rows with priorityId, ownerId/ownerIds, departmentId, and workplanId."
+    },
+    {
+      "area": "Workplan linkage",
+      "gap": "Department workplans exist as front-end objects, but nested Q2 objective workplan fields are not consistently linked by workplanId. Create canonical Workplan records, then attach KeyObjective and Priority rows."
+    },
+    {
+      "area": "Priority IDs",
+      "gap": "Calendar mock source ids include legacy examples like p1 that do not match the real q2-* priority ids. Calendar sources need to be remapped to actual Priority, ActionItem, ChecklistSubmission, or Workplan ids."
+    },
+    {
+      "area": "Calendar event model",
+      "gap": "Current DB table is waypoints with representation and compass_status. Target schema needs label, rhythm, lifecycle, and sourceStatus display hint or no event status at all."
+    },
+    {
+      "area": "Quarterly commitments",
+      "gap": "Curb Appeal submissions are not yet materialized as calendar events. Each submission should create a CalendarEvent with label Commitment, rhythm quarterly, lifecycle scheduled, sourceType checklist_submission, and sourceId submission.id."
+    },
+    {
+      "area": "Property assignments",
+      "gap": "Property managers exist in curbAppealPropertyManagers but are not linked to Profile ids or property_assignments. Production needs profile records and property assignment rows."
+    },
+    {
+      "area": "Property operations history",
+      "gap": "Property operations are current snapshot fields only. If trend/history is needed, add metric records or a property_operations_snapshots table."
+    },
+    {
+      "area": "Huddle membership",
+      "gap": "Huddles currently have recurrence and timing but no member rows in mock data. huddle_members should be seeded."
+    },
+    {
+      "area": "Action item hierarchy",
+      "gap": "Weekly priority task-derived action items are generated in memory and do not retain parent task/priority ids cleanly. Add parentPriorityId or sourceType/sourceId if they remain derived."
+    },
+    {
+      "area": "Review requests",
+      "gap": "Review workflows are implicit in WaypointContext and CurbAppealContext. Production should create ReviewRequest rows for org-calendar approvals and checklist review/follow-up."
+    },
+    {
+      "area": "Teams delivery",
+      "gap": "Teams/adaptive-card tables exist, but mock data does not include Teams account mappings, notification events, delivery rows, or card responses."
+    },
+    {
+      "area": "Notification triggers",
+      "gap": "NotificationEvent is now formalized, but application triggers still need to be added when a stuck is issued, an action item is assigned, a deadline is approaching, a task is overdue, or a review/escalation is requested."
+    },
+    {
+      "area": "Audit/history",
+      "gap": "There is no explicit event history, status history, comment, attachment, or activity log table. Add these before production if accountability trails are required."
+    }
+  ]
+}

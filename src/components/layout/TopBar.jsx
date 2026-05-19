@@ -5,6 +5,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 
@@ -17,8 +19,22 @@ const navMenus = {
 
 const TopBar = ({ onMenuClick }) => {
   const { demoUsers, setUserId, signOut, user, userId } = useAuth();
+  const navigate = useNavigate();
+  const { unavailable } = useActionFeedback();
   const [anchor, setAnchor] = useState(null);
   const [menu, setMenu] = useState('');
+
+  const routeByMenuItem = {
+    'Annual Initiatives': '/initiatives',
+    'Company Dashboard': '/dashboard/company',
+    'Priority Map': '/priorities',
+    Huddles: '/huddles',
+    Stucks: '/stucks',
+    'Data Table': '/metrics/table',
+    Users: '/admin',
+    Teams: '/admin',
+    Permissions: '/admin',
+  };
 
   const openMenu = (event, label) => {
     setAnchor(event.currentTarget);
@@ -68,7 +84,7 @@ const TopBar = ({ onMenuClick }) => {
             </Button>
           ))}
         </Box>
-        <IconButton aria-label="Open quick add menu" color="primary"><AddCircleOutlineIcon /></IconButton>
+        <IconButton aria-label="Open quick add menu" color="primary" onClick={() => unavailable('quick add is not connected to a create workflow yet.')}><AddCircleOutlineIcon /></IconButton>
         <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
           <InputLabel>Demo User</InputLabel>
           <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
@@ -87,7 +103,21 @@ const TopBar = ({ onMenuClick }) => {
         <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
           <AnimatePresence>
             <Box component={motion.div} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              {(navMenus[menu] || []).map((item) => <MenuItem key={item} onClick={() => setAnchor(null)}>{item}</MenuItem>)}
+              {(navMenus[menu] || []).map((item) => (
+                <MenuItem
+                  key={item}
+                  onClick={() => {
+                    setAnchor(null);
+                    if (routeByMenuItem[item]) {
+                      navigate(routeByMenuItem[item]);
+                      return;
+                    }
+                    unavailable(`${item.toLowerCase()} is not built for this MVP view yet.`);
+                  }}
+                >
+                  {item}
+                </MenuItem>
+              ))}
             </Box>
           </AnimatePresence>
         </Menu>

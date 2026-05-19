@@ -4,6 +4,7 @@ import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Button, Chip, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { priorities } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
@@ -13,6 +14,7 @@ import PriorityRow from './PriorityRow';
 
 const PrioritiesPage = () => {
   const { user } = useAuth();
+  const { unavailable } = useActionFeedback();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [expandedAll, setExpandedAll] = useState(false);
@@ -22,14 +24,14 @@ const PrioritiesPage = () => {
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" gap={1}>
           <Typography variant="h1">Manage Priorities</Typography>
-          <IconButton aria-label="Open priorities help"><HelpOutlineIcon /></IconButton>
+          <IconButton aria-label="Open priorities help" onClick={() => unavailable('priority help content has not been authored yet.')}><HelpOutlineIcon /></IconButton>
         </Stack>
         <Stack direction="row" gap={1} flexWrap="wrap">
           <Button variant="contained" onClick={() => setPanelOpen(true)}>Add Priority</Button>
-          <Button variant="outlined">Update Priority Values</Button>
+          <Button variant="outlined" onClick={() => unavailable('bulk priority value updates need a connected metric source.')}>Update Priority Values</Button>
           <Button startIcon={<FilterListOutlinedIcon />} onClick={() => setFiltersOpen((value) => !value)}>Filter</Button>
           <Button startIcon={<ExpandMoreIcon />} onClick={() => setExpandedAll((value) => !value)}>Expand All</Button>
-          <Button startIcon={<ContentCopyIcon />}>Copy Previous Priorities</Button>
+          <Button startIcon={<ContentCopyIcon />} onClick={() => unavailable('previous-quarter priority import is not connected yet.')}>Copy Previous Priorities</Button>
         </Stack>
       </Stack>
       <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>

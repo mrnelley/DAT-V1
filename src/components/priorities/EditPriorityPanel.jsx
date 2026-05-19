@@ -4,9 +4,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Autocomplete, Box, Button, Checkbox, Divider, Drawer, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Radio, RadioGroup, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { strategicPlan2030, users } from '../../data/mockData';
 
 const EditPriorityPanel = ({ open, onClose }) => {
+  const { unavailable } = useActionFeedback();
   const [measurement, setMeasurement] = useState('Number');
   const [advanced, setAdvanced] = useState(false);
   const [pillarId, setPillarId] = useState(strategicPlan2030.pillars[0].id);
@@ -73,11 +75,11 @@ const EditPriorityPanel = ({ open, onClose }) => {
               <FormControlLabel control={<Checkbox />} label="Company Priority" />
               <Autocomplete options={['Operational Excellence', 'Resident Experience']} renderInput={(params) => <TextField {...params} label="Annual Initiatives" />} />
               <Autocomplete multiple freeSolo options={['Q2', 'Company']} renderInput={(params) => <TextField {...params} label="Tags" />} />
-              <Button startIcon={<AddCircleOutlineIcon />} variant="outlined">Add Task</Button>
+              <Button startIcon={<AddCircleOutlineIcon />} variant="outlined" onClick={() => unavailable('priority task creation belongs in the action item workflow now.')}>Add Task</Button>
             </Stack>
           )}
-          <Button variant="contained" color="success">Save</Button>
-          <Button variant="outlined">Save and Add Another</Button>
+          <Button variant="contained" color="success" onClick={() => unavailable('priority persistence is not connected yet.')}>Save</Button>
+          <Button variant="outlined" onClick={() => unavailable('priority persistence is not connected yet.')}>Save and Add Another</Button>
           <Button onClick={onClose}>Cancel</Button>
         </Stack>
       </Box>

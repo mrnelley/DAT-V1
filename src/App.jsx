@@ -16,6 +16,7 @@ import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
+import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
 import { WaypointProvider } from './context/WaypointContext';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
@@ -79,7 +80,9 @@ const App = () => (
       <CssBaseline />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ActionFeedbackProvider>
+            <AppRoutes />
+          </ActionFeedbackProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

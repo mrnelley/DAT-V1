@@ -1,9 +1,11 @@
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Autocomplete, Box, Button, Checkbox, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { users } from '../../data/mockData';
 
 const FilterPanel = ({ open }) => {
+  const { unavailable } = useActionFeedback();
   if (!open) return null;
   return (
     <Box component={motion.div} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} sx={{ overflow: 'hidden', mb: 2 }}>
@@ -22,7 +24,7 @@ const FilterPanel = ({ open }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
           <Checkbox />
           <Box sx={{ flex: 1 }}>Company Priority</Box>
-          <Button startIcon={<CloseOutlinedIcon />}>Clear Filter</Button>
+          <Button startIcon={<CloseOutlinedIcon />} onClick={() => unavailable('filter state is not persisted outside this prototype panel.')}>Clear Filter</Button>
         </Box>
       </Box>
     </Box>

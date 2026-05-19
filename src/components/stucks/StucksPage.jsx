@@ -5,6 +5,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import { Button, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { stucks } from '../../data/mockData';
 import { formatDateTime } from '../../utils/formatters';
 import PageWrapper from '../layout/PageWrapper';
@@ -14,6 +15,8 @@ import AddStuckModal from './AddStuckModal';
 
 const StucksPage = () => {
   const [open, setOpen] = useState(false);
+  const [activeOnly, setActiveOnly] = useState(false);
+  const { unavailable } = useActionFeedback();
 
   return (
     <PageWrapper>
@@ -21,7 +24,7 @@ const StucksPage = () => {
         <Typography variant="h1">Manage Stucks</Typography>
         <Stack direction="row" gap={1}>
           <Button variant="contained" onClick={() => setOpen(true)}>Add New Stuck</Button>
-          <Button>Show Active Stucks</Button>
+          <Button variant={activeOnly ? 'contained' : 'outlined'} onClick={() => setActiveOnly((value) => !value)}>Show Active Stucks</Button>
         </Stack>
       </Stack>
       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
@@ -42,7 +45,7 @@ const StucksPage = () => {
                 [PushPinIcon, 'Pin stuck'],
                 [EditOutlinedIcon, 'Edit stuck'],
                 [ChatBubbleOutlineIcon, 'Comment on stuck'],
-              ].map(([Icon, label]) => <IconButton aria-label={`${label}: ${stuck.description}`} key={label}><Icon fontSize="small" /></IconButton>)}</TableCell>
+              ].map(([Icon, label]) => <IconButton aria-label={`${label}: ${stuck.description}`} key={label} onClick={() => unavailable(`${label.toLowerCase()} needs stuck activity persistence.`)}><Icon fontSize="small" /></IconButton>)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

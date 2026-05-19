@@ -1362,8 +1362,11 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
     id: `action-${priority.id}`,
     description: priority.outcome,
     owner: priority.owner,
+    createdBy: priority.owner,
+    department: priority.department,
     due: priority.due,
     status: 'Open',
+    visibility: 'private',
     priority: priority.organizationalPriority || priority.alignedTo,
     strategicPillarId: priority.strategicPillarId,
     strategicPillar: priority.strategicPillar,
@@ -1372,8 +1375,11 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
     id: `action-${task.id}`,
     description: task.title,
     owner: task.owner,
+    createdBy: priority.owner,
+    department: task.owner?.department || priority.department,
     due: task.due,
     status: task.status,
+    visibility: 'private',
     priority: `Support: ${priority.outcome}`,
     strategicPillarId: priority.strategicPillarId,
     strategicPillar: priority.strategicPillar,
@@ -1381,9 +1387,9 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
 ]);
 
 export const actionItems = [
-  { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], due: '2026-05-05', status: 'Open', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
-  { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], due: '2026-05-03', status: 'In Progress', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
-  { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], due: '2026-05-10', status: 'Open', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
+  { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], createdBy: users[0], department: users[0].department, due: '2026-05-05', status: 'Open', visibility: 'olt', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
+  { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], createdBy: users[0], department: users[2].department, due: '2026-05-03', status: 'In Progress', visibility: 'department', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
+  { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], createdBy: users[6], department: users[6].department, due: '2026-05-10', status: 'Open', visibility: 'private', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
   ...weeklyPriorityActionItems,
 ];
 

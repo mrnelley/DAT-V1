@@ -3,11 +3,13 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { Area, AreaChart, CartesianGrid, Line, ReferenceLine, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 import { Box, Button, Chip, Dialog, DialogContent, IconButton, Stack, Switch, Tab, Tabs, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import UserAvatar from './UserAvatar';
 
 const periods = ['Weekly', 'Monthly', 'Quarterly', 'Annual', 'Period'];
 
 const KpiDetailModal = ({ metric, open, onClose }) => {
+  const { unavailable } = useActionFeedback();
   if (!metric) return null;
   const data = metric.history.map((value, index) => ({ date: `W${index + 1}`, value, target: metric.target }));
 
@@ -56,7 +58,7 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
               <Typography variant="body2">Show Target on Graph</Typography>
               <Switch defaultChecked color="secondary" />
             </Stack>
-            <Button variant="outlined" color="secondary" sx={{ mt: 2 }}>Add Past Update</Button>
+            <Button variant="outlined" color="secondary" sx={{ mt: 2 }} onClick={() => unavailable('manual KPI history entry is not connected yet.')}>Add Past Update</Button>
           </Box>
           <Box>
             <Typography component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }} variant="h1">

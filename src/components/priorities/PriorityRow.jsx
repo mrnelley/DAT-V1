@@ -3,12 +3,14 @@ import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { Box, Card, Chip, IconButton, LinearProgress, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { statusColorMap } from '../../utils/statusColors';
 import UserAvatar from '../shared/UserAvatar';
 import PriorityGraph from './PriorityGraph';
 import PriorityHeatmap from './PriorityHeatmap';
 
 const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) => {
+  const { unavailable } = useActionFeedback();
   const [expanded, setExpanded] = useState(expandedAll);
   const [tab, setTab] = useState(0);
   const toggleExpanded = () => setExpanded((value) => !value);
@@ -53,7 +55,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           <Typography variant="h4" color={statusColorMap[priority.status]}>{priority.percent}%</Typography>
           <Tooltip title={canManage ? 'Priority options' : 'Only tied owners can update this priority'}>
             <span>
-              <IconButton disabled={!canManage} aria-label={`More options for priority ${priority.name}`} onClick={(event) => event.stopPropagation()}><MoreHorizOutlinedIcon /></IconButton>
+              <IconButton disabled={!canManage} aria-label={`More options for priority ${priority.name}`} onClick={(event) => { event.stopPropagation(); unavailable('priority options need the priority detail drawer.'); }}><MoreHorizOutlinedIcon /></IconButton>
             </span>
           </Tooltip>
         </Box>
