@@ -2,13 +2,13 @@ create extension if not exists pgcrypto;
 
 do $$
 begin
-  create type public.compass_status as enum ('on_course', 'needs_attention', 'off_course', 'completed', 'rescheduled');
+  create type public.work_signal_status as enum ('steady', 'watch', 'alert', 'complete', 'paused', 'no_data');
 exception when duplicate_object then null;
 end $$;
 
 do $$
 begin
-  create type public.review_state as enum ('private', 'pending', 'approved', 'declined', 'needs_follow_up');
+  create type public.review_state as enum ('private', 'pending', 'approved', 'declined', 'needs_follow_up', 'returned');
 exception when duplicate_object then null;
 end $$;
 
@@ -97,6 +97,40 @@ as $$
   );
 $$;
 
+create or replace function public.is_elt_member(org_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.organization_id = org_id
+      and p.is_active = true
+      and p.working_group = 'ELT'
+  );
+$$;
+
+create or replace function public.is_olt_member(org_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.organization_id = org_id
+      and p.is_active = true
+      and p.working_group in ('ELT', 'OLT')
+  );
+$$;
+
 create table if not exists public.properties (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -146,11 +180,43 @@ create table if not exists public.strategic_plans (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.planning_cycles (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
+  label text not null,
+  year integer not null,
+  quarter text not null,
+  starts_on date not null,
+  ends_on date not null,
+  status text not null default 'draft',
+  set_by uuid references public.profiles(id) on delete set null,
+  approved_by uuid references public.profiles(id) on delete set null,
+  approved_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (organization_id, year, quarter)
+);
+
 create table if not exists public.strategic_pillars (
   id uuid primary key default gen_random_uuid(),
   strategic_plan_id uuid not null references public.strategic_plans(id) on delete cascade,
   title text not null,
   description text,
+  display_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.quarterly_pillars (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  planning_cycle_id uuid not null references public.planning_cycles(id) on delete cascade,
+  strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
+  owner_id uuid references public.profiles(id) on delete set null,
+  title text not null,
+  description text,
+  status text not null default 'draft',
   display_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -185,7 +251,7 @@ create table if not exists public.initiatives (
   description text,
   year integer,
   quarter text,
-  status public.compass_status not null default 'on_course',
+  status public.work_signal_status not null default 'steady',
   progress numeric(5, 2) not null default 0,
   target_value numeric,
   current_value numeric,
@@ -200,13 +266,18 @@ create table if not exists public.workplans (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
   strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
+  quarterly_pillar_id uuid references public.quarterly_pillars(id) on delete set null,
   department_id uuid references public.departments(id) on delete set null,
   lead_id uuid references public.profiles(id) on delete set null,
   initiative_id uuid references public.initiatives(id) on delete set null,
   title text not null,
   scope text,
   outcome text,
-  status public.compass_status not null default 'on_course',
+  status public.work_signal_status not null default 'steady',
+  approval_status text not null default 'draft' check (approval_status in ('draft', 'pending', 'approved', 'returned')),
+  approved_by uuid references public.profiles(id) on delete set null,
+  approved_at timestamptz,
+  path_forward text,
   progress numeric(5, 2) not null default 0,
   starts_on date,
   due_on date,
@@ -219,6 +290,7 @@ create table if not exists public.priorities (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   strategic_plan_id uuid references public.strategic_plans(id) on delete set null,
   strategic_pillar_id uuid references public.strategic_pillars(id) on delete set null,
+  quarterly_pillar_id uuid references public.quarterly_pillars(id) on delete set null,
   department_id uuid references public.departments(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   workplan_id uuid references public.workplans(id) on delete set null,
@@ -226,7 +298,7 @@ create table if not exists public.priorities (
   title text not null,
   description text,
   priority_type text not null default 'task',
-  status public.compass_status not null default 'on_course',
+  status public.work_signal_status not null default 'steady',
   period_label text,
   starts_on date,
   due_on date,
@@ -249,7 +321,7 @@ create table if not exists public.key_objectives (
   workplan_id uuid references public.workplans(id) on delete set null,
   title text not null,
   description text,
-  status text not null default 'on_course',
+  status public.work_signal_status not null default 'steady',
   lifecycle_status text not null default 'active',
   progress numeric(5, 2) not null default 0,
   due_on date,
@@ -269,7 +341,7 @@ create table if not exists public.objective_kpis (
   target_value numeric,
   current_value numeric,
   progress numeric(5, 2) not null default 0,
-  status text not null default 'on_course',
+  status public.work_signal_status not null default 'steady',
   due_on date,
   source text,
   children jsonb not null default '[]',
@@ -327,6 +399,21 @@ create table if not exists public.huddle_members (
   primary key (huddle_id, profile_id)
 );
 
+create table if not exists public.workplan_huddle_reviews (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  workplan_id uuid not null references public.workplans(id) on delete cascade,
+  huddle_id uuid references public.huddles(id) on delete set null,
+  requested_by uuid references public.profiles(id) on delete set null,
+  reviewed_by uuid references public.profiles(id) on delete set null,
+  decision text not null default 'pending' check (decision in ('pending', 'approved', 'returned', 'deferred')),
+  path_forward text,
+  decision_note text,
+  decided_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.action_items (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -335,6 +422,7 @@ create table if not exists public.action_items (
   department_id uuid references public.departments(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   created_by uuid references public.profiles(id) on delete set null,
+  workplan_id uuid references public.workplans(id) on delete set null,
   priority_id uuid references public.priorities(id) on delete set null,
   huddle_id uuid references public.huddles(id) on delete set null,
   title text not null,
@@ -345,6 +433,22 @@ create table if not exists public.action_items (
   completed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.work_object_assignments (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  source_type text not null check (source_type in ('initiative', 'workplan', 'priority', 'key_objective', 'objective_kpi', 'action_item', 'calendar_event', 'stuck', 'checklist_submission')),
+  source_id uuid not null,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  assignment_role text not null default 'support' check (assignment_role in ('owner', 'lead', 'accountable', 'assignee', 'reviewer', 'support', 'observer')),
+  assigned_by uuid references public.profiles(id) on delete set null,
+  starts_on date,
+  ends_on date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (source_type, source_id, profile_id, assignment_role)
 );
 
 create table if not exists public.stucks (
@@ -370,13 +474,16 @@ create table if not exists public.waypoints (
   approved_by uuid references public.profiles(id) on delete set null,
   scope text not null check (scope in ('personal', 'organization')),
   title text not null,
-  representation text not null default 'Waypoint',
-  compass_status public.compass_status not null default 'on_course',
+  label text not null default 'Beat' check (label in ('Beat', 'Marker', 'Commitment', 'Touchpoint')),
+  rhythm text not null default 'once' check (rhythm in ('once', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom')),
+  lifecycle text not null default 'scheduled' check (lifecycle in ('scheduled', 'completed', 'rescheduled', 'cancelled')),
+  source_status public.work_signal_status,
   review_state public.review_state not null default 'private',
   starts_on date not null,
   ends_on date,
   department_id uuid references public.departments(id) on delete set null,
   property_id uuid references public.properties(id) on delete set null,
+  action_item_id uuid references public.action_items(id) on delete set null,
   source_type text,
   source_id uuid,
   origin_waypoint_id uuid references public.waypoints(id) on delete set null,
@@ -557,6 +664,48 @@ create table if not exists public.adaptive_card_deliveries (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.activity_events (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  actor_profile_id uuid references public.profiles(id) on delete set null,
+  source_type text not null,
+  source_id uuid not null,
+  event_type text not null,
+  visibility text not null default 'involved' check (visibility in ('involved', 'department', 'olt', 'organization')),
+  summary text,
+  payload jsonb not null default '{}',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.comments (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  author_profile_id uuid references public.profiles(id) on delete set null,
+  source_type text not null,
+  source_id uuid not null,
+  body text not null,
+  visibility text not null default 'involved' check (visibility in ('involved', 'department', 'olt', 'organization')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.attachments (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  uploaded_by uuid references public.profiles(id) on delete set null,
+  source_type text not null,
+  source_id uuid not null,
+  file_name text not null,
+  file_url text not null,
+  mime_type text,
+  file_size_bytes bigint,
+  visibility text not null default 'involved' check (visibility in ('involved', 'department', 'olt', 'organization')),
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.contacts (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -603,12 +752,116 @@ create table if not exists public.brand_assets (
   unique (organization_id, asset_key)
 );
 
+create or replace function public.can_read_work_source(
+  org_id uuid,
+  visibility_value text,
+  department_value uuid,
+  source_type_value text,
+  source_id_value uuid,
+  participant_profile_id uuid
+)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select
+    public.is_admin()
+    or participant_profile_id = auth.uid()
+    or (visibility_value = 'organization' and public.is_org_member(org_id))
+    or (visibility_value = 'olt' and public.is_olt_member(org_id))
+    or (
+      visibility_value = 'department'
+      and exists (
+        select 1
+        from public.profiles p
+        where p.id = auth.uid()
+          and p.organization_id = org_id
+          and p.department_id = department_value
+      )
+    )
+    or (
+      exists (
+        select 1
+        from public.work_object_assignments woa
+        where woa.organization_id = org_id
+          and woa.source_type = source_type_value
+          and woa.source_id = source_id_value
+          and woa.profile_id = auth.uid()
+      )
+    )
+    or (
+      source_type_value = 'action_item'
+      and exists (
+        select 1
+        from public.action_items ai
+        where ai.id = source_id_value
+          and (ai.owner_id = auth.uid() or ai.created_by = auth.uid() or public.is_olt_member(ai.organization_id))
+      )
+    )
+    or (
+      source_type_value = 'priority'
+      and exists (
+        select 1
+        from public.priorities pr
+        where pr.id = source_id_value
+          and (pr.owner_id = auth.uid() or public.is_olt_member(pr.organization_id))
+      )
+    )
+    or (
+      source_type_value = 'workplan'
+      and exists (
+        select 1
+        from public.workplans wp
+        where wp.id = source_id_value
+          and (wp.lead_id = auth.uid() or public.is_olt_member(wp.organization_id))
+      )
+    )
+    or (
+      source_type_value = 'stuck'
+      and exists (
+        select 1
+        from public.stucks s
+        where s.id = source_id_value
+          and (s.person_stuck_id = auth.uid() or s.help_from_id = auth.uid() or public.is_olt_member(s.organization_id))
+      )
+    )
+    or (
+      source_type_value = 'calendar_event'
+      and exists (
+        select 1
+        from public.waypoints w
+        where w.id = source_id_value
+          and (
+            w.owner_id = auth.uid()
+            or w.submitted_by = auth.uid()
+            or w.approved_by = auth.uid()
+            or (w.scope = 'organization' and public.is_org_member(w.organization_id))
+          )
+      )
+    )
+    or (
+      source_type_value = 'checklist_submission'
+      and exists (
+        select 1
+        from public.checklist_submissions cs
+        where cs.id = source_id_value
+          and (cs.assigned_to = auth.uid() or cs.reviewer_id = auth.uid() or public.is_olt_member(cs.organization_id))
+      )
+    );
+$$;
+
 create index if not exists idx_profiles_org on public.profiles(organization_id);
 create index if not exists idx_properties_org on public.properties(organization_id);
+create index if not exists idx_planning_cycles_org on public.planning_cycles(organization_id, year, quarter);
+create index if not exists idx_quarterly_pillars_cycle on public.quarterly_pillars(planning_cycle_id, display_order);
 create index if not exists idx_strategic_success_metrics_pillar on public.strategic_success_metrics(strategic_pillar_id);
 create index if not exists idx_initiatives_pillar on public.initiatives(strategic_pillar_id);
 create index if not exists idx_workplans_pillar on public.workplans(strategic_pillar_id);
+create index if not exists idx_workplans_quarterly_pillar on public.workplans(quarterly_pillar_id);
 create index if not exists idx_priorities_pillar on public.priorities(strategic_pillar_id);
+create index if not exists idx_priorities_quarterly_pillar on public.priorities(quarterly_pillar_id);
 create index if not exists idx_priorities_owner on public.priorities(owner_id);
 create index if not exists idx_priorities_workplan on public.priorities(workplan_id);
 create index if not exists idx_key_objectives_priority on public.key_objectives(priority_id);
@@ -616,8 +869,13 @@ create index if not exists idx_key_objectives_owner on public.key_objectives(own
 create index if not exists idx_objective_kpis_objective on public.objective_kpis(key_objective_id);
 create index if not exists idx_action_items_pillar on public.action_items(strategic_pillar_id);
 create index if not exists idx_action_items_department_visibility on public.action_items(department_id, visibility);
+create index if not exists idx_action_items_workplan on public.action_items(workplan_id);
+create index if not exists idx_work_object_assignments_source on public.work_object_assignments(source_type, source_id);
+create index if not exists idx_work_object_assignments_profile on public.work_object_assignments(profile_id, assignment_role);
+create index if not exists idx_workplan_huddle_reviews_workplan on public.workplan_huddle_reviews(workplan_id, decision);
 create index if not exists idx_waypoints_owner_scope on public.waypoints(owner_id, scope);
 create index if not exists idx_waypoints_date on public.waypoints(starts_on);
+create index if not exists idx_waypoints_action_item on public.waypoints(action_item_id);
 create index if not exists idx_checklist_submissions_due on public.checklist_submissions(due_on, status);
 create index if not exists idx_checklist_submissions_property on public.checklist_submissions(property_id);
 create index if not exists idx_review_requests_reviewer on public.review_requests(reviewer_id, status);
@@ -628,6 +886,9 @@ create index if not exists idx_notification_events_recipient on public.notificat
 create index if not exists idx_notification_events_source on public.notification_events(source_type, source_id);
 create index if not exists idx_notification_events_status on public.notification_events(status, scheduled_for);
 create index if not exists idx_adaptive_card_deliveries_source on public.adaptive_card_deliveries(source_type, source_id);
+create index if not exists idx_activity_events_source on public.activity_events(source_type, source_id, created_at);
+create index if not exists idx_comments_source on public.comments(source_type, source_id, created_at);
+create index if not exists idx_attachments_source on public.attachments(source_type, source_id, created_at);
 
 do $$
 declare
@@ -635,10 +896,10 @@ declare
 begin
   foreach table_name in array array[
     'organizations', 'departments', 'profiles', 'properties', 'strategic_plans',
-    'strategic_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
-    'huddles', 'action_items', 'stucks', 'waypoints', 'review_requests',
+    'planning_cycles', 'strategic_pillars', 'quarterly_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
+    'huddles', 'workplan_huddle_reviews', 'action_items', 'work_object_assignments', 'stucks', 'waypoints', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
-    'workflow_definitions', 'teams_accounts', 'notification_events', 'contacts', 'touchpoints',
+    'workflow_definitions', 'teams_accounts', 'notification_events', 'comments', 'contacts', 'touchpoints',
     'brand_assets'
   ]
   loop
@@ -657,7 +918,9 @@ alter table public.profiles enable row level security;
 alter table public.properties enable row level security;
 alter table public.property_assignments enable row level security;
 alter table public.strategic_plans enable row level security;
+alter table public.planning_cycles enable row level security;
 alter table public.strategic_pillars enable row level security;
+alter table public.quarterly_pillars enable row level security;
 alter table public.strategic_success_metrics enable row level security;
 alter table public.initiatives enable row level security;
 alter table public.workplans enable row level security;
@@ -668,7 +931,9 @@ alter table public.metrics enable row level security;
 alter table public.metric_values enable row level security;
 alter table public.huddles enable row level security;
 alter table public.huddle_members enable row level security;
+alter table public.workplan_huddle_reviews enable row level security;
 alter table public.action_items enable row level security;
+alter table public.work_object_assignments enable row level security;
 alter table public.stucks enable row level security;
 alter table public.waypoints enable row level security;
 alter table public.review_requests enable row level security;
@@ -682,6 +947,9 @@ alter table public.workflow_runs enable row level security;
 alter table public.teams_accounts enable row level security;
 alter table public.notification_events enable row level security;
 alter table public.adaptive_card_deliveries enable row level security;
+alter table public.activity_events enable row level security;
+alter table public.comments enable row level security;
+alter table public.attachments enable row level security;
 alter table public.contacts enable row level security;
 alter table public.touchpoints enable row level security;
 alter table public.brand_assets enable row level security;
@@ -717,6 +985,22 @@ on public.properties for all
 using (public.is_admin())
 with check (public.is_admin());
 
+create policy "org members read property assignments"
+on public.property_assignments for select
+using (
+  exists (
+    select 1
+    from public.properties p
+    where p.id = property_assignments.property_id
+      and (public.is_admin() or public.is_org_member(p.organization_id))
+  )
+);
+
+create policy "admins manage property assignments"
+on public.property_assignments for all
+using (public.is_admin())
+with check (public.is_admin());
+
 create policy "org members read strategic plans"
 on public.strategic_plans for select
 using (public.is_org_member(organization_id) or public.is_admin());
@@ -725,6 +1009,15 @@ create policy "admins manage strategic plans"
 on public.strategic_plans for all
 using (public.is_admin())
 with check (public.is_admin());
+
+create policy "org members read planning cycles"
+on public.planning_cycles for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "elt manages planning cycles"
+on public.planning_cycles for all
+using (public.is_admin() or public.is_elt_member(organization_id))
+with check (public.is_admin() or public.is_elt_member(organization_id));
 
 create policy "org members read strategic pillars"
 on public.strategic_pillars for select
@@ -742,6 +1035,15 @@ create policy "admins manage strategic pillars"
 on public.strategic_pillars for all
 using (public.is_admin())
 with check (public.is_admin());
+
+create policy "org members read quarterly pillars"
+on public.quarterly_pillars for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "elt manages quarterly pillars"
+on public.quarterly_pillars for all
+using (public.is_admin() or public.is_elt_member(organization_id))
+with check (public.is_admin() or public.is_elt_member(organization_id));
 
 create policy "org members read strategic success metrics"
 on public.strategic_success_metrics for select
@@ -767,8 +1069,8 @@ using (public.is_org_member(organization_id) or public.is_admin());
 
 create policy "leads and admins manage workplans"
 on public.workplans for all
-using (public.is_admin() or lead_id = auth.uid())
-with check (public.is_admin() or lead_id = auth.uid());
+using (public.is_admin() or public.is_olt_member(organization_id) or lead_id = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or lead_id = auth.uid());
 
 create policy "org members read priorities"
 on public.priorities for select
@@ -776,8 +1078,8 @@ using (public.is_org_member(organization_id) or public.is_admin());
 
 create policy "owners and admins manage priorities"
 on public.priorities for all
-using (public.is_admin() or owner_id = auth.uid())
-with check (public.is_admin() or owner_id = auth.uid());
+using (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid());
 
 create policy "org members read key objectives"
 on public.key_objectives for select
@@ -815,6 +1117,93 @@ with check (
   )
 );
 
+create policy "org members read metrics"
+on public.metrics for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "owners and olt manage metrics"
+on public.metrics for all
+using (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid());
+
+create policy "org members read metric values"
+on public.metric_values for select
+using (
+  exists (
+    select 1
+    from public.metrics m
+    where m.id = metric_values.metric_id
+      and (public.is_admin() or public.is_org_member(m.organization_id))
+  )
+);
+
+create policy "metric owners and olt manage metric values"
+on public.metric_values for all
+using (
+  exists (
+    select 1
+    from public.metrics m
+    where m.id = metric_values.metric_id
+      and (public.is_admin() or public.is_olt_member(m.organization_id) or m.owner_id = auth.uid())
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.metrics m
+    where m.id = metric_values.metric_id
+      and (public.is_admin() or public.is_olt_member(m.organization_id) or m.owner_id = auth.uid())
+  )
+);
+
+create policy "org members read huddles"
+on public.huddles for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "huddle owners and olt manage huddles"
+on public.huddles for all
+using (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid());
+
+create policy "org members read huddle members"
+on public.huddle_members for select
+using (
+  exists (
+    select 1
+    from public.huddles h
+    where h.id = huddle_members.huddle_id
+      and (public.is_admin() or public.is_org_member(h.organization_id))
+  )
+);
+
+create policy "huddle owners and olt manage huddle members"
+on public.huddle_members for all
+using (
+  exists (
+    select 1
+    from public.huddles h
+    where h.id = huddle_members.huddle_id
+      and (public.is_admin() or public.is_olt_member(h.organization_id) or h.owner_id = auth.uid())
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.huddles h
+    where h.id = huddle_members.huddle_id
+      and (public.is_admin() or public.is_olt_member(h.organization_id) or h.owner_id = auth.uid())
+  )
+);
+
+create policy "org members read workplan huddle reviews"
+on public.workplan_huddle_reviews for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "olt manages workplan huddle reviews"
+on public.workplan_huddle_reviews for all
+using (public.is_admin() or public.is_olt_member(organization_id) or requested_by = auth.uid() or reviewed_by = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or requested_by = auth.uid() or reviewed_by = auth.uid());
+
 create policy "users read visible action items"
 on public.action_items for select
 using (
@@ -834,20 +1223,95 @@ using (
   )
   or (
     visibility = 'olt'
-    and exists (
-      select 1
-      from public.profiles p
-      where p.id = auth.uid()
-        and p.organization_id = action_items.organization_id
-        and p.working_group = 'OLT'
-    )
+    and public.is_olt_member(organization_id)
+  )
+  or exists (
+    select 1
+    from public.work_object_assignments woa
+    where woa.source_type = 'action_item'
+      and woa.source_id = action_items.id
+      and woa.profile_id = auth.uid()
   )
 );
 
 create policy "assigned users and admins manage action items"
 on public.action_items for all
-using (public.is_admin() or owner_id = auth.uid() or created_by = auth.uid())
-with check (public.is_admin() or owner_id = auth.uid() or created_by = auth.uid());
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or owner_id = auth.uid()
+  or created_by = auth.uid()
+  or exists (
+    select 1
+    from public.work_object_assignments woa
+    where woa.source_type = 'action_item'
+      and woa.source_id = action_items.id
+      and woa.profile_id = auth.uid()
+      and woa.assignment_role in ('owner', 'lead', 'accountable', 'assignee')
+  )
+)
+with check (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or owner_id = auth.uid()
+  or created_by = auth.uid()
+);
+
+create policy "users read relevant work object assignments"
+on public.work_object_assignments for select
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or profile_id = auth.uid()
+  or assigned_by = auth.uid()
+  or (
+    department_id is not null
+    and exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and p.organization_id = work_object_assignments.organization_id
+        and p.department_id = work_object_assignments.department_id
+    )
+  )
+);
+
+create policy "olt and source owners manage work object assignments"
+on public.work_object_assignments for all
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or assigned_by = auth.uid()
+)
+with check (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or assigned_by = auth.uid()
+);
+
+create policy "involved users read stucks"
+on public.stucks for select
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or person_stuck_id = auth.uid()
+  or help_from_id = auth.uid()
+);
+
+create policy "involved users manage stucks"
+on public.stucks for all
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or person_stuck_id = auth.uid()
+  or help_from_id = auth.uid()
+)
+with check (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or person_stuck_id = auth.uid()
+  or help_from_id = auth.uid()
+);
 
 create policy "org members read review requests"
 on public.review_requests for select
@@ -935,6 +1399,125 @@ create policy "recipients and admins update notifications"
 on public.notification_events for update
 using (public.is_admin() or recipient_profile_id = auth.uid())
 with check (public.is_admin() or recipient_profile_id = auth.uid());
+
+create policy "org members read workflow definitions"
+on public.workflow_definitions for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "admins manage workflow definitions"
+on public.workflow_definitions for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "org members read workflow runs"
+on public.workflow_runs for select
+using (
+  exists (
+    select 1
+    from public.workflow_definitions wd
+    where wd.id = workflow_runs.workflow_id
+      and (public.is_admin() or public.is_org_member(wd.organization_id))
+  )
+);
+
+create policy "admins manage workflow runs"
+on public.workflow_runs for all
+using (
+  exists (
+    select 1
+    from public.workflow_definitions wd
+    where wd.id = workflow_runs.workflow_id
+      and public.is_admin()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.workflow_definitions wd
+    where wd.id = workflow_runs.workflow_id
+      and public.is_admin()
+  )
+);
+
+create policy "users read own teams accounts"
+on public.teams_accounts for select
+using (public.is_admin() or profile_id = auth.uid() or public.is_olt_member(organization_id));
+
+create policy "admins manage teams accounts"
+on public.teams_accounts for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "users read relevant adaptive card deliveries"
+on public.adaptive_card_deliveries for select
+using (
+  public.is_admin()
+  or recipient_profile_id = auth.uid()
+  or public.is_olt_member(organization_id)
+);
+
+create policy "admins manage adaptive card deliveries"
+on public.adaptive_card_deliveries for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "users read visible activity events"
+on public.activity_events for select
+using (
+  public.can_read_work_source(organization_id, visibility, department_id, source_type, source_id, actor_profile_id)
+);
+
+create policy "org members create activity events"
+on public.activity_events for insert
+with check (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "users read visible comments"
+on public.comments for select
+using (
+  public.can_read_work_source(organization_id, visibility, department_id, source_type, source_id, author_profile_id)
+);
+
+create policy "org members create comments"
+on public.comments for insert
+with check (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "authors and admins update comments"
+on public.comments for update
+using (public.is_admin() or author_profile_id = auth.uid())
+with check (public.is_admin() or author_profile_id = auth.uid());
+
+create policy "users read visible attachments"
+on public.attachments for select
+using (
+  public.can_read_work_source(organization_id, visibility, department_id, source_type, source_id, uploaded_by)
+);
+
+create policy "org members create attachments"
+on public.attachments for insert
+with check (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "uploaders and admins update attachments"
+on public.attachments for update
+using (public.is_admin() or uploaded_by = auth.uid())
+with check (public.is_admin() or uploaded_by = auth.uid());
+
+create policy "owners and olt read contacts"
+on public.contacts for select
+using (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id));
+
+create policy "owners and olt manage contacts"
+on public.contacts for all
+using (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id))
+with check (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id));
+
+create policy "owners and olt read touchpoints"
+on public.touchpoints for select
+using (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id));
+
+create policy "owners and olt manage touchpoints"
+on public.touchpoints for all
+using (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id))
+with check (public.is_admin() or owner_id = auth.uid() or public.is_olt_member(organization_id));
 
 create policy "org members read brand assets"
 on public.brand_assets for select

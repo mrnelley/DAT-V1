@@ -9,10 +9,11 @@
   ],
   "enums": {
     "workSignalStatus": ["steady", "watch", "alert", "complete", "paused", "no_data"],
-    "legacyCompassStatus": ["on_course", "needs_attention", "off_course", "completed", "rescheduled"],
     "calendarLabel": ["Beat", "Marker", "Commitment", "Touchpoint"],
     "calendarRhythm": ["once", "daily", "weekly", "monthly", "quarterly", "annual", "custom"],
     "calendarLifecycle": ["scheduled", "completed", "rescheduled", "cancelled"],
+    "workObjectVisibility": ["involved", "department", "olt", "organization"],
+    "workObjectAssignmentRole": ["owner", "lead", "accountable", "assignee", "reviewer", "support", "observer"],
     "reviewState": ["private", "pending", "approved", "declined", "needs_follow_up", "returned"],
     "checklistSubmissionStatus": ["scheduled", "draft", "submitted_pending_review", "needs_follow_up", "approved"],
     "checklistResponseValue": ["", "good", "needs_correction", "na"],
@@ -192,6 +193,52 @@
         "workplans": "Workplan[]"
       }
     },
+    "PlanningCycle": {
+      "table": "planning_cycles",
+      "source": ["supabase", "formalizes ELT quarterly planning authority"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "strategicPlanId": "StrategicPlan.id|null",
+        "label": "string",
+        "year": "number",
+        "quarter": "Q1|Q2|Q3|Q4|string",
+        "startsOn": "date",
+        "endsOn": "date",
+        "status": "draft|active|closed|string",
+        "setBy": "Profile.id|null",
+        "approvedBy": "Profile.id|null",
+        "approvedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "quarterlyPillars": "QuarterlyPillar[]"
+      }
+    },
+    "QuarterlyPillar": {
+      "table": "quarterly_pillars",
+      "source": ["supabase", "ELT-set quarterly operating pillars"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "planningCycleId": "PlanningCycle.id",
+        "strategicPillarId": "StrategicPillar.id|null",
+        "ownerId": "Profile.id|null",
+        "title": "string",
+        "description": "string|null",
+        "status": "draft|active|closed|string",
+        "displayOrder": "number",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "workplans": "Workplan[]",
+        "priorities": "Priority[]"
+      }
+    },
     "StrategicSuccessMetric": {
       "table": "strategic_success_metrics",
       "source": ["supabase", "src/data/mockData.js pillar.successMetrics"],
@@ -252,6 +299,7 @@
         "organizationId": "Organization.id",
         "strategicPlanId": "StrategicPlan.id|null",
         "strategicPillarId": "StrategicPillar.id|null",
+        "quarterlyPillarId": "QuarterlyPillar.id|null",
         "departmentId": "Department.id|null",
         "leadId": "Profile.id|null",
         "initiativeId": "Initiative.id|null",
@@ -261,10 +309,13 @@
         "quarterlyInitiative": "string|null",
         "outcome": "string|null",
         "status": "workSignalStatus|legacy|string",
+        "approvalStatus": "draft|pending|approved|returned",
+        "approvedBy": "Profile.id|null",
+        "approvedAt": "datetime|null",
+        "pathForward": "string|null",
         "progress": "number",
         "startsOn": "date|null",
         "dueOn": "date|null",
-        "ownerIds": "Profile.id[]",
         "priorityLinks": "string[]",
         "createdAt": "datetime",
         "updatedAt": "datetime"
@@ -272,7 +323,9 @@
       "relationships": {
         "initiative": "Initiative|null",
         "priorities": "Priority[]",
-        "keyObjectives": "KeyObjective[]"
+        "keyObjectives": "KeyObjective[]",
+        "huddleReviews": "WorkplanHuddleReview[]",
+        "assignments": "WorkObjectAssignment[]"
       }
     },
     "Priority": {
@@ -284,9 +337,9 @@
         "organizationId": "Organization.id",
         "strategicPlanId": "StrategicPlan.id|null",
         "strategicPillarId": "StrategicPillar.id|null",
+        "quarterlyPillarId": "QuarterlyPillar.id|null",
         "departmentId": "Department.id|null",
         "ownerId": "Profile.id|null",
-        "ownerIds": "Profile.id[]",
         "workplanId": "Workplan.id|null",
         "initiativeId": "Initiative.id|null",
         "title": "string",
@@ -310,7 +363,8 @@
         "keyObjectives": "KeyObjective[]",
         "actionItems": "ActionItem[]",
         "calendarEvents": "CalendarEvent[]",
-        "metrics": "Metric[]"
+        "metrics": "Metric[]",
+        "assignments": "WorkObjectAssignment[]"
       }
     },
     "KeyObjective": {
@@ -324,7 +378,6 @@
         "strategicPillarId": "StrategicPillar.id|null",
         "priorityId": "Priority.id",
         "ownerId": "Profile.id|null",
-        "ownerIds": "Profile.id[]",
         "departmentId": "Department.id|null",
         "workplanId": "Workplan.id|null",
         "title": "string",
@@ -344,7 +397,8 @@
       "relationships": {
         "priority": "Priority",
         "workplan": "Workplan|null",
-        "kpis": "ObjectiveKpi[]"
+        "kpis": "ObjectiveKpi[]",
+        "assignments": "WorkObjectAssignment[]"
       }
     },
     "ObjectiveKpi": {
@@ -455,6 +509,7 @@
         "departmentId": "Department.id|null",
         "ownerId": "Profile.id|null",
         "createdBy": "Profile.id|null",
+        "workplanId": "Workplan.id|null",
         "priorityId": "Priority.id|null",
         "huddleId": "Huddle.id|null",
         "title": "string",
@@ -467,7 +522,52 @@
         "updatedAt": "datetime"
       },
       "relationships": {
-        "calendarEvents": "CalendarEvent[]"
+        "calendarEvents": "CalendarEvent[]",
+        "assignments": "WorkObjectAssignment[]"
+      }
+    },
+    "WorkObjectAssignment": {
+      "table": "work_object_assignments",
+      "source": ["supabase", "formalizes ownerIds/collaborators/reviewers across shared work objects"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "sourceType": "initiative|workplan|priority|key_objective|objective_kpi|action_item|calendar_event|stuck|checklist_submission",
+        "sourceId": "uuid",
+        "profileId": "Profile.id",
+        "assignmentRole": "workObjectAssignmentRole",
+        "assignedBy": "Profile.id|null",
+        "startsOn": "date|null",
+        "endsOn": "date|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "organization": "Organization",
+        "department": "Department|null",
+        "profile": "Profile",
+        "assignedByProfile": "Profile|null"
+      }
+    },
+    "WorkplanHuddleReview": {
+      "table": "workplan_huddle_reviews",
+      "source": ["supabase", "formalizes ELT/OLT huddle review and approval path-forward decisions"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "workplanId": "Workplan.id",
+        "huddleId": "Huddle.id|null",
+        "requestedBy": "Profile.id|null",
+        "reviewedBy": "Profile.id|null",
+        "decision": "pending|approved|returned|deferred",
+        "pathForward": "string|null",
+        "decisionNote": "string|null",
+        "decidedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
       }
     },
     "Stuck": {
@@ -513,6 +613,7 @@
         "endsOn": "date|null",
         "departmentId": "Department.id|null",
         "propertyId": "Property.id|null",
+        "actionItemId": "ActionItem.id|null",
         "sourceType": "priority|action_item|task|checklist_submission|checklist_template|initiative|workplan|huddle|stuck|touchpoint|native",
         "sourceId": "uuid|string|null",
         "sourceLabel": "string",
@@ -526,8 +627,6 @@
         "updatedAt": "datetime"
       },
       "legacyFieldMap": {
-        "representation": "label",
-        "compassStatus": "sourceStatus_display_hint_or_remove",
         "date": "startsOn",
         "endDate": "endsOn",
         "originWaypointId": "originCalendarEventId"
@@ -768,6 +867,60 @@
         "createdAt": "datetime"
       }
     },
+    "ActivityEvent": {
+      "table": "activity_events",
+      "source": ["supabase", "accountability/audit trail for visible work-object changes"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "actorProfileId": "Profile.id|null",
+        "sourceType": "action_item|priority|workplan|stuck|calendar_event|checklist_submission|string",
+        "sourceId": "uuid|string",
+        "eventType": "created|updated|completed|commented|assigned|approved|returned|string",
+        "visibility": "workObjectVisibility",
+        "summary": "string|null",
+        "payload": "object",
+        "createdAt": "datetime"
+      }
+    },
+    "Comment": {
+      "table": "comments",
+      "source": ["supabase", "work-object discussion threads"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "authorProfileId": "Profile.id|null",
+        "sourceType": "action_item|priority|workplan|stuck|calendar_event|checklist_submission|string",
+        "sourceId": "uuid|string",
+        "body": "string",
+        "visibility": "workObjectVisibility",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
+    "Attachment": {
+      "table": "attachments",
+      "source": ["supabase", "work-object file links"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid",
+        "organizationId": "Organization.id",
+        "departmentId": "Department.id|null",
+        "uploadedBy": "Profile.id|null",
+        "sourceType": "action_item|priority|workplan|stuck|calendar_event|checklist_submission|string",
+        "sourceId": "uuid|string",
+        "fileName": "string",
+        "fileUrl": "string",
+        "mimeType": "string|null",
+        "fileSizeBytes": "number|null",
+        "visibility": "workObjectVisibility",
+        "createdAt": "datetime"
+      }
+    },
     "Contact": {
       "table": "contacts",
       "source": ["supabase", "src/data/mockData.js advocacyContacts"],
@@ -842,53 +995,139 @@
     { "from": "PropertyAssignment.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
     { "from": "PropertyAssignment.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "StrategicPlan.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "PlanningCycle.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "PlanningCycle.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "PlanningCycle.setBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "PlanningCycle.approvedBy", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "StrategicPillar.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "QuarterlyPillar.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "QuarterlyPillar.planningCycleId", "to": "PlanningCycle.id", "cardinality": "many-to-one" },
+    { "from": "QuarterlyPillar.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "QuarterlyPillar.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "StrategicSuccessMetric.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "StrategicSuccessMetric.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
     { "from": "StrategicSuccessMetric.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "Initiative.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Initiative.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
     { "from": "Initiative.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
     { "from": "Initiative.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.quarterlyPillarId", "to": "QuarterlyPillar.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "Workplan.initiativeId", "to": "Initiative.id", "cardinality": "many-to-one" },
     { "from": "Workplan.leadId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Workplan.approvedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Priority.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Priority.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "Priority.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
+    { "from": "Priority.quarterlyPillarId", "to": "QuarterlyPillar.id", "cardinality": "many-to-one" },
+    { "from": "Priority.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "Priority.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
     { "from": "Priority.initiativeId", "to": "Initiative.id", "cardinality": "many-to-one" },
     { "from": "Priority.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
     { "from": "KeyObjective.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "KeyObjective.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "KeyObjective.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "ObjectiveKpi.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "ObjectiveKpi.keyObjectiveId", "to": "KeyObjective.id", "cardinality": "many-to-one" },
+    { "from": "ObjectiveKpi.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Metric.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Metric.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Metric.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "Metric.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
     { "from": "MetricValue.metricId", "to": "Metric.id", "cardinality": "many-to-one" },
+    { "from": "MetricValue.recordedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Huddle.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "Huddle.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "Huddle.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "HuddleMember.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
     { "from": "HuddleMember.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.strategicPlanId", "to": "StrategicPlan.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.strategicPillarId", "to": "StrategicPillar.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.createdBy", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "ActionItem.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
+    { "from": "WorkObjectAssignment.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "WorkObjectAssignment.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "WorkObjectAssignment.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WorkObjectAssignment.assignedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WorkObjectAssignment.sourceType+sourceId", "to": "Initiative|Workplan|Priority|KeyObjective|ObjectiveKpi|ActionItem|CalendarEvent|Stuck|ChecklistSubmission", "cardinality": "polymorphic" },
+    { "from": "WorkplanHuddleReview.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "WorkplanHuddleReview.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "WorkplanHuddleReview.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
+    { "from": "WorkplanHuddleReview.requestedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WorkplanHuddleReview.reviewedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Stuck.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "Stuck.personStuckId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "Stuck.helpFromId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "CalendarEvent.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.submittedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.approvedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "CalendarEvent.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
+    { "from": "CalendarEvent.actionItemId", "to": "ActionItem.id", "cardinality": "many-to-one" },
     { "from": "CalendarEvent.sourceType+sourceId", "to": "Priority|ActionItem|ChecklistSubmission|ChecklistTemplate|Initiative|Workplan|Huddle|Stuck|Touchpoint|native", "cardinality": "polymorphic" },
     { "from": "CalendarEvent.originCalendarEventId", "to": "CalendarEvent.id", "cardinality": "self-reference" },
+    { "from": "ReviewRequest.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "ReviewRequest.requesterId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ReviewRequest.reviewerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "ReviewRequest.sourceType+sourceId", "to": "CalendarEvent|ChecklistSubmission|Priority|ActionItem|other", "cardinality": "polymorphic" },
+    { "from": "ChecklistTemplate.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "ChecklistSection.templateId", "to": "ChecklistTemplate.id", "cardinality": "many-to-one" },
     { "from": "ChecklistItem.sectionId", "to": "ChecklistSection.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "ChecklistSubmission.templateId", "to": "ChecklistTemplate.id", "cardinality": "many-to-one" },
     { "from": "ChecklistSubmission.propertyId", "to": "Property.id", "cardinality": "many-to-one" },
     { "from": "ChecklistSubmission.assignedTo", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.reviewerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ChecklistSubmission.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
     { "from": "ChecklistResponse.submissionId", "to": "ChecklistSubmission.id", "cardinality": "many-to-one" },
     { "from": "ChecklistResponse.itemId", "to": "ChecklistItem.id", "cardinality": "many-to-one" },
+    { "from": "WorkflowDefinition.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "WorkflowDefinition.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "WorkflowDefinition.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "WorkflowDefinition.reviewerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "WorkflowRun.workflowId", "to": "WorkflowDefinition.id", "cardinality": "many-to-one" },
+    { "from": "TeamsAccount.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "TeamsAccount.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "NotificationEvent.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "NotificationEvent.recipientProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "NotificationEvent.actorProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "NotificationEvent.sourceType+sourceId", "to": "Stuck|ActionItem|Priority|WorkflowRun|ChecklistSubmission|CalendarEvent|other", "cardinality": "polymorphic" },
+    { "from": "AdaptiveCardDelivery.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "AdaptiveCardDelivery.notificationEventId", "to": "NotificationEvent.id", "cardinality": "many-to-one" },
     { "from": "AdaptiveCardDelivery.workflowRunId", "to": "WorkflowRun.id", "cardinality": "many-to-one" },
     { "from": "AdaptiveCardDelivery.teamsAccountId", "to": "TeamsAccount.id", "cardinality": "many-to-one" },
+    { "from": "AdaptiveCardDelivery.recipientProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActivityEvent.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "ActivityEvent.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "ActivityEvent.actorProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "ActivityEvent.sourceType+sourceId", "to": "ActionItem|Priority|Workplan|Stuck|CalendarEvent|ChecklistSubmission|other", "cardinality": "polymorphic" },
+    { "from": "Comment.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Comment.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "Comment.authorProfileId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Comment.sourceType+sourceId", "to": "ActionItem|Priority|Workplan|Stuck|CalendarEvent|ChecklistSubmission|other", "cardinality": "polymorphic" },
+    { "from": "Attachment.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Attachment.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "Attachment.uploadedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Attachment.sourceType+sourceId", "to": "ActionItem|Priority|Workplan|Stuck|CalendarEvent|ChecklistSubmission|other", "cardinality": "polymorphic" },
+    { "from": "Contact.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "Contact.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "Touchpoint.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "Touchpoint.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "Touchpoint.contactId", "to": "Contact.id", "cardinality": "many-to-one" },
+    { "from": "Touchpoint.sourceType+sourceId", "to": "Priority|ActionItem|Initiative|Workplan|CalendarEvent|other", "cardinality": "polymorphic" },
     { "from": "BrandAsset.organizationId", "to": "Organization.id", "cardinality": "many-to-one" }
   ],
   "missingData": [
@@ -914,7 +1153,7 @@
     },
     {
       "area": "Calendar event model",
-      "gap": "Current DB table is waypoints with representation and compass_status. Target schema needs label, rhythm, lifecycle, and sourceStatus display hint or no event status at all."
+      "gap": "Current DB table now carries label, rhythm, lifecycle, sourceStatus, and a direct nullable actionItemId. Production cleanup should migrate consumers fully off the legacy representation field when safe."
     },
     {
       "area": "Quarterly commitments",
@@ -934,7 +1173,7 @@
     },
     {
       "area": "Action item hierarchy",
-      "gap": "Weekly priority task-derived action items are generated in memory and do not retain parent task/priority ids cleanly. Add parentPriorityId or sourceType/sourceId if they remain derived."
+      "gap": "Action items now support direct workplanId and priorityId links. Weekly priority task-derived mock items still need canonical IDs and persistence rows before production."
     },
     {
       "area": "Review requests",
@@ -947,10 +1186,6 @@
     {
       "area": "Notification triggers",
       "gap": "NotificationEvent is now formalized, but application triggers still need to be added when a stuck is issued, an action item is assigned, a deadline is approaching, a task is overdue, or a review/escalation is requested."
-    },
-    {
-      "area": "Audit/history",
-      "gap": "There is no explicit event history, status history, comment, attachment, or activity log table. Add these before production if accountability trails are required."
     }
   ]
 }
