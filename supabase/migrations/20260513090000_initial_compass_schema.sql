@@ -1087,8 +1087,20 @@ using (public.is_org_member(organization_id) or public.is_admin());
 
 create policy "owners and admins manage key objectives"
 on public.key_objectives for all
-using (public.is_admin() or owner_id = auth.uid())
-with check (public.is_admin() or owner_id = auth.uid());
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or owner_id = auth.uid()
+  or exists (
+    select 1
+    from public.work_object_assignments woa
+    where woa.source_type = 'key_objective'
+      and woa.source_id = key_objectives.id
+      and woa.profile_id = auth.uid()
+      and woa.assignment_role in ('owner', 'lead', 'accountable', 'assignee')
+  )
+)
+with check (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid());
 
 create policy "org members read objective kpis"
 on public.objective_kpis for select
@@ -1098,6 +1110,7 @@ create policy "owners and objective owners manage objective kpis"
 on public.objective_kpis for all
 using (
   public.is_admin()
+  or public.is_olt_member(organization_id)
   or owner_id = auth.uid()
   or exists (
     select 1
@@ -1108,6 +1121,7 @@ using (
 )
 with check (
   public.is_admin()
+  or public.is_olt_member(organization_id)
   or owner_id = auth.uid()
   or exists (
     select 1
@@ -1325,6 +1339,78 @@ create policy "reviewers and admins update review requests"
 on public.review_requests for update
 using (public.is_admin() or reviewer_id = auth.uid())
 with check (public.is_admin() or reviewer_id = auth.uid());
+
+create policy "org members read checklist templates"
+on public.checklist_templates for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "admins manage checklist templates"
+on public.checklist_templates for all
+using (public.is_admin() or public.is_olt_member(organization_id))
+with check (public.is_admin() or public.is_olt_member(organization_id));
+
+create policy "org members read checklist sections"
+on public.checklist_sections for select
+using (
+  exists (
+    select 1
+    from public.checklist_templates t
+    where t.id = checklist_sections.template_id
+      and (public.is_admin() or public.is_org_member(t.organization_id))
+  )
+);
+
+create policy "admins manage checklist sections"
+on public.checklist_sections for all
+using (
+  exists (
+    select 1
+    from public.checklist_templates t
+    where t.id = checklist_sections.template_id
+      and (public.is_admin() or public.is_olt_member(t.organization_id))
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.checklist_templates t
+    where t.id = checklist_sections.template_id
+      and (public.is_admin() or public.is_olt_member(t.organization_id))
+  )
+);
+
+create policy "org members read checklist items"
+on public.checklist_items for select
+using (
+  exists (
+    select 1
+    from public.checklist_sections s
+    join public.checklist_templates t on t.id = s.template_id
+    where s.id = checklist_items.section_id
+      and (public.is_admin() or public.is_org_member(t.organization_id))
+  )
+);
+
+create policy "admins manage checklist items"
+on public.checklist_items for all
+using (
+  exists (
+    select 1
+    from public.checklist_sections s
+    join public.checklist_templates t on t.id = s.template_id
+    where s.id = checklist_items.section_id
+      and (public.is_admin() or public.is_olt_member(t.organization_id))
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.checklist_sections s
+    join public.checklist_templates t on t.id = s.template_id
+    where s.id = checklist_items.section_id
+      and (public.is_admin() or public.is_olt_member(t.organization_id))
+  )
+);
 
 create policy "users read own personal waypoints and org waypoints"
 on public.waypoints for select
