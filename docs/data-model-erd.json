@@ -1141,7 +1141,7 @@
     },
     {
       "area": "Q2 objectives normalization",
-      "gap": "Actual Q2 key objectives are nested under mock priorities. They need their own KeyObjective rows with priorityId, ownerId/ownerIds, departmentId, and workplanId."
+      "gap": "Actual Q2 key objectives are nested under mock priorities. They need their own KeyObjective rows with priorityId, ownerId, departmentId, workplanId, and WorkObjectAssignment rows for secondary owners/support."
     },
     {
       "area": "Workplan linkage",
@@ -1153,7 +1153,7 @@
     },
     {
       "area": "Calendar event model",
-      "gap": "Current DB table now carries label, rhythm, lifecycle, sourceStatus, and a direct nullable actionItemId. Production cleanup should migrate consumers fully off the legacy representation field when safe."
+      "gap": "The first migration now carries label, rhythm, lifecycle, sourceStatus, and a direct nullable actionItemId. Remaining work is front-end consumer cleanup where old mock objects still refer to representation."
     },
     {
       "area": "Quarterly commitments",
