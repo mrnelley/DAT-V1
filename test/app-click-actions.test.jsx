@@ -12,6 +12,7 @@ Object.defineProperty(global, 'navigator', {
   value: dom.window.navigator,
 });
 global.HTMLElement = dom.window.HTMLElement;
+global.SVGElement = dom.window.SVGElement;
 global.Node = dom.window.Node;
 global.File = dom.window.File;
 global.Blob = dom.window.Blob;
@@ -36,6 +37,7 @@ window.matchMedia = window.matchMedia || (() => ({
 }));
 
 const { default: React } = await import('react');
+global.React = React;
 const { ThemeProvider } = await import('@mui/material/styles');
 const { CssBaseline } = await import('@mui/material');
 const { MemoryRouter, Route, Routes, useLocation } = await import('react-router-dom');
@@ -43,6 +45,7 @@ const { cleanup, render, screen, waitFor, within } = await import('@testing-libr
 const { default: userEvent } = await import('@testing-library/user-event');
 const { AuthProvider } = await import('../src/hooks/useAuth.js');
 const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackContext.jsx');
+const { NotificationsProvider } = await import('../src/context/NotificationsContext.jsx');
 const { default: theme } = await import('../src/theme/index.js');
 const { default: ActionItemsPage } = await import('../src/components/action-items/ActionItemsPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
@@ -70,7 +73,9 @@ const renderWithProviders = (ui, path = '/') => {
         <MemoryRouter initialEntries={[path]}>
           <AuthProvider>
             <ActionFeedbackProvider>
-              {ui}
+              <NotificationsProvider>
+                {ui}
+              </NotificationsProvider>
             </ActionFeedbackProvider>
           </AuthProvider>
         </MemoryRouter>
@@ -103,6 +108,20 @@ describe('clickable user actions', () => {
     await user.click(screen.getByRole('button', { name: /create/i }));
 
     expect(await screen.findByText('Confirm Teams card copy')).to.exist;
+    expect(screen.queryByRole('dialog')).to.equal(null);
+  });
+
+  it('opens and saves the task assignment workflow from an action item row', async () => {
+    const { user } = renderWithProviders(<ActionItemsPage />);
+
+    await user.click(await screen.findByRole('button', { name: /open assignment workflow for action item send final q2 priority draft to elt/i }));
+
+    expect(await screen.findByRole('heading', { name: /task assignment workflow/i })).to.exist;
+    expect(screen.getByLabelText(/assign to/i)).to.exist;
+
+    await user.click(screen.getByRole('button', { name: /save assignment/i }));
+
+    expect(await screen.findByText(/teams action card queued for dana hanchin/i)).to.exist;
     expect(screen.queryByRole('dialog')).to.equal(null);
   });
 

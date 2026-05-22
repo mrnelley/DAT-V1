@@ -1,10 +1,14 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import React from 'react';
 import { useState } from 'react';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
+import { useNotifications } from '../../context/NotificationsContext';
 import { actionItems, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
@@ -34,7 +38,23 @@ const buildInitialForm = (user) => ({
   strategicPillar: 'Agility & Capacity',
 });
 
-const isInvolved = (item, user) => item.owner?.id === user.id || item.createdBy?.id === user.id;
+const buildAssignmentForm = (item) => ({
+  due: item?.due || '2026-05-19',
+  note: '',
+  ownerId: item?.owner?.id || '',
+  status: item?.status || 'Open',
+  visibility: item?.visibility || 'private',
+});
+
+const isLeadershipUser = (user) => ['ELT', 'OLT'].includes(user.workingGroup);
+
+const isInvolved = (item, user) => (
+  item.owner?.id === user.id
+  || item.createdBy?.id === user.id
+  || item.assignments?.some((assignment) => assignment.profile?.id === user.id)
+);
+
+const canManageActionItem = (item, user) => isLeadershipUser(user) || isInvolved(item, user);
 
 const canViewActionItem = (item, user) => (
   isInvolved(item, user)
@@ -46,11 +66,15 @@ const canViewActionItem = (item, user) => (
 const ActionItemsPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
+  const { addNotification } = useNotifications();
   const [scope, setScope] = useState('My Items');
   const [items, setItems] = useState(actionItems);
   const [completed, setCompleted] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(buildInitialForm(user));
+  const [assignmentEvents, setAssignmentEvents] = useState([]);
+  const [assignmentForm, setAssignmentForm] = useState(buildAssignmentForm());
+  const [selectedItem, setSelectedItem] = useState(null);
   const visibleItems = items.filter((item) => {
     if (!canViewActionItem(item, user)) return false;
     if (scope === 'My Items') return isInvolved(item, user);
@@ -63,6 +87,10 @@ const ActionItemsPage = () => {
   const closeDialog = () => {
     setDialogOpen(false);
     setForm(buildInitialForm(user));
+  };
+  const closeAssignmentDialog = () => {
+    setSelectedItem(null);
+    setAssignmentForm(buildAssignmentForm());
   };
 
   const addActionItem = () => {
@@ -77,12 +105,72 @@ const ActionItemsPage = () => {
         due: form.due,
         status: form.status,
         visibility: form.visibility,
+        assignments: [
+          { profile: owner, role: 'assignee' },
+          { profile: user, role: 'assigned_by' },
+        ],
         priority: form.priority,
         strategicPillar: form.strategicPillar,
       },
       ...current,
     ]);
     closeDialog();
+  };
+
+  const openAssignmentWorkflow = (item) => {
+    if (!canManageActionItem(item, user)) {
+      unavailable('only assigned users, creators, ELT, or OLT can update task assignments.');
+      return;
+    }
+
+    setSelectedItem(item);
+    setAssignmentForm(buildAssignmentForm(item));
+  };
+
+  const updateAssignment = (field) => (event) => setAssignmentForm((current) => ({ ...current, [field]: event.target.value }));
+
+  const saveAssignment = () => {
+    const owner = users.find((candidate) => candidate.id === assignmentForm.ownerId) || selectedItem.owner;
+    const event = {
+      id: `assignment-event-${Date.now()}`,
+      actionItemId: selectedItem.id,
+      actor: user,
+      recipient: owner,
+      message: `${user.name} assigned "${selectedItem.description}" to ${owner.name}.`,
+      note: assignmentForm.note,
+      scheduledFor: assignmentForm.due,
+      visibility: assignmentForm.visibility,
+    };
+
+    setItems((current) => current.map((item) => (
+      item.id === selectedItem.id
+        ? {
+          ...item,
+          owner,
+          department: owner.department,
+          due: assignmentForm.due,
+          status: assignmentForm.status,
+          visibility: assignmentForm.visibility,
+          assignments: [
+            { profile: owner, role: 'assignee' },
+            { profile: user, role: 'assigned_by' },
+          ],
+        }
+        : item
+    )));
+    setAssignmentEvents((current) => [event, ...current]);
+    addNotification({
+      actionPath: '/action-items',
+      actor: user,
+      body: `${selectedItem.description} is due on ${assignmentForm.due}. ${assignmentForm.note}`.trim(),
+      channel: 'in_app',
+      notificationType: 'task_assigned',
+      recipient: owner,
+      sourceId: selectedItem.id,
+      sourceType: 'action_item',
+      title: `${user.name} assigned you a task`,
+    });
+    closeAssignmentDialog();
   };
 
   return (
@@ -100,10 +188,19 @@ const ActionItemsPage = () => {
         </ToggleButtonGroup>
         <Select size="small" defaultValue="Open"><MenuItem value="Open">Open</MenuItem><MenuItem value="In Progress">In Progress</MenuItem><MenuItem value="Complete">Complete</MenuItem></Select>
       </Stack>
+      {assignmentEvents.length > 0 && (
+        <Alert
+          icon={<NotificationsActiveOutlinedIcon />}
+          severity="info"
+          sx={{ mb: 2 }}
+        >
+          Teams action card queued for {assignmentEvents[0].recipient.name}: {assignmentEvents[0].message}
+        </Alert>
+      )}
       <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
         {visibleItems.map((item) => {
           const done = completed.includes(item.id);
-          const canManage = isInvolved(item, user);
+          const canManage = canManageActionItem(item, user);
           return (
             <ListItem
               key={item.id}
@@ -121,7 +218,7 @@ const ActionItemsPage = () => {
                   <Chip label={item.strategicPillar} variant="outlined" size="small" />
                 </Stack>
               </Box>
-              <IconButton disabled={!canManage} aria-label={`More options for action item ${item.description}`} onClick={() => unavailable('action item options need the task detail drawer.') }><MoreHorizOutlinedIcon /></IconButton>
+              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for action item ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
             </ListItem>
           );
         })}
@@ -159,6 +256,47 @@ const ActionItemsPage = () => {
         <DialogActions>
           <Button onClick={closeDialog}>Cancel</Button>
           <Button variant="contained" onClick={addActionItem} disabled={!form.description.trim()}>Create</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
+        <DialogTitle>Task Assignment Workflow</DialogTitle>
+        <DialogContent>
+          <Stack gap={2} sx={{ pt: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">Action item</Typography>
+              <Typography>{selectedItem?.description}</Typography>
+            </Box>
+            <Divider />
+            <TextField select label="Assign to" value={assignmentForm.ownerId} onChange={updateAssignment('ownerId')} fullWidth>
+              {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
+            </TextField>
+            <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+              <TextField label="Due date" type="date" value={assignmentForm.due} onChange={updateAssignment('due')} fullWidth InputLabelProps={{ shrink: true }} />
+              <TextField select label="Status" value={assignmentForm.status} onChange={updateAssignment('status')} fullWidth>
+                <MenuItem value="Open">Open</MenuItem>
+                <MenuItem value="In Progress">In Progress</MenuItem>
+                <MenuItem value="Complete">Complete</MenuItem>
+                <MenuItem value="Blocked">Blocked</MenuItem>
+              </TextField>
+            </Stack>
+            <FormControl fullWidth>
+              <InputLabel id="task-assignment-visibility-label">Visibility</InputLabel>
+              <Select labelId="task-assignment-visibility-label" label="Visibility" value={assignmentForm.visibility} onChange={updateAssignment('visibility')}>
+                <MenuItem value="private">Only assigned and created by</MenuItem>
+                <MenuItem value="department">Owner's department</MenuItem>
+                <MenuItem value="olt">Everyone in OLT</MenuItem>
+                <MenuItem value="organization">All users</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField label="Assignment note" value={assignmentForm.note} onChange={updateAssignment('note')} minRows={3} multiline fullWidth />
+            <Alert icon={<AssignmentIndOutlinedIcon />} severity="success">
+              Saving this assignment queues a Teams action card for the assigned user and keeps the task visible according to the selected visibility.
+            </Alert>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeAssignmentDialog}>Cancel</Button>
+          <Button variant="contained" onClick={saveAssignment}>Save Assignment</Button>
         </DialogActions>
       </Dialog>
     </PageWrapper>

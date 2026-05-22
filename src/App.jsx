@@ -10,6 +10,7 @@ import HuddlesPage from './components/huddles/HuddlesPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
 import DataTablePage from './components/metrics/DataTablePage';
+import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
@@ -17,6 +18,7 @@ import StucksPage from './components/stucks/StucksPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
+import { NotificationsProvider } from './context/NotificationsContext';
 import { WaypointProvider } from './context/WaypointContext';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
@@ -41,6 +43,7 @@ const AnimatedRoutes = () => {
         <Route path="/action-items" element={<ActionItemsPage />} />
         <Route path="/metrics" element={<PlaceholderPage title="Metrics Management" />} />
         <Route path="/metrics/table" element={<DataTablePage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<PlaceholderPage title="Learn" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
@@ -58,11 +61,13 @@ const ProtectedApp = () => {
 
   return (
     <CurbAppealProvider>
-      <WaypointProvider>
-        <AppShell>
-          <AnimatedRoutes />
-        </AppShell>
-      </WaypointProvider>
+      <NotificationsProvider>
+        <WaypointProvider>
+          <AppShell>
+            <AnimatedRoutes />
+          </AppShell>
+        </WaypointProvider>
+      </NotificationsProvider>
     </CurbAppealProvider>
   );
 };

@@ -2,11 +2,13 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Avatar, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
+import { AppBar, Avatar, Badge, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
+import { useNotifications } from '../../context/NotificationsContext';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 
@@ -21,6 +23,7 @@ const TopBar = ({ onMenuClick }) => {
   const { demoUsers, setUserId, signOut, user, userId } = useAuth();
   const navigate = useNavigate();
   const { unavailable } = useActionFeedback();
+  const { unreadCount } = useNotifications();
   const [anchor, setAnchor] = useState(null);
   const [menu, setMenu] = useState('');
 
@@ -85,6 +88,13 @@ const TopBar = ({ onMenuClick }) => {
           ))}
         </Box>
         <IconButton aria-label="Open quick add menu" color="primary" onClick={() => unavailable('quick add is not connected to a create workflow yet.')}><AddCircleOutlineIcon /></IconButton>
+        <Tooltip title="Notifications">
+          <IconButton aria-label="Open notifications inbox" color="primary" onClick={() => navigate('/notifications')}>
+            <Badge color="error" badgeContent={unreadCount} max={99}>
+              <NotificationsNoneOutlinedIcon />
+            </Badge>
+          </IconButton>
+        </Tooltip>
         <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
           <InputLabel>Demo User</InputLabel>
           <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
