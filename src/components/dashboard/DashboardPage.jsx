@@ -161,7 +161,7 @@ const DashboardPage = ({ company = false }) => {
     critical: 'Critical Numbers',
     focus: user.dashboardFocus === 'advocacy' ? 'Advocacy Dashboard' : 'Focused Dashboard',
     kpis: 'My KPIs',
-    organizationCalendar: 'Compass Calendar',
+    organizationCalendar: 'Calendar',
     strategicPlan: 'Strategic Plan',
   };
 
@@ -183,11 +183,20 @@ const DashboardPage = ({ company = false }) => {
     </>
   );
 
+  const firstName = user.name.split(' ')[0];
+  const dashboardTitle = company
+    ? 'Company Dashboard'
+    : user.workingGroup === 'ELT'
+      ? `${firstName}'s Executive View`
+      : user.workingGroup === 'OLT'
+        ? `${firstName}'s Operation`
+        : `${firstName}'s Dashboard`;
+
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 3 }}>
         <Box>
-          <Typography variant="h1">{company ? 'Dashboard' : `${user.name.split(' ')[0]}'s Dashboard`}</Typography>
+          <Typography variant="h1">{dashboardTitle}</Typography>
           <Typography variant="body2">{company ? 'Company-wide accountability view' : `${user.department} operating view`}</Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">

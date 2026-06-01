@@ -87,7 +87,7 @@ const LoginPage = () => {
           {[
             [BusinessOutlinedIcon, 'Portfolio'],
             [ChecklistOutlinedIcon, 'Workplans'],
-            [CalendarMonthOutlinedIcon, 'Beats'],
+            [CalendarMonthOutlinedIcon, 'Touchpoints'],
             [GroupsOutlinedIcon, 'Huddles'],
           ].map(([Icon, label]) => (
             <Box key={label} sx={{ border: '1px solid rgba(255,255,255,0.22)', borderRadius: 1, p: 1.25, bgcolor: 'rgba(255,255,255,0.08)' }}>

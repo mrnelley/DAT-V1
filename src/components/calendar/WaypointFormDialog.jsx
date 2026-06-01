@@ -6,7 +6,7 @@ const emptyForm = (date) => ({
   title: '',
   date,
   endDate: '',
-  label: 'Beat',
+  label: 'Touchpoint',
   rhythm: 'once',
   lifecycle: 'scheduled',
   department: '',
@@ -48,8 +48,8 @@ const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
             <TextField label="Date" type="date" value={form.date} onChange={update('date')} InputLabelProps={{ shrink: true }} fullWidth />
             <FormControl fullWidth>
-              <InputLabel>Label</InputLabel>
-              <Select label="Label" value={form.label} onChange={update('label')}>
+              <InputLabel>Type</InputLabel>
+              <Select label="Type" value={form.label} onChange={update('label')}>
                 {calendarLabels.map((label) => (
                   <MenuItem key={label} value={label}>{label}</MenuItem>
                 ))}
@@ -86,7 +86,7 @@ const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleCreate}>Add</Button>
+        <Button variant="contained" onClick={handleCreate}>Add Event</Button>
       </DialogActions>
     </Dialog>
   );

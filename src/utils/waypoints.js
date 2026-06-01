@@ -1,4 +1,4 @@
-export const calendarLabels = ['Beat', 'Marker', 'Commitment', 'Touchpoint'];
+export const calendarLabels = ['Touchpoint', 'Checkpoint', 'Milestone', 'Commitment'];
 
 export const calendarRhythms = ['once', 'weekly', 'monthly', 'quarterly', 'annual', 'custom'];
 
@@ -30,7 +30,7 @@ export const connectedLabels = {
   initiative: 'Connected to Initiative',
   huddle: 'Connected to Huddle',
   stuck: 'Connected to Stuck',
-  native: 'Native calendar item',
+  native: 'Calendar event',
 };
 
 const statusAliases = {
@@ -100,7 +100,7 @@ export const createNativeWaypoint = (values, user, scope) => ({
   title: values.title,
   date: values.date,
   endDate: values.endDate || null,
-  label: values.label || 'Beat',
+  label: values.label || 'Touchpoint',
   rhythm: values.rhythm || 'once',
   lifecycle: values.lifecycle || 'scheduled',
   scope,
@@ -124,7 +124,7 @@ export const waypointFromPriority = (priority, overrides = {}) => ({
   title: priority.name,
   date: overrides.date || '2026-05-28',
   endDate: null,
-  label: overrides.label || 'Beat',
+  label: overrides.label || 'Checkpoint',
   rhythm: overrides.rhythm || 'once',
   lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
@@ -147,7 +147,7 @@ export const waypointFromInitiative = (initiative, overrides = {}) => ({
   title: initiative.title,
   date: overrides.date || '2026-06-05',
   endDate: null,
-  label: overrides.label || 'Marker',
+  label: overrides.label || 'Milestone',
   rhythm: overrides.rhythm || 'once',
   lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',

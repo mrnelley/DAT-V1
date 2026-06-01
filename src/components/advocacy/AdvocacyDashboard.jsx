@@ -626,7 +626,7 @@ const AdvocacyDashboard = () => {
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
               Primary Advocate - Chief Executive Officer
             </Typography>
-            <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Dana's Compass</Typography>
+            <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Advocacy Command Center</Typography>
             <Typography variant="body2">Advocacy command center - May 2026</Typography>
           </Box>
         </Stack>

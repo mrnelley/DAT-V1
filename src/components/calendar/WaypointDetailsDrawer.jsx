@@ -63,9 +63,9 @@ const WaypointDetailsDrawer = ({
 
         <Stack gap={2}>
           <FormControl size="small">
-            <InputLabel>Label</InputLabel>
+            <InputLabel>Type</InputLabel>
             <Select
-              label="Label"
+              label="Type"
               value={waypoint.label}
               onChange={(event) => onUpdate(waypoint.id, { label: event.target.value })}
             >
@@ -136,7 +136,7 @@ const WaypointDetailsDrawer = ({
 
           {scope === 'personal' && waypoint.orgSubmissionState !== 'pending' && waypoint.orgSubmissionState !== 'approved' && (
             <Button variant="contained" startIcon={<SendOutlinedIcon />} onClick={() => onSendToOrg(waypoint.id)}>
-              Send to Org Calendar
+              Send to Organization Calendar
             </Button>
           )}
 

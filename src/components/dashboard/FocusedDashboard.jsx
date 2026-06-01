@@ -75,7 +75,7 @@ const profiles = {
     title: 'People Dashboard',
     subtitle: 'Employee satisfaction, retention, hiring health, and open position momentum.',
     stats: [
-      ['Engagement Pulse', '81%', 'Last survey response health'],
+      ['Engagement Signal', '81%', 'Last survey response health'],
       ['Retention Risk', '4', 'Roles flagged for follow-up'],
       ['Open Positions', '11', 'Across five departments'],
       ['Time to Fill', '34d', 'Median active posting age'],

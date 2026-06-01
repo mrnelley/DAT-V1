@@ -23,17 +23,17 @@ import WaypointFormDialog from './WaypointFormDialog';
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const labelTones = {
-  Beat: 'primary.main',
-  Marker: 'secondary.main',
+  Touchpoint: 'primary.main',
+  Checkpoint: 'info.main',
+  Milestone: 'secondary.main',
   Commitment: 'warning.main',
-  Touchpoint: 'success.main',
 };
 
 const labelBackgrounds = {
-  Beat: 'rgba(7, 44, 94, 0.08)',
-  Marker: 'rgba(94, 184, 168, 0.12)',
+  Touchpoint: 'rgba(7, 44, 94, 0.08)',
+  Checkpoint: 'rgba(35, 139, 230, 0.1)',
+  Milestone: 'rgba(94, 184, 168, 0.12)',
   Commitment: 'rgba(241, 172, 73, 0.16)',
-  Touchpoint: 'rgba(0, 110, 92, 0.1)',
 };
 
 const matchesDate = (event, dateValue) => getEventDate(event) === dateValue;
@@ -92,18 +92,18 @@ const CompassCalendar = ({
 }) => {
   const [monthCursor, setMonthCursor] = useState(new Date(2026, 4, 1));
   const [view, setView] = useState('calendar');
-  const [labelFilter, setLabelFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState('All');
   const [rhythmFilter, setRhythmFilter] = useState('All');
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
 
   const visibleEvents = useMemo(() => (
     sortCalendarEventsByDate(waypoints).filter((event) => (
-      (labelFilter === 'All' || event.label === labelFilter)
+      (typeFilter === 'All' || event.label === typeFilter)
       && (rhythmFilter === 'All' || event.rhythm === rhythmFilter)
       && event.reviewState !== 'declined'
     ))
-  ), [labelFilter, rhythmFilter, waypoints]);
+  ), [typeFilter, rhythmFilter, waypoints]);
 
   const monthDays = useMemo(() => getCalendarDays(monthCursor), [monthCursor]);
   const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
@@ -131,7 +131,7 @@ const CompassCalendar = ({
     <Box sx={{ mt: 3 }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 1.5 }}>
         <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
-          <Typography variant="h3">Compass Calendar</Typography>
+          <Typography variant="h3">Calendar</Typography>
           <Chip label={`${monthEvents.length} this period`} size="small" color="primary" variant="outlined" />
           {isAdmin && scope === 'organization' && pendingCount > 0 && (
             <Chip label={`${pendingCount} pending approval`} size="small" color="warning" />
@@ -145,14 +145,14 @@ const CompassCalendar = ({
             <ToggleButton value="calendar" aria-label="Calendar view"><CalendarMonthIcon fontSize="small" /></ToggleButton>
             <ToggleButton value="upcoming" aria-label="Upcoming view"><ViewAgendaOutlinedIcon fontSize="small" /></ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>Add Beat</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>Add Event</Button>
         </Stack>
       </Stack>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ mb: 2 }}>
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel>Label</InputLabel>
-          <Select label="Label" value={labelFilter} onChange={(event) => setLabelFilter(event.target.value)}>
+          <InputLabel>Type</InputLabel>
+          <Select label="Type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
             <MenuItem value="All">All</MenuItem>
             {calendarLabels.map((label) => (
               <MenuItem key={label} value={label}>{label}</MenuItem>
