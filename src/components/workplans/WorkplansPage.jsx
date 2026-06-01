@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { departmentWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
@@ -273,9 +274,19 @@ const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
 
 const WorkplansPage = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [dialog, setDialog] = useState({ item: null, open: false });
   const [scope, setScope] = useState('all');
   const [workplans, setWorkplans] = useState(departmentWorkplans);
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+
+    setDialog({ item: null, open: true });
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('new');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const visibleWorkplans = useMemo(() => (
     workplans

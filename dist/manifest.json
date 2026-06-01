@@ -1,6 +1,6 @@
 {
-  "name": "HDC Pulse",
-  "short_name": "Pulse",
+  "name": "HDC Compass",
+  "short_name": "Compass",
   "description": "Operational accountability platform for HDC leadership and department teams.",
   "start_url": "/dashboard/me",
   "display": "standalone",

@@ -22,7 +22,7 @@ const notificationTypeLabels = {
 
 const channelLabels = {
   email: 'Email',
-  in_app: 'Pulse',
+  in_app: 'Compass',
   teams: 'Teams',
 };
 
@@ -54,7 +54,7 @@ const NotificationsPage = () => {
         <Box>
           <Typography variant="h1">Notifications</Typography>
           <Typography variant="body2" color="text.secondary">
-            A durable Pulse inbox for tasks, stucks, reviews, reminders, and failed delivery fallbacks.
+            A durable Compass inbox for tasks, stucks, reviews, reminders, and failed delivery fallbacks.
           </Typography>
         </Box>
         <Button startIcon={<CheckCircleOutlineIcon />} onClick={markAllAsRead} disabled={!unreadCount}>
@@ -72,7 +72,7 @@ const NotificationsPage = () => {
         <EmptyState
           icon={<NotificationsNoneOutlinedIcon />}
           title="No notifications"
-          body="When Pulse has something that needs your attention, it will land here."
+          body="When Compass has something that needs your attention, it will land here."
         />
       ) : (
         <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hdc-pulse-shell-v1';
+const CACHE_NAME = 'hdc-compass-shell-v1';
 const SHELL = ['/', '/dashboard/me', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

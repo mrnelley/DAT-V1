@@ -6,44 +6,37 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import { AppBar, Avatar, Badge, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useActionFeedback } from '../../context/ActionFeedbackContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useAuth } from '../../hooks/useAuth';
+import { quickAddItems, topNavMenus } from '../../navigation/topNav';
 import { brandAssets } from '../../theme/brandAssets';
-
-const navMenus = {
-  Strategy: ['Annual Initiatives', 'Company Dashboard', 'Priority Map', 'Weekly Tracker'],
-  Culture: ['Huddles', 'Stucks', 'Team Health'],
-  Reports: ['Data Table', 'Executive Summary', 'Exports'],
-  Administration: ['Users', 'Teams', 'Permissions'],
-};
 
 const TopBar = ({ onMenuClick }) => {
   const { demoUsers, setUserId, signOut, user, userId } = useAuth();
   const navigate = useNavigate();
-  const { unavailable } = useActionFeedback();
+  const location = useLocation();
   const { unreadCount } = useNotifications();
   const [anchor, setAnchor] = useState(null);
+  const [quickAnchor, setQuickAnchor] = useState(null);
   const [menu, setMenu] = useState('');
-
-  const routeByMenuItem = {
-    'Annual Initiatives': '/initiatives',
-    'Company Dashboard': '/dashboard/company',
-    'Priority Map': '/priorities',
-    'Weekly Tracker': '/weekly-tracker',
-    Huddles: '/huddles',
-    Stucks: '/stucks',
-    'Data Table': '/metrics/table',
-    Users: '/admin',
-    Teams: '/admin',
-    Permissions: '/admin',
-  };
 
   const openMenu = (event, label) => {
     setAnchor(event.currentTarget);
     setMenu(label);
   };
+
+  const closeMenus = () => {
+    setAnchor(null);
+    setQuickAnchor(null);
+  };
+
+  const goTo = (path) => {
+    closeMenus();
+    navigate(path);
+  };
+
+  const currentMenu = topNavMenus.find((candidate) => candidate.label === menu);
 
   return (
     <AppBar
@@ -79,16 +72,26 @@ const TopBar = ({ onMenuClick }) => {
             aria-hidden="true"
             sx={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
           />
-          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Pulse</Typography>
+          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
         </Stack>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
-          {Object.keys(navMenus).map((label) => (
-            <Button key={label} color="primary" endIcon={<ArrowDropDownIcon />} onClick={(event) => openMenu(event, label)}>
-              {label}
-            </Button>
-          ))}
+          {topNavMenus.map((navMenu) => {
+            const active = navMenu.items.some((item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`));
+
+            return (
+              <Button
+                key={navMenu.label}
+                color="primary"
+                endIcon={<ArrowDropDownIcon />}
+                onClick={(event) => openMenu(event, navMenu.label)}
+                variant={active ? 'outlined' : 'text'}
+              >
+                {navMenu.label}
+              </Button>
+            );
+          })}
         </Box>
-        <IconButton aria-label="Open quick add menu" color="primary" onClick={() => unavailable('quick add is not connected to a create workflow yet.')}><AddCircleOutlineIcon /></IconButton>
+        <IconButton aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
         <Tooltip title="Notifications">
           <IconButton aria-label="Open notifications inbox" color="primary" onClick={() => navigate('/notifications')}>
             <Badge color="error" badgeContent={unreadCount} max={99}>
@@ -111,22 +114,26 @@ const TopBar = ({ onMenuClick }) => {
         <IconButton aria-label="Sign out" color="primary" onClick={signOut}>
           <LogoutOutlinedIcon />
         </IconButton>
-        <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+        <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={closeMenus}>
           <AnimatePresence>
             <Box component={motion.div} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              {(navMenus[menu] || []).map((item) => (
+              {(currentMenu?.items || []).map((item) => (
                 <MenuItem
-                  key={item}
-                  onClick={() => {
-                    setAnchor(null);
-                    if (routeByMenuItem[item]) {
-                      navigate(routeByMenuItem[item]);
-                      return;
-                    }
-                    unavailable(`${item.toLowerCase()} is not built for this MVP view yet.`);
-                  }}
+                  key={item.path}
+                  onClick={() => goTo(item.path)}
                 >
-                  {item}
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Box>
+          </AnimatePresence>
+        </Menu>
+        <Menu anchorEl={quickAnchor} open={Boolean(quickAnchor)} onClose={closeMenus}>
+          <AnimatePresence>
+            <Box component={motion.div} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+              {quickAddItems.map((item) => (
+                <MenuItem key={item.path} onClick={() => goTo(item.path)}>
+                  New {item.label}
                 </MenuItem>
               ))}
             </Box>

@@ -161,7 +161,7 @@ const DashboardPage = ({ company = false }) => {
     critical: 'Critical Numbers',
     focus: user.dashboardFocus === 'advocacy' ? 'Advocacy Dashboard' : 'Focused Dashboard',
     kpis: 'My KPIs',
-    organizationCalendar: 'Pulse Calendar',
+    organizationCalendar: 'Compass Calendar',
     strategicPlan: 'Strategic Plan',
   };
 

@@ -61,7 +61,7 @@ const LoginPage = () => {
               sx={{ width: { xs: 210, md: 270 }, height: 'auto', display: 'block' }}
             />
             <Box>
-              <Typography variant="h3" color="inherit">HDC Pulse</Typography>
+              <Typography variant="h3" color="inherit">HDC Compass</Typography>
               <Typography variant="caption" color="secondary.light">Accountability without extra drag</Typography>
             </Box>
           </Stack>

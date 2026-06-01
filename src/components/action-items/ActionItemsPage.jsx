@@ -6,7 +6,8 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useNotifications } from '../../context/NotificationsContext';
 import { actionItems, users } from '../../data/mockData';
@@ -67,6 +68,7 @@ const ActionItemsPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
   const { addNotification } = useNotifications();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('My Items');
   const [items, setItems] = useState(actionItems);
   const [completed, setCompleted] = useState([]);
@@ -82,6 +84,15 @@ const ActionItemsPage = () => {
     if (scope === 'OLT') return item.visibility === 'olt' && user.workingGroup === 'OLT';
     return true;
   });
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+
+    setDialogOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('new');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
   const closeDialog = () => {

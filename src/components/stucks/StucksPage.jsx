@@ -4,7 +4,8 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import { Button, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { stucks } from '../../data/mockData';
 import { formatDateTime } from '../../utils/formatters';
@@ -14,9 +15,19 @@ import UserAvatar from '../shared/UserAvatar';
 import AddStuckModal from './AddStuckModal';
 
 const StucksPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [activeOnly, setActiveOnly] = useState(false);
   const { unavailable } = useActionFeedback();
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+
+    setOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('new');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   return (
     <PageWrapper>

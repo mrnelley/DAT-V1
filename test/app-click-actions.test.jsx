@@ -1,5 +1,8 @@
 import { expect } from 'chai';
+import { createRequire } from 'node:module';
 import { JSDOM } from 'jsdom';
+
+const require = createRequire(import.meta.url);
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {
   url: 'http://localhost/',
@@ -14,6 +17,10 @@ Object.defineProperty(global, 'navigator', {
 global.HTMLElement = dom.window.HTMLElement;
 global.SVGElement = dom.window.SVGElement;
 global.Node = dom.window.Node;
+global.Element = dom.window.Element;
+global.DocumentFragment = dom.window.DocumentFragment;
+global.AbortController = dom.window.AbortController;
+global.AbortSignal = dom.window.AbortSignal;
 global.File = dom.window.File;
 global.Blob = dom.window.Blob;
 global.getComputedStyle = dom.window.getComputedStyle;
@@ -36,8 +43,48 @@ window.matchMedia = window.matchMedia || (() => ({
   removeListener: () => {},
 }));
 
+const unwrapElementType = (type) => {
+  const maybeComponent = type && typeof type === 'object'
+    ? type.default?.default || type.default
+    : null;
+
+  return maybeComponent && (typeof maybeComponent === 'function' || maybeComponent.$$typeof)
+    ? maybeComponent
+    : type;
+};
+
+const patchJsxRuntime = (moduleName) => {
+  const runtime = require(moduleName);
+  const baseJsx = runtime.jsx;
+  const baseJsxs = runtime.jsxs;
+  const baseJsxDev = runtime.jsxDEV;
+
+  if (baseJsx) {
+    runtime.jsx = (type, props, key) => baseJsx(unwrapElementType(type), props, key);
+  }
+
+  if (baseJsxs) {
+    runtime.jsxs = (type, props, key) => baseJsxs(unwrapElementType(type), props, key);
+  }
+
+  if (baseJsxDev) {
+    runtime.jsxDEV = (type, props, key, isStaticChildren, source, self) => (
+      baseJsxDev(unwrapElementType(type), props, key, isStaticChildren, source, self)
+    );
+  }
+};
+
+patchJsxRuntime('react/jsx-runtime');
+patchJsxRuntime('react/jsx-dev-runtime');
+
 const { default: React } = await import('react');
 global.React = React;
+const baseCreateElement = React.createElement;
+React.createElement = (type, props, ...children) => baseCreateElement(
+  unwrapElementType(type),
+  props,
+  ...children,
+);
 const { ThemeProvider } = await import('@mui/material/styles');
 const { CssBaseline } = await import('@mui/material');
 const { MemoryRouter, Route, Routes, useLocation } = await import('react-router-dom');
@@ -49,7 +96,6 @@ const { NotificationsProvider } = await import('../src/context/NotificationsCont
 const { default: theme } = await import('../src/theme/index.js');
 const { default: ActionItemsPage } = await import('../src/components/action-items/ActionItemsPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
-const { default: InitiativesPage } = await import('../src/components/initiatives/InitiativesPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: StucksPage } = await import('../src/components/stucks/StucksPage.jsx');
@@ -104,11 +150,13 @@ describe('clickable user actions', () => {
     const { user } = renderWithProviders(<ActionItemsPage />);
 
     await user.click(await screen.findByRole('button', { name: /add action item/i }));
-    await user.type(screen.getByLabelText(/task/i), 'Confirm Teams card copy');
+    await user.type(screen.getByLabelText(/^task$/i), 'Confirm Teams card copy');
     await user.click(screen.getByRole('button', { name: /create/i }));
 
     expect(await screen.findByText('Confirm Teams card copy')).to.exist;
-    expect(screen.queryByRole('dialog')).to.equal(null);
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).to.equal(null);
+    });
   });
 
   it('opens and saves the task assignment workflow from an action item row', async () => {
@@ -122,7 +170,9 @@ describe('clickable user actions', () => {
     await user.click(screen.getByRole('button', { name: /save assignment/i }));
 
     expect(await screen.findByText(/teams action card queued for dana hanchin/i)).to.exist;
-    expect(screen.queryByRole('dialog')).to.equal(null);
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).to.equal(null);
+    });
   });
 
   it('opens the priority drawer from Add Priority', async () => {
@@ -161,30 +211,55 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/action is unavailable because pin stuck needs stuck activity persistence/i)).to.exist;
   });
 
-  it('routes the top navigation Annual Initiatives item to the initiatives page', async () => {
+  it('routes every top navigation dropdown item to a destination', async () => {
+    const { user } = renderWithProviders(
+      <>
+        <TopBar onMenuClick={() => {}} />
+        <LocationProbe />
+      </>,
+      '/action-items',
+    );
+
+    const destinations = [
+      ['Strategy', 'Annual Initiatives', '/initiatives'],
+      ['Strategy', 'Company Dashboard', '/dashboard/company'],
+      ['Strategy', 'Priority Map', '/priorities'],
+      ['Strategy', 'Weekly Tracker', '/weekly-tracker'],
+      ['Culture', 'Huddles', '/huddles'],
+      ['Culture', 'Stucks', '/stucks'],
+      ['Culture', 'Team Health', '/culture/team-health'],
+      ['Reports', 'Data Table', '/metrics/table'],
+      ['Reports', 'Executive Summary', '/reports/executive-summary'],
+      ['Reports', 'Exports', '/reports/exports'],
+      ['Administration', 'Users', '/admin/users'],
+      ['Administration', 'Teams', '/admin/teams'],
+      ['Administration', 'Permissions', '/admin/permissions'],
+    ];
+
+    for (const [menu, item, path] of destinations) {
+      await user.click(await screen.findByRole('button', { name: new RegExp(menu, 'i') }));
+      await user.click(await screen.findByRole('menuitem', { name: new RegExp(item, 'i') }));
+      expect((await screen.findByTestId('location')).textContent).to.equal(path);
+    }
+  });
+
+  it('opens an existing create workflow from the quick add menu', async () => {
     const { user } = renderWithProviders(
       <>
         <TopBar onMenuClick={() => {}} />
         <LocationProbe />
         <Routes>
-          <Route path="/initiatives" element={<InitiativesPage />} />
+          <Route path="/action-items" element={<ActionItemsPage />} />
         </Routes>
       </>,
-      '/action-items',
+      '/dashboard/me',
     );
 
-    await user.click(await screen.findByRole('button', { name: /strategy/i }));
-    await user.click(await screen.findByRole('menuitem', { name: /annual initiatives/i }));
-
-    expect(await screen.findByTestId('location')).to.have.text('/initiatives');
-  });
-
-  it('shows an unavailable alert for the quick add button', async () => {
-    const { user } = renderWithProviders(<TopBar onMenuClick={() => {}} />);
-
     await user.click(await screen.findByRole('button', { name: /open quick add menu/i }));
+    await user.click(await screen.findByRole('menuitem', { name: /new action item/i }));
 
-    expect(await screen.findByText(/action is unavailable because quick add is not connected/i)).to.exist;
+    expect((await screen.findByTestId('location')).textContent).to.equal('/action-items');
+    expect(await screen.findByRole('heading', { name: /add action item/i })).to.exist;
   });
 
   it('routes huddle stucks button to the stucks page', async () => {

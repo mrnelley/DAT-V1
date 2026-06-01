@@ -10,6 +10,7 @@ import HuddlesPage from './components/huddles/HuddlesPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
 import DataTablePage from './components/metrics/DataTablePage';
+import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
@@ -41,14 +42,20 @@ const AnimatedRoutes = () => {
         <Route path="/huddles" element={<HuddlesPage />} />
         <Route path="/huddles/:id" element={<HuddlesPage />} />
         <Route path="/stucks" element={<StucksPage />} />
+        <Route path="/culture/team-health" element={<CompassDestinationPage page="teamHealth" />} />
         <Route path="/action-items" element={<ActionItemsPage />} />
         <Route path="/weekly-tracker" element={<WeeklyActionTrackerPage />} />
         <Route path="/metrics" element={<PlaceholderPage title="Metrics Management" />} />
         <Route path="/metrics/table" element={<DataTablePage />} />
+        <Route path="/reports/executive-summary" element={<CompassDestinationPage page="executiveSummary" />} />
+        <Route path="/reports/exports" element={<CompassDestinationPage page="exports" />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<PlaceholderPage title="Learn" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
+        <Route path="/admin/users" element={<CompassDestinationPage page="adminUsers" />} />
+        <Route path="/admin/teams" element={<CompassDestinationPage page="adminTeams" />} />
+        <Route path="/admin/permissions" element={<CompassDestinationPage page="adminPermissions" />} />
       </Routes>
     </AnimatePresence>
   );

@@ -131,7 +131,7 @@ const CompassCalendar = ({
     <Box sx={{ mt: 3 }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 1.5 }}>
         <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
-          <Typography variant="h3">Pulse Calendar</Typography>
+          <Typography variant="h3">Compass Calendar</Typography>
           <Chip label={`${monthEvents.length} this period`} size="small" color="primary" variant="outlined" />
           {isAdmin && scope === 'organization' && pendingCount > 0 && (
             <Chip label={`${pendingCount} pending approval`} size="small" color="warning" />

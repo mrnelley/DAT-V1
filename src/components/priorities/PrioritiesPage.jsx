@@ -3,7 +3,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Button, Chip, IconButton, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { priorities } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
@@ -15,9 +16,19 @@ import PriorityRow from './PriorityRow';
 const PrioritiesPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [expandedAll, setExpandedAll] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+
+    setPanelOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('new');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   return (
     <PageWrapper>
