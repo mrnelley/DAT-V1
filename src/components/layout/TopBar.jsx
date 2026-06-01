@@ -13,7 +13,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 
 const navMenus = {
-  Strategy: ['Annual Initiatives', 'Company Dashboard', 'Priority Map'],
+  Strategy: ['Annual Initiatives', 'Company Dashboard', 'Priority Map', 'Weekly Tracker'],
   Culture: ['Huddles', 'Stucks', 'Team Health'],
   Reports: ['Data Table', 'Executive Summary', 'Exports'],
   Administration: ['Users', 'Teams', 'Permissions'],
@@ -31,6 +31,7 @@ const TopBar = ({ onMenuClick }) => {
     'Annual Initiatives': '/initiatives',
     'Company Dashboard': '/dashboard/company',
     'Priority Map': '/priorities',
+    'Weekly Tracker': '/weekly-tracker',
     Huddles: '/huddles',
     Stucks: '/stucks',
     'Data Table': '/metrics/table',

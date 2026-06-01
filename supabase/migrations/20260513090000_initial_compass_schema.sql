@@ -435,11 +435,70 @@ create table if not exists public.action_items (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.weekly_action_reports (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  planning_cycle_id uuid references public.planning_cycles(id) on delete set null,
+  week_start date not null,
+  week_end date not null,
+  submission_due_at timestamptz not null,
+  review_meeting_at timestamptz not null,
+  status text not null default 'draft' check (status in ('draft', 'submitted', 'reviewed', 'locked')),
+  created_by uuid references public.profiles(id) on delete set null,
+  reviewed_by uuid references public.profiles(id) on delete set null,
+  reviewed_at timestamptz,
+  locked_at timestamptz,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (organization_id, week_start)
+);
+
+create table if not exists public.weekly_action_entries (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  report_id uuid not null references public.weekly_action_reports(id) on delete cascade,
+  owner_id uuid not null references public.profiles(id) on delete cascade,
+  department_id uuid references public.departments(id) on delete set null,
+  rank integer not null check (rank between 1 and 3),
+  previous_rank integer check (previous_rank between 1 and 3),
+  carried_from_entry_id uuid references public.weekly_action_entries(id) on delete set null,
+  priority_id uuid references public.priorities(id) on delete set null,
+  workplan_id uuid references public.workplans(id) on delete set null,
+  stuck_id uuid references public.stucks(id) on delete set null,
+  title text not null,
+  alignment_type text not null default 'enterprise' check (alignment_type in ('enterprise', 'department')),
+  aligned_priority_label text,
+  risk_support_note text,
+  status public.work_signal_status not null default 'steady',
+  due_on date,
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (report_id, owner_id, rank)
+);
+
+create table if not exists public.weekly_action_tasks (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  entry_id uuid not null references public.weekly_action_entries(id) on delete cascade,
+  action_item_id uuid references public.action_items(id) on delete set null,
+  carryover_from_task_id uuid references public.weekly_action_tasks(id) on delete set null,
+  owner_id uuid references public.profiles(id) on delete set null,
+  created_by uuid references public.profiles(id) on delete set null,
+  title text not null,
+  status text not null default 'open' check (status in ('open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over')),
+  due_on date,
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.work_object_assignments (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
   department_id uuid references public.departments(id) on delete set null,
-  source_type text not null check (source_type in ('initiative', 'workplan', 'priority', 'key_objective', 'objective_kpi', 'action_item', 'calendar_event', 'stuck', 'checklist_submission')),
+  source_type text not null check (source_type in ('initiative', 'workplan', 'priority', 'key_objective', 'objective_kpi', 'action_item', 'weekly_action_entry', 'weekly_action_task', 'calendar_event', 'stuck', 'checklist_submission')),
   source_id uuid not null,
   profile_id uuid not null references public.profiles(id) on delete cascade,
   assignment_role text not null default 'support' check (assignment_role in ('owner', 'lead', 'accountable', 'assignee', 'reviewer', 'support', 'observer')),
@@ -828,6 +887,25 @@ as $$
       )
     )
     or (
+      source_type_value = 'weekly_action_entry'
+      and exists (
+        select 1
+        from public.weekly_action_entries wae
+        where wae.id = source_id_value
+          and (wae.owner_id = auth.uid() or public.is_olt_member(wae.organization_id))
+      )
+    )
+    or (
+      source_type_value = 'weekly_action_task'
+      and exists (
+        select 1
+        from public.weekly_action_tasks wat
+        join public.weekly_action_entries wae on wae.id = wat.entry_id
+        where wat.id = source_id_value
+          and (wat.owner_id = auth.uid() or wat.created_by = auth.uid() or wae.owner_id = auth.uid() or public.is_olt_member(wat.organization_id))
+      )
+    )
+    or (
       source_type_value = 'calendar_event'
       and exists (
         select 1
@@ -870,6 +948,10 @@ create index if not exists idx_objective_kpis_objective on public.objective_kpis
 create index if not exists idx_action_items_pillar on public.action_items(strategic_pillar_id);
 create index if not exists idx_action_items_department_visibility on public.action_items(department_id, visibility);
 create index if not exists idx_action_items_workplan on public.action_items(workplan_id);
+create index if not exists idx_weekly_action_reports_week on public.weekly_action_reports(organization_id, week_start, status);
+create index if not exists idx_weekly_action_entries_report on public.weekly_action_entries(report_id, owner_id, rank);
+create index if not exists idx_weekly_action_entries_links on public.weekly_action_entries(priority_id, workplan_id, stuck_id);
+create index if not exists idx_weekly_action_tasks_entry on public.weekly_action_tasks(entry_id, status, due_on);
 create index if not exists idx_work_object_assignments_source on public.work_object_assignments(source_type, source_id);
 create index if not exists idx_work_object_assignments_profile on public.work_object_assignments(profile_id, assignment_role);
 create index if not exists idx_workplan_huddle_reviews_workplan on public.workplan_huddle_reviews(workplan_id, decision);
@@ -897,7 +979,7 @@ begin
   foreach table_name in array array[
     'organizations', 'departments', 'profiles', 'properties', 'strategic_plans',
     'planning_cycles', 'strategic_pillars', 'quarterly_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
-    'huddles', 'workplan_huddle_reviews', 'action_items', 'work_object_assignments', 'stucks', 'waypoints', 'review_requests',
+    'huddles', 'workplan_huddle_reviews', 'action_items', 'weekly_action_reports', 'weekly_action_entries', 'weekly_action_tasks', 'work_object_assignments', 'stucks', 'waypoints', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
     'workflow_definitions', 'teams_accounts', 'notification_events', 'comments', 'contacts', 'touchpoints',
     'brand_assets'
@@ -933,6 +1015,9 @@ alter table public.huddles enable row level security;
 alter table public.huddle_members enable row level security;
 alter table public.workplan_huddle_reviews enable row level security;
 alter table public.action_items enable row level security;
+alter table public.weekly_action_reports enable row level security;
+alter table public.weekly_action_entries enable row level security;
+alter table public.weekly_action_tasks enable row level security;
 alter table public.work_object_assignments enable row level security;
 alter table public.stucks enable row level security;
 alter table public.waypoints enable row level security;
@@ -1269,6 +1354,58 @@ with check (
   or public.is_olt_member(organization_id)
   or owner_id = auth.uid()
   or created_by = auth.uid()
+);
+
+create policy "org members read weekly action reports"
+on public.weekly_action_reports for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "olt manages weekly action reports"
+on public.weekly_action_reports for all
+using (public.is_admin() or public.is_olt_member(organization_id) or created_by = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or created_by = auth.uid());
+
+create policy "org members read weekly action entries"
+on public.weekly_action_entries for select
+using (public.is_org_member(organization_id) or public.is_admin());
+
+create policy "olt and owners manage weekly action entries"
+on public.weekly_action_entries for all
+using (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid())
+with check (public.is_admin() or public.is_olt_member(organization_id) or owner_id = auth.uid());
+
+create policy "org members read weekly action tasks"
+on public.weekly_action_tasks for select
+using (
+  public.is_org_member(organization_id)
+  or public.is_admin()
+);
+
+create policy "task owners and olt manage weekly action tasks"
+on public.weekly_action_tasks for all
+using (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or owner_id = auth.uid()
+  or created_by = auth.uid()
+  or exists (
+    select 1
+    from public.weekly_action_entries wae
+    where wae.id = weekly_action_tasks.entry_id
+      and wae.owner_id = auth.uid()
+  )
+)
+with check (
+  public.is_admin()
+  or public.is_olt_member(organization_id)
+  or owner_id = auth.uid()
+  or created_by = auth.uid()
+  or exists (
+    select 1
+    from public.weekly_action_entries wae
+    where wae.id = weekly_action_tasks.entry_id
+      and wae.owner_id = auth.uid()
+  )
 );
 
 create policy "users read relevant work object assignments"

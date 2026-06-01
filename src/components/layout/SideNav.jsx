@@ -6,6 +6,7 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Box, Collapse, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery } from '@mui/material';
@@ -21,6 +22,7 @@ const navItems = [
   { icon: FactCheckOutlinedIcon, label: 'Workplans', path: '/workplans' },
   { icon: GroupsIcon, label: 'Huddles', popout: true },
   { icon: CheckCircleOutlineIcon, label: 'Action Items', path: '/action-items' },
+  { icon: TodayOutlinedIcon, label: 'Weekly Tracker', path: '/weekly-tracker' },
   { icon: NotificationsNoneOutlinedIcon, label: 'Notifications', path: '/notifications' },
   { icon: BarChartIcon, label: 'Metrics', path: '/metrics' },
   { icon: SchoolOutlinedIcon, label: 'Learn', path: '/learn' },

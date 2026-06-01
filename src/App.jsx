@@ -15,6 +15,7 @@ import ProfilePage from './components/profile/ProfilePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
+import WeeklyActionTrackerPage from './components/weekly-tracker/WeeklyActionTrackerPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
@@ -41,6 +42,7 @@ const AnimatedRoutes = () => {
         <Route path="/huddles/:id" element={<HuddlesPage />} />
         <Route path="/stucks" element={<StucksPage />} />
         <Route path="/action-items" element={<ActionItemsPage />} />
+        <Route path="/weekly-tracker" element={<WeeklyActionTrackerPage />} />
         <Route path="/metrics" element={<PlaceholderPage title="Metrics Management" />} />
         <Route path="/metrics/table" element={<DataTablePage />} />
         <Route path="/notifications" element={<NotificationsPage />} />

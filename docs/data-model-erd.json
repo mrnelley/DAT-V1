@@ -18,6 +18,9 @@
     "checklistSubmissionStatus": ["scheduled", "draft", "submitted_pending_review", "needs_follow_up", "approved"],
     "checklistResponseValue": ["", "good", "needs_correction", "na"],
     "actionItemStatus": ["open", "in_progress", "complete", "blocked", "cancelled"],
+    "weeklyActionReportStatus": ["draft", "submitted", "reviewed", "locked"],
+    "weeklyActionTaskStatus": ["open", "in_progress", "complete", "blocked", "cancelled", "carried_over"],
+    "weeklyAlignmentType": ["enterprise", "department"],
     "stuckStatus": ["active", "resolved"],
     "workflowFrequency": ["once", "daily", "weekly", "monthly", "quarterly", "annual"]
   },
@@ -526,6 +529,81 @@
         "assignments": "WorkObjectAssignment[]"
       }
     },
+    "WeeklyActionReport": {
+      "table": "weekly_action_reports",
+      "source": ["supabase", "src/data/mockData.js weeklyActionReports"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "planningCycleId": "PlanningCycle.id|null",
+        "weekStart": "date",
+        "weekEnd": "date",
+        "submissionDueAt": "datetime",
+        "reviewMeetingAt": "datetime",
+        "status": "weeklyActionReportStatus",
+        "createdBy": "Profile.id|null",
+        "reviewedBy": "Profile.id|null",
+        "reviewedAt": "datetime|null",
+        "lockedAt": "datetime|null",
+        "notes": "string|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "entries": "WeeklyActionEntry[]"
+      }
+    },
+    "WeeklyActionEntry": {
+      "table": "weekly_action_entries",
+      "source": ["supabase", "src/data/mockData.js weeklyActionEntries"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "reportId": "WeeklyActionReport.id",
+        "ownerId": "Profile.id",
+        "departmentId": "Department.id|null",
+        "rank": "1|2|3",
+        "previousRank": "1|2|3|null",
+        "carriedFromEntryId": "WeeklyActionEntry.id|null",
+        "priorityId": "Priority.id|null",
+        "workplanId": "Workplan.id|null",
+        "stuckId": "Stuck.id|null",
+        "title": "string",
+        "alignmentType": "weeklyAlignmentType",
+        "alignedPriorityLabel": "string|null",
+        "riskSupportNote": "string|null",
+        "status": "workSignalStatus",
+        "dueOn": "date|null",
+        "reviewedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      },
+      "relationships": {
+        "tasks": "WeeklyActionTask[]"
+      }
+    },
+    "WeeklyActionTask": {
+      "table": "weekly_action_tasks",
+      "source": ["supabase", "src/data/mockData.js weeklyActionEntries.tasks"],
+      "primaryKey": "id",
+      "fields": {
+        "id": "uuid|string",
+        "organizationId": "Organization.id",
+        "entryId": "WeeklyActionEntry.id",
+        "actionItemId": "ActionItem.id|null",
+        "carryoverFromTaskId": "WeeklyActionTask.id|null",
+        "ownerId": "Profile.id|null",
+        "createdBy": "Profile.id|null",
+        "title": "string",
+        "status": "weeklyActionTaskStatus",
+        "dueOn": "date|null",
+        "completedAt": "datetime|null",
+        "createdAt": "datetime",
+        "updatedAt": "datetime"
+      }
+    },
     "WorkObjectAssignment": {
       "table": "work_object_assignments",
       "source": ["supabase", "formalizes ownerIds/collaborators/reviewers across shared work objects"],
@@ -534,7 +612,7 @@
         "id": "uuid",
         "organizationId": "Organization.id",
         "departmentId": "Department.id|null",
-        "sourceType": "initiative|workplan|priority|key_objective|objective_kpi|action_item|calendar_event|stuck|checklist_submission",
+        "sourceType": "initiative|workplan|priority|key_objective|objective_kpi|action_item|weekly_action_entry|weekly_action_task|calendar_event|stuck|checklist_submission",
         "sourceId": "uuid",
         "profileId": "Profile.id",
         "assignmentRole": "workObjectAssignmentRole",
@@ -1057,11 +1135,29 @@
     { "from": "ActionItem.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
     { "from": "ActionItem.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionReport.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionReport.planningCycleId", "to": "PlanningCycle.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionReport.createdBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionReport.reviewedBy", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.reportId", "to": "WeeklyActionReport.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.carriedFromEntryId", "to": "WeeklyActionEntry.id", "cardinality": "self-reference" },
+    { "from": "WeeklyActionEntry.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.stuckId", "to": "Stuck.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionTask.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionTask.entryId", "to": "WeeklyActionEntry.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionTask.actionItemId", "to": "ActionItem.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionTask.carryoverFromTaskId", "to": "WeeklyActionTask.id", "cardinality": "self-reference" },
+    { "from": "WeeklyActionTask.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionTask.createdBy", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "WorkObjectAssignment.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "WorkObjectAssignment.departmentId", "to": "Department.id", "cardinality": "many-to-one" },
     { "from": "WorkObjectAssignment.profileId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "WorkObjectAssignment.assignedBy", "to": "Profile.id", "cardinality": "many-to-one" },
-    { "from": "WorkObjectAssignment.sourceType+sourceId", "to": "Initiative|Workplan|Priority|KeyObjective|ObjectiveKpi|ActionItem|CalendarEvent|Stuck|ChecklistSubmission", "cardinality": "polymorphic" },
+    { "from": "WorkObjectAssignment.sourceType+sourceId", "to": "Initiative|Workplan|Priority|KeyObjective|ObjectiveKpi|ActionItem|WeeklyActionEntry|WeeklyActionTask|CalendarEvent|Stuck|ChecklistSubmission", "cardinality": "polymorphic" },
     { "from": "WorkplanHuddleReview.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "WorkplanHuddleReview.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
     { "from": "WorkplanHuddleReview.huddleId", "to": "Huddle.id", "cardinality": "many-to-one" },
@@ -1173,7 +1269,7 @@
     },
     {
       "area": "Action item hierarchy",
-      "gap": "Action items now support direct workplanId and priorityId links. Weekly priority task-derived mock items still need canonical IDs and persistence rows before production."
+      "gap": "Weekly tracker tasks now have persistence rows and can link to ActionItem records. Remaining production work is seeding canonical weekly report, entry, task, and action item IDs from real OLT submissions."
     },
     {
       "area": "Review requests",

@@ -1346,6 +1346,97 @@ export const weeklyPriorities = [
 
 export const financeWeeklyPriorities = weeklyPriorities.filter((priority) => priority.department === 'Finance');
 
+export const weeklyTrackerParticipants = ['u1', 'u2', 'u3', 'u8', 'u6', 'u9', 'u10', 'u5', 'u4', 'u15', 'u13', 'u11', 'u17']
+  .map((id) => userById[id])
+  .filter(Boolean);
+
+const previousWeeklyRankById = {
+  'finance-sam-2026-05-11-ap-process': 2,
+  'finance-sam-2026-05-11-asset-manager-plan': 1,
+  'finance-shar-2026-05-11-adamsburry-service-package': 3,
+  'hr-michele-2026-05-11-align-401k': 1,
+  'pm-jaime-2026-05-11-flats-v-lease-up': 2,
+  'red-kim-2026-05-11-nepa-underwriting': 2,
+  'advancement-meg-2026-05-11-td-bank': 2,
+  'operations-tammie-2026-05-11-jaime-workload': 3,
+  'red-chris-2026-05-11-tc5-pay-apps': 1,
+};
+
+export const weeklyActionReports = [
+  {
+    id: 'war-2026-05-18',
+    weekStart: '2026-05-18',
+    weekEnd: '2026-05-22',
+    submissionDueAt: '2026-05-15T12:00:00-04:00',
+    reviewMeetingAt: '2026-05-18T10:00:00-04:00',
+    status: 'reviewed',
+    createdBy: userById.u1,
+    reviewedBy: userById.u8,
+    reviewedAt: '2026-05-18T10:55:00-04:00',
+    lockedAt: null,
+    notes: 'OLT reviewed weekly top-three priorities and support needs in the Monday 10am operating meeting.',
+  },
+];
+
+export const weeklyActionEntries = weeklyTrackerParticipants.flatMap((participant) => {
+  const ownerPriorities = weeklyPriorities
+    .filter((priority) => priority.owner.id === participant.id)
+    .sort((a, b) => a.rank - b.rank);
+
+  return [1, 2, 3].map((rank) => {
+    const priority = ownerPriorities.find((candidate) => candidate.rank === rank);
+
+    if (!priority) {
+      return {
+        id: `wae-2026-05-18-${participant.id}-${rank}`,
+        reportId: 'war-2026-05-18',
+        owner: participant,
+        department: participant.department,
+        rank,
+        previousRank: null,
+        carriedFromEntryId: null,
+        title: '',
+        alignmentType: 'department',
+        alignedPriorityLabel: '',
+        riskSupportNote: '',
+        status: 'no_data',
+        due: '2026-05-22',
+        tasks: [],
+      };
+    }
+
+    return {
+      id: `wae-${priority.id}`,
+      reportId: 'war-2026-05-18',
+      owner: priority.owner,
+      department: priority.department,
+      rank: priority.rank,
+      previousRank: previousWeeklyRankById[priority.id] || priority.rank,
+      carriedFromEntryId: priority.outcome.toLowerCase().includes('carryover') ? `previous-${priority.id}` : null,
+      priorityId: priority.id,
+      title: priority.outcome,
+      alignmentType: priority.alignedTo?.toLowerCase().includes('department') ? 'department' : 'enterprise',
+      alignedPriorityLabel: priority.organizationalPriority || priority.alignedTo,
+      riskSupportNote: priority.supportLabel === 'None' ? '' : priority.supportLabel,
+      status: priority.status === 'Needs Attention' ? 'watch' : 'steady',
+      due: priority.due,
+      strategicPillar: priority.strategicPillar,
+      keyObjective: priority.keyObjective,
+      tasks: priority.tasks.map((task) => ({
+        id: `wat-${task.id}`,
+        entryId: `wae-${priority.id}`,
+        actionItemId: `action-${task.id}`,
+        owner: task.owner,
+        createdBy: priority.owner,
+        title: task.title,
+        status: task.status,
+        due: task.due,
+        carriedOver: task.status === 'carried_over',
+      })),
+    };
+  });
+});
+
 export const huddles = [
   { id: 'daily-ops', name: 'Daily Operations', recurrence: 'Every weekday', when: 'today' },
   { id: 'resident-services', name: 'Resident Services Weekly', recurrence: 'Tuesdays', when: 'future' },
