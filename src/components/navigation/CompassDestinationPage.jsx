@@ -17,6 +17,7 @@ import {
   users,
   weeklyActionReports,
 } from '../../data/mockData';
+import FeatureRolloutPage from '../admin/FeatureRolloutPage';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -50,6 +51,11 @@ const pageMeta = {
     eyebrow: 'Administration',
     title: 'Permissions',
     subtitle: 'A practical permissions map for who can view, manage, and advance work in Compass.',
+  },
+  adminFeatures: {
+    eyebrow: 'Administration',
+    title: 'Feature Rollout',
+    subtitle: 'Turn functionality on or off by user so adoption can move intentionally instead of all at once.',
   },
 };
 
@@ -428,6 +434,7 @@ const PermissionsPage = () => {
 
 const pageActions = {
   adminPermissions: [{ label: 'Review Users', path: '/admin/users' }, { label: 'Open Teams', path: '/admin/teams' }],
+  adminFeatures: [{ label: 'Review Users', path: '/admin/users' }, { label: 'View Permissions', path: '/admin/permissions' }],
   adminTeams: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Users', path: '/admin/users' }],
   adminUsers: [{ label: 'Open Profile', path: '/profile' }, { label: 'View Permissions', path: '/admin/permissions' }],
   executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Priority Map', path: '/priorities' }],
@@ -442,6 +449,7 @@ const renderPage = (page) => {
   if (page === 'adminUsers') return <UsersPage />;
   if (page === 'adminTeams') return <TeamsPage />;
   if (page === 'adminPermissions') return <PermissionsPage />;
+  if (page === 'adminFeatures') return <FeatureRolloutPage />;
   return <ExecutiveSummaryPage />;
 };
 

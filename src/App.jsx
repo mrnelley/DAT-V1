@@ -14,12 +14,14 @@ import CompassDestinationPage from './components/navigation/CompassDestinationPa
 import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
+import FeatureGate from './components/shared/FeatureGate';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
 import WeeklyActionTrackerPage from './components/weekly-tracker/WeeklyActionTrackerPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
+import { FeatureAccessProvider } from './context/FeatureAccessContext';
 import { NotificationsProvider } from './context/NotificationsContext';
 import { CalendarEventProvider } from './context/CalendarEventContext';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -32,30 +34,31 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate to="/dashboard/me" replace />} />
-        <Route path="/dashboard/me" element={<DashboardPage />} />
-        <Route path="/dashboard/company" element={<DashboardPage company />} />
+        <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
+        <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
-        <Route path="/priorities" element={<PrioritiesPage />} />
-        <Route path="/workplans" element={<WorkplansPage />} />
-        <Route path="/initiatives" element={<InitiativesPage />} />
-        <Route path="/initiatives/:id" element={<InitiativesPage />} />
-        <Route path="/huddles" element={<HuddlesPage />} />
-        <Route path="/huddles/:id" element={<HuddlesPage />} />
-        <Route path="/stucks" element={<StucksPage />} />
-        <Route path="/culture/team-health" element={<CompassDestinationPage page="teamHealth" />} />
-        <Route path="/action-items" element={<ActionItemsPage />} />
-        <Route path="/weekly-tracker" element={<WeeklyActionTrackerPage />} />
-        <Route path="/metrics" element={<PlaceholderPage title="Metrics Management" />} />
-        <Route path="/metrics/table" element={<DataTablePage />} />
-        <Route path="/reports/executive-summary" element={<CompassDestinationPage page="executiveSummary" />} />
-        <Route path="/reports/exports" element={<CompassDestinationPage page="exports" />} />
+        <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
+        <Route path="/workplans" element={<FeatureGate featureKey="workplans"><WorkplansPage /></FeatureGate>} />
+        <Route path="/initiatives" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
+        <Route path="/initiatives/:id" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
+        <Route path="/huddles" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
+        <Route path="/huddles/:id" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
+        <Route path="/stucks" element={<FeatureGate featureKey="stucks"><StucksPage /></FeatureGate>} />
+        <Route path="/culture/team-health" element={<FeatureGate featureKey="teamHealth"><CompassDestinationPage page="teamHealth" /></FeatureGate>} />
+        <Route path="/action-items" element={<FeatureGate featureKey="actionItems"><ActionItemsPage /></FeatureGate>} />
+        <Route path="/weekly-tracker" element={<FeatureGate featureKey="weeklyTracker"><WeeklyActionTrackerPage /></FeatureGate>} />
+        <Route path="/metrics" element={<FeatureGate featureKey="metrics"><PlaceholderPage title="Metrics Management" /></FeatureGate>} />
+        <Route path="/metrics/table" element={<FeatureGate featureKey="metrics"><DataTablePage /></FeatureGate>} />
+        <Route path="/reports/executive-summary" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="executiveSummary" /></FeatureGate>} />
+        <Route path="/reports/exports" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="exports" /></FeatureGate>} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<PlaceholderPage title="Learn" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
-        <Route path="/admin/users" element={<CompassDestinationPage page="adminUsers" />} />
-        <Route path="/admin/teams" element={<CompassDestinationPage page="adminTeams" />} />
-        <Route path="/admin/permissions" element={<CompassDestinationPage page="adminPermissions" />} />
+        <Route path="/admin/users" element={<FeatureGate featureKey="adminUsers"><CompassDestinationPage page="adminUsers" /></FeatureGate>} />
+        <Route path="/admin/teams" element={<FeatureGate featureKey="adminTeams"><CompassDestinationPage page="adminTeams" /></FeatureGate>} />
+        <Route path="/admin/permissions" element={<FeatureGate featureKey="adminPermissions"><CompassDestinationPage page="adminPermissions" /></FeatureGate>} />
+        <Route path="/admin/features" element={<FeatureGate featureKey="featureRollout"><CompassDestinationPage page="adminFeatures" /></FeatureGate>} />
       </Routes>
     </AnimatePresence>
   );
@@ -70,13 +73,15 @@ const ProtectedApp = () => {
 
   return (
     <CurbAppealProvider>
-      <NotificationsProvider>
-        <CalendarEventProvider>
-          <AppShell>
-            <AnimatedRoutes />
-          </AppShell>
-        </CalendarEventProvider>
-      </NotificationsProvider>
+      <FeatureAccessProvider>
+        <NotificationsProvider>
+          <CalendarEventProvider>
+            <AppShell>
+              <AnimatedRoutes />
+            </AppShell>
+          </CalendarEventProvider>
+        </NotificationsProvider>
+      </FeatureAccessProvider>
     </CurbAppealProvider>
   );
 };

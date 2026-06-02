@@ -13,41 +13,45 @@ import { Box, Collapse, Drawer, IconButton, List, ListItemButton, ListItemIcon, 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
 const navItems = [
   { icon: DashboardOutlinedIcon, label: 'Dashboards', submenu: true },
-  { icon: TrendingUpIcon, label: 'Priorities', path: '/priorities' },
-  { icon: FactCheckOutlinedIcon, label: 'Workplans', path: '/workplans' },
-  { icon: GroupsIcon, label: 'Huddles', popout: true },
-  { icon: CheckCircleOutlineIcon, label: 'Action Items', path: '/action-items' },
-  { icon: TodayOutlinedIcon, label: 'Weekly Tracker', path: '/weekly-tracker' },
+  { featureKey: 'priorities', icon: TrendingUpIcon, label: 'Priorities', path: '/priorities' },
+  { featureKey: 'workplans', icon: FactCheckOutlinedIcon, label: 'Workplans', path: '/workplans' },
+  { featureKey: 'huddles', icon: GroupsIcon, label: 'Huddles', popout: true },
+  { featureKey: 'actionItems', icon: CheckCircleOutlineIcon, label: 'Action Items', path: '/action-items' },
+  { featureKey: 'weeklyTracker', icon: TodayOutlinedIcon, label: 'Weekly Tracker', path: '/weekly-tracker' },
   { icon: NotificationsNoneOutlinedIcon, label: 'Notifications', path: '/notifications' },
-  { icon: BarChartIcon, label: 'Metrics', path: '/metrics' },
+  { featureKey: 'metrics', icon: BarChartIcon, label: 'Metrics', path: '/metrics' },
   { icon: SchoolOutlinedIcon, label: 'Learn', path: '/learn' },
 ];
 
 const dashboardLinks = [
-  ['My Dashboard', '/dashboard/me'],
-  ['Company Dashboard', '/dashboard/company'],
-  ['Annual Initiatives', '/initiatives'],
-  ['Data Table', '/metrics/table'],
+  { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
+  { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+  { featureKey: 'initiatives', label: 'Annual Initiatives', path: '/initiatives' },
+  { featureKey: 'metrics', label: 'Data Table', path: '/metrics/table' },
 ];
 
 const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
   const { user } = useAuth();
+  const { isFeatureEnabled } = useFeatureAccess();
   const navigate = useNavigate();
   const location = useLocation();
   const mobile = useMediaQuery((theme) => theme.breakpoints.down('md'));
   const [dashOpen, setDashOpen] = useState(true);
   const width = open ? 240 : 64;
+  const visibleNavItems = navItems.filter((item) => !item.featureKey || isFeatureEnabled(item.featureKey));
+  const visibleDashboardLinks = dashboardLinks.filter((item) => isFeatureEnabled(item.featureKey));
 
   const content = (
     <Box component={motion.div} animate={{ width: mobile ? 240 : width }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} sx={{ width, height: '100%', color: 'common.white', overflowX: 'hidden' }}>
       <Toolbar />
       <List sx={{ px: 1 }}>
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const active = item.path ? location.pathname.startsWith(item.path) : item.submenu && location.pathname.startsWith('/dashboard');
           return (
@@ -74,7 +78,7 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
               {item.submenu && (
                 <Collapse in={dashOpen && (open || mobile)} timeout="auto">
                   <List dense sx={{ pl: 4 }}>
-                    {dashboardLinks.map(([label, path]) => {
+                    {visibleDashboardLinks.map(({ label, path }) => {
                       const selected = location.pathname === path;
 
                       return (

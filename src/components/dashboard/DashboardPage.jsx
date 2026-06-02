@@ -13,6 +13,7 @@ import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useAuth } from '../../hooks/useAuth';
 import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
 import CalendarPanel from '../calendar/CalendarPanel';
+import CompanyDashboardOverview from './CompanyDashboardOverview';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import CriticalNumbersSection from './CriticalNumbersSection';
@@ -65,9 +66,9 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
-  const teamOptions = company ? ['Critical Numbers for Leadership', 'Operations', 'Resident Services', 'Asset Management'] : user.teams;
+  const teamOptions = company ? [] : user.teams;
   const opensCalendarFirst = !company && user.id === 'u1';
-  const [team, setTeam] = useState(teamOptions[0]);
+  const [team, setTeam] = useState(teamOptions[0] || 'All Teams');
   const [edit, setEdit] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(opensCalendarFirst);
   const [selectedMetric, setSelectedMetric] = useState(null);
@@ -88,7 +89,7 @@ const DashboardPage = ({ company = false }) => {
   const [widgetOrder, setWidgetOrder] = useState(() => getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
 
   useEffect(() => {
-    setTeam(teamOptions[0]);
+    setTeam(teamOptions[0] || 'All Teams');
     setCalendarOpen(opensCalendarFirst);
   }, [company, opensCalendarFirst, user.id]);
 
@@ -200,9 +201,11 @@ const DashboardPage = ({ company = false }) => {
           <Typography variant="body2">{company ? 'Company-wide accountability view' : `${user.department} operating view`}</Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">
-          <Button variant={edit ? 'contained' : 'outlined'} startIcon={<DragIndicatorIcon />} onClick={() => setEdit((value) => !value)}>
-            {edit ? 'Save Order' : 'Edit'}
-          </Button>
+          {!company && (
+            <Button variant={edit ? 'contained' : 'outlined'} startIcon={<DragIndicatorIcon />} onClick={() => setEdit((value) => !value)}>
+              {edit ? 'Save Order' : 'Edit'}
+            </Button>
+          )}
           {!company && (
             <Button
               variant={calendarOpen ? 'contained' : 'outlined'}
@@ -218,16 +221,23 @@ const DashboardPage = ({ company = false }) => {
             <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
             <IconButton aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
           </Stack>
-          <FormControl size="small" sx={{ minWidth: 230 }}>
-            <InputLabel>Team Filter</InputLabel>
-            <Select label="Team Filter" value={team} onChange={(event) => setTeam(event.target.value)}>
-              {teamOptions.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}
-            </Select>
-          </FormControl>
+          {!company && (
+            <FormControl size="small" sx={{ minWidth: 230 }}>
+              <InputLabel>Team Filter</InputLabel>
+              <Select label="Team Filter" value={team} onChange={(event) => setTeam(event.target.value)}>
+                {teamOptions.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}
+              </Select>
+            </FormControl>
+          )}
         </Stack>
       </Stack>
       {company ? (
-        dashboardWidgets
+        <CompanyDashboardOverview
+          calendarEvents={organizationCalendarEvents}
+          calendarProps={calendarProps}
+          isAdmin={isAdmin}
+          onMetricClick={setSelectedMetric}
+        />
       ) : (
         <Box sx={{ overflow: 'hidden' }}>
           <Box

@@ -2,41 +2,42 @@ export const topNavMenus = [
   {
     label: 'Strategy',
     items: [
-      { label: 'Annual Initiatives', path: '/initiatives' },
-      { label: 'Company Dashboard', path: '/dashboard/company' },
-      { label: 'Priority Map', path: '/priorities' },
-      { label: 'Weekly Tracker', path: '/weekly-tracker' },
+      { featureKey: 'initiatives', label: 'Annual Initiatives', path: '/initiatives' },
+      { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+      { featureKey: 'priorities', label: 'Priority Map', path: '/priorities' },
+      { featureKey: 'weeklyTracker', label: 'Weekly Tracker', path: '/weekly-tracker' },
     ],
   },
   {
     label: 'Culture',
     items: [
-      { label: 'Huddles', path: '/huddles' },
-      { label: 'Stucks', path: '/stucks' },
-      { label: 'Team Health', path: '/culture/team-health' },
+      { featureKey: 'huddles', label: 'Huddles', path: '/huddles' },
+      { featureKey: 'stucks', label: 'Stucks', path: '/stucks' },
+      { featureKey: 'teamHealth', label: 'Team Health', path: '/culture/team-health' },
     ],
   },
   {
     label: 'Reports',
     items: [
-      { label: 'Data Table', path: '/metrics/table' },
-      { label: 'Executive Summary', path: '/reports/executive-summary' },
-      { label: 'Exports', path: '/reports/exports' },
+      { featureKey: 'metrics', label: 'Data Table', path: '/metrics/table' },
+      { featureKey: 'reports', label: 'Executive Summary', path: '/reports/executive-summary' },
+      { featureKey: 'reports', label: 'Exports', path: '/reports/exports' },
     ],
   },
   {
     label: 'Administration',
     items: [
-      { label: 'Users', path: '/admin/users' },
-      { label: 'Teams', path: '/admin/teams' },
-      { label: 'Permissions', path: '/admin/permissions' },
+      { featureKey: 'adminUsers', label: 'Users', path: '/admin/users' },
+      { featureKey: 'adminTeams', label: 'Teams', path: '/admin/teams' },
+      { featureKey: 'adminPermissions', label: 'Permissions', path: '/admin/permissions' },
+      { featureKey: 'featureRollout', label: 'Feature Rollout', path: '/admin/features' },
     ],
   },
 ];
 
 export const quickAddItems = [
-  { label: 'Action Item', path: '/action-items?new=1' },
-  { label: 'Priority', path: '/priorities?new=1' },
-  { label: 'Stuck', path: '/stucks?new=1' },
-  { label: 'Workplan', path: '/workplans?new=1' },
+  { featureKey: 'actionItems', label: 'Action Item', path: '/action-items?new=1' },
+  { featureKey: 'priorities', label: 'Priority', path: '/priorities?new=1' },
+  { featureKey: 'stucks', label: 'Stuck', path: '/stucks?new=1' },
+  { featureKey: 'workplans', label: 'Workplan', path: '/workplans?new=1' },
 ];

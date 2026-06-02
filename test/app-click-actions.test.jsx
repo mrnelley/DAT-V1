@@ -92,9 +92,11 @@ const { cleanup, render, screen, waitFor, within } = await import('@testing-libr
 const { default: userEvent } = await import('@testing-library/user-event');
 const { AuthProvider } = await import('../src/hooks/useAuth.js');
 const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackContext.jsx');
+const { FeatureAccessProvider } = await import('../src/context/FeatureAccessContext.jsx');
 const { NotificationsProvider } = await import('../src/context/NotificationsContext.jsx');
 const { default: theme } = await import('../src/theme/index.js');
 const { default: ActionItemsPage } = await import('../src/components/action-items/ActionItemsPage.jsx');
+const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
@@ -111,6 +113,7 @@ const renderWithProviders = (ui, path = '/') => {
   window.localStorage.clear();
   window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
   window.localStorage.setItem('hdc_compass_demo_user_id', 'u1');
+  window.localStorage.setItem('hdc_compass_guided_practice_u1', 'complete');
   return {
     user: userEvent.setup({ document: window.document }),
     ...render(
@@ -119,9 +122,11 @@ const renderWithProviders = (ui, path = '/') => {
         <MemoryRouter initialEntries={[path]}>
           <AuthProvider>
             <ActionFeedbackProvider>
-              <NotificationsProvider>
-                {ui}
-              </NotificationsProvider>
+              <FeatureAccessProvider>
+                <NotificationsProvider>
+                  {ui}
+                </NotificationsProvider>
+              </FeatureAccessProvider>
             </ActionFeedbackProvider>
           </AuthProvider>
         </MemoryRouter>
@@ -234,6 +239,7 @@ describe('clickable user actions', () => {
       ['Administration', 'Users', '/admin/users'],
       ['Administration', 'Teams', '/admin/teams'],
       ['Administration', 'Permissions', '/admin/permissions'],
+      ['Administration', 'Feature Rollout', '/admin/features'],
     ];
 
     for (const [menu, item, path] of destinations) {
@@ -241,6 +247,28 @@ describe('clickable user actions', () => {
       await user.click(await screen.findByRole('menuitem', { name: new RegExp(item, 'i') }));
       expect((await screen.findByTestId('location')).textContent).to.equal(path);
     }
+  });
+
+  it('pins operational priority health on the company dashboard', async () => {
+    renderWithProviders(
+      <CompanyDashboardOverview
+        calendarEvents={[]}
+        calendarProps={{
+          onApprove: () => {},
+          onCreateCalendarEvent: () => {},
+          onDecline: () => {},
+          onSendToOrg: () => {},
+          onUpdateCalendarEvent: () => {},
+        }}
+        isAdmin
+        onMetricClick={() => {}}
+      />,
+      '/dashboard/company',
+    );
+
+    expect(await screen.findByText(/pinned priority signal/i)).to.exist;
+    expect(await screen.findByRole('heading', { name: /operational priority health/i })).to.exist;
+    expect(screen.getByLabelText(/team filter/i)).to.exist;
   });
 
   it('opens an existing create workflow from the quick add menu', async () => {

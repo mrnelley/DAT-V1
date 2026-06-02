@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
+import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useAuth } from '../../hooks/useAuth';
 import { quickAddItems, topNavMenus } from '../../navigation/topNav';
 import { brandAssets } from '../../theme/brandAssets';
@@ -17,6 +18,7 @@ const TopBar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useNotifications();
+  const { isFeatureEnabled } = useFeatureAccess();
   const [anchor, setAnchor] = useState(null);
   const [quickAnchor, setQuickAnchor] = useState(null);
   const [menu, setMenu] = useState('');
@@ -36,7 +38,14 @@ const TopBar = ({ onMenuClick }) => {
     navigate(path);
   };
 
-  const currentMenu = topNavMenus.find((candidate) => candidate.label === menu);
+  const visibleTopNavMenus = topNavMenus
+    .map((navMenu) => ({
+      ...navMenu,
+      items: navMenu.items.filter((item) => isFeatureEnabled(item.featureKey)),
+    }))
+    .filter((navMenu) => navMenu.items.length);
+  const visibleQuickAddItems = quickAddItems.filter((item) => isFeatureEnabled(item.featureKey));
+  const currentMenu = visibleTopNavMenus.find((candidate) => candidate.label === menu);
 
   return (
     <AppBar
@@ -75,7 +84,7 @@ const TopBar = ({ onMenuClick }) => {
           <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
         </Stack>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
-          {topNavMenus.map((navMenu) => {
+          {visibleTopNavMenus.map((navMenu) => {
             const active = navMenu.items.some((item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`));
 
             return (
@@ -91,7 +100,9 @@ const TopBar = ({ onMenuClick }) => {
             );
           })}
         </Box>
-        <IconButton aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
+        {visibleQuickAddItems.length > 0 && (
+          <IconButton aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
+        )}
         <Tooltip title="Notifications">
           <IconButton aria-label="Open notifications inbox" color="primary" onClick={() => navigate('/notifications')}>
             <Badge color="error" badgeContent={unreadCount} max={99}>
@@ -131,7 +142,7 @@ const TopBar = ({ onMenuClick }) => {
         <Menu anchorEl={quickAnchor} open={Boolean(quickAnchor)} onClose={closeMenus}>
           <AnimatePresence>
             <Box component={motion.div} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              {quickAddItems.map((item) => (
+              {visibleQuickAddItems.map((item) => (
                 <MenuItem key={item.path} onClick={() => goTo(item.path)}>
                   New {item.label}
                 </MenuItem>

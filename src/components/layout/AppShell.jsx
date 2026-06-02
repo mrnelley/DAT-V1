@@ -1,6 +1,7 @@
 import { Box, Toolbar } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import HuddleSidePopout from '../huddles/HuddleSidePopout';
+import FirstRunPracticeOverlay from '../onboarding/FirstRunPracticeOverlay';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 
@@ -46,6 +47,7 @@ const AppShell = ({ children }) => {
         <Toolbar />
         <Box sx={{ p: { xs: 2, md: 3 } }}>{children}</Box>
       </Box>
+      <FirstRunPracticeOverlay />
     </Box>
   );
 };
