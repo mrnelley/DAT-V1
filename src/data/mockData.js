@@ -865,6 +865,68 @@ export const priorities = [
       },
     ],
   }),
+  q2OrgPriority({
+    id: 'q2-advocacy-policy-influence',
+    name: 'Advocacy & Policy Influence',
+    owner: users[0],
+    ownerIds: [users[0].id, userById.u6.id, users[6].id],
+    pillarId: 'advocate-change',
+    roadmapStatus: 'Needs Attention',
+    keyObjectives: [
+      {
+        id: 'ac-housing-stability-advocacy',
+        title: 'Advance Q2 Housing Stability Advocacy Push',
+        owner: users[0],
+        ownerIds: [users[0].id, userById.u6.id],
+        department: 'Executive Office',
+        status: 'On Course',
+        workplanTitle: 'Public Funding Relationship Map',
+        workplanAccess: 'Executive Office',
+        workplanSummary: 'Move high-value public funding relationships, testimony themes, and budget advocacy asks before summer decisions.',
+        notes: 'Priority work is moving, with relationship touchpoints and coalition language still in flight.',
+        kpis: [
+          {
+            id: 'ac-public-funding-touchpoints',
+            title: 'Complete high-value public funding touchpoints',
+            target: '5 high-value touchpoints completed',
+            currentLabel: '3 of 5 completed this week',
+            progress: 60,
+            status: 'On Course',
+          },
+          {
+            id: 'ac-coalition-testimony-themes',
+            title: 'Finalize testimony themes with coalition partners',
+            target: '4 testimony themes confirmed',
+            currentLabel: '2 of 4 confirmed',
+            progress: 50,
+            status: 'On Course',
+          },
+        ],
+      },
+      {
+        id: 'ac-resident-voice-story-bank',
+        title: 'Build Resident Voice Story Bank',
+        owner: users[6],
+        ownerIds: [users[0].id, users[6].id],
+        department: 'Resident Services',
+        status: 'Needs Attention',
+        workplanTitle: 'Resident Impact Narrative Collection',
+        workplanAccess: 'Resident Services',
+        workplanSummary: 'Collect, approve, and prepare resident stories that can support advocacy, communications, and board education.',
+        notes: 'One story is secured; two additional story leads are still needed from Resident Services.',
+        kpis: [
+          {
+            id: 'ac-resident-stories-secured',
+            title: 'Secure resident impact stories for advocacy',
+            target: '3 approved resident stories',
+            currentLabel: '1 of 3 secured',
+            progress: 33,
+            status: 'Needs Attention',
+          },
+        ],
+      },
+    ],
+  }),
 ];
 
 const weeklyPriority = ({

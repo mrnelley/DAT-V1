@@ -269,6 +269,8 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/pinned priority signal/i)).to.exist;
     expect(await screen.findByRole('heading', { name: /operational priority health/i })).to.exist;
     expect(screen.getByLabelText(/team filter/i)).to.exist;
+    expect(screen.getByText(/6\/6 q2 objectives/i)).to.exist;
+    expect(screen.queryByText(/critical numbers/i)).to.equal(null);
   });
 
   it('opens an existing create workflow from the quick add menu', async () => {

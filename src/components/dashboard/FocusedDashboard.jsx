@@ -7,7 +7,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
-import { weeklyPriorities } from '../../data/mockData';
+import { departmentWorkplans, weeklyPriorities } from '../../data/mockData';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
@@ -39,7 +39,7 @@ const profiles = {
     stats: [
       ['Active Workplans', '9', 'Across Finance, PM, RS, RED, HR, and Advancement'],
       ['Open Stucks', '6', 'Need cross-department support'],
-      ['Q2 Priorities', '5', 'Company priorities in motion'],
+      ['Q2 Objectives', '6', 'Company objectives in motion'],
       ['Watch Items', '3', 'Need ELT/OLT attention'],
     ],
     primaryTitle: 'Operations Priorities',
@@ -143,6 +143,13 @@ const statusColor = {
   Alert: 'error',
   Completed: 'success',
   Open: 'info',
+};
+
+const statusOrder = {
+  Alert: 0,
+  Watch: 1,
+  Steady: 2,
+  Completed: 3,
 };
 
 const weeklyPriorityLeadershipLanes = {
@@ -261,11 +268,85 @@ const WeeklyPrioritiesSection = ({ user }) => {
   );
 };
 
+const DepartmentWorkplanAlignmentSection = ({ user }) => {
+  const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
+  const departments = new Set([user.department, ...(user.teams || []), ...(leadershipLane?.departments || [])]);
+  const visibleWorkplans = departmentWorkplans
+    .filter((workplan) => (
+      workplan.lead?.id === user.id
+      || workplan.ownerIds?.includes(user.id)
+      || departments.has(workplan.department)
+      || departments.has(workplan.scope)
+    ))
+    .sort((a, b) => (
+      (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4)
+      || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
+    ));
+
+  if (!visibleWorkplans.length) return null;
+
+  return (
+    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
+        <Box>
+          <Typography variant="h3">Department Workplan Alignment</Typography>
+          <Typography variant="body2">Q2 operating work tied to company objectives, strategic pillars, and due dates.</Typography>
+        </Box>
+        <Chip label={`${visibleWorkplans.length} Q2 workplans`} color="primary" variant="outlined" />
+      </Stack>
+
+      <Stack gap={1}>
+        {visibleWorkplans.map((workplan) => (
+          <Box key={workplan.id} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.2fr) minmax(180px, 0.55fr) minmax(210px, 0.7fr) 120px' }, gap: 1.25, alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{ mb: 0.5 }}>
+                <Chip label={workplan.status} color={statusColor[workplan.status] || 'default'} size="small" />
+                <Chip label={workplan.quarter} size="small" variant="outlined" />
+                <Chip label={`Due ${workplan.due}`} size="small" variant="outlined" />
+              </Stack>
+              <Typography variant="body1" color="text.primary" fontWeight={800}>{workplan.title}</Typography>
+              <Typography variant="body2">{workplan.outcome}</Typography>
+            </Box>
+
+            <Stack direction="row" gap={1} alignItems="center">
+              <UserAvatar user={workplan.lead} size="sm" />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" color="text.primary" fontWeight={700}>{workplan.lead.name}</Typography>
+                <Typography variant="caption">{workplan.department}</Typography>
+              </Box>
+            </Stack>
+
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Linked objective</Typography>
+              <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 0.35 }}>
+                {(workplan.priorityLinks || []).length ? (
+                  workplan.priorityLinks.map((priority) => <Chip key={priority} label={priority} size="small" variant="outlined" />)
+                ) : (
+                  <Chip label="No objective link" size="small" variant="outlined" />
+                )}
+              </Stack>
+            </Box>
+
+            <Box>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                <Typography variant="caption">Progress</Typography>
+                <Typography variant="caption" fontWeight={800}>{workplan.progress}%</Typography>
+              </Stack>
+              <LinearProgress value={workplan.progress} variant="determinate" />
+            </Box>
+          </Box>
+        ))}
+      </Stack>
+    </Box>
+  );
+};
+
 const FocusedDashboard = ({ user }) => {
   if (user.dashboardFocus === 'property_management') {
     return (
       <Box sx={{ mb: 3 }}>
         <WeeklyPrioritiesSection user={user} />
+        <DepartmentWorkplanAlignmentSection user={user} />
         <PropertyManagementDashboard user={user} />
       </Box>
     );
@@ -301,6 +382,7 @@ const FocusedDashboard = ({ user }) => {
       </Box>
 
       <WeeklyPrioritiesSection user={user} />
+      <DepartmentWorkplanAlignmentSection user={user} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
 
