@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { Box, Button, Chip, Divider, Drawer, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Typography } from '@mui/material';
-import { calendarLabels, calendarLifecycles, calendarRhythms, connectedLabels, formatDateLabel, formatRhythmLabel, getEventDate, reviewStates, sourceStatuses } from '../../utils/waypoints';
+import { calendarEventTypes, calendarLifecycles, calendarRhythms, connectedWorkLabels, formatDateLabel, formatRhythmLabel, getEventDate, reviewStates, sourceStatuses } from '../../utils/calendarEvents';
 import UserAvatar from '../shared/UserAvatar';
 
 const meaningFields = [
@@ -20,7 +20,8 @@ const orgSubmissionCopy = {
   returned: 'Returned',
 };
 
-const WaypointDetailsDrawer = ({
+const CalendarEventDetailsDrawer = ({
+  event,
   isAdmin = false,
   onApprove,
   onClose,
@@ -29,35 +30,34 @@ const WaypointDetailsDrawer = ({
   onUpdate,
   open,
   scope,
-  waypoint,
 }) => {
-  if (!waypoint) return null;
+  if (!event) return null;
 
-  const lifecycle = calendarLifecycles[waypoint.lifecycle] || calendarLifecycles.scheduled;
-  const review = reviewStates[waypoint.reviewState] || reviewStates.private;
-  const sourceStatus = waypoint.sourceStatus ? sourceStatuses[waypoint.sourceStatus] : null;
-  const connectedLabel = connectedLabels[waypoint.source?.type] || waypoint.connectedWork;
-  const pending = waypoint.reviewState === 'pending';
+  const lifecycle = calendarLifecycles[event.lifecycle] || calendarLifecycles.scheduled;
+  const review = reviewStates[event.reviewState] || reviewStates.private;
+  const sourceStatus = event.sourceStatus ? sourceStatuses[event.sourceStatus] : null;
+  const connectedLabel = connectedWorkLabels[event.source?.type] || event.connectedWork;
+  const pending = event.reviewState === 'pending';
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 430 }, bgcolor: 'background.paper' } }}>
       <Box sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" gap={1} sx={{ mb: 2 }}>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h2">{waypoint.title}</Typography>
-            <Typography variant="body2">{formatDateLabel(getEventDate(waypoint))}</Typography>
+            <Typography variant="h2">{event.title}</Typography>
+            <Typography variant="body2">{formatDateLabel(getEventDate(event))}</Typography>
           </Box>
           <IconButton aria-label="Close calendar event details" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
 
         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
-          <Chip label={waypoint.label} color="primary" size="small" />
-          <Chip label={formatRhythmLabel(waypoint.rhythm)} color="secondary" size="small" variant="outlined" />
+          <Chip label={event.type} color="primary" size="small" />
+          <Chip label={formatRhythmLabel(event.rhythm)} color="secondary" size="small" variant="outlined" />
           <Chip label={lifecycle.label} color={lifecycle.color} size="small" />
           {sourceStatus && <Chip label={sourceStatus.label} color={sourceStatus.color} size="small" />}
           <Chip label={review.label} variant={pending ? 'outlined' : 'filled'} size="small" />
-          {waypoint.orgSubmissionState && waypoint.scope === 'personal' && (
-            <Chip label={orgSubmissionCopy[waypoint.orgSubmissionState]} variant="outlined" size="small" />
+          {event.orgSubmissionState && event.scope === 'personal' && (
+            <Chip label={orgSubmissionCopy[event.orgSubmissionState]} variant="outlined" size="small" />
           )}
         </Stack>
 
@@ -66,11 +66,11 @@ const WaypointDetailsDrawer = ({
             <InputLabel>Type</InputLabel>
             <Select
               label="Type"
-              value={waypoint.label}
-              onChange={(event) => onUpdate(waypoint.id, { label: event.target.value })}
+              value={event.type}
+              onChange={(changeEvent) => onUpdate(event.id, { type: changeEvent.target.value })}
             >
-              {calendarLabels.map((label) => (
-                <MenuItem key={label} value={label}>{label}</MenuItem>
+              {calendarEventTypes.map((type) => (
+                <MenuItem key={type} value={type}>{type}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -79,8 +79,8 @@ const WaypointDetailsDrawer = ({
             <InputLabel>Rhythm</InputLabel>
             <Select
               label="Rhythm"
-              value={waypoint.rhythm}
-              onChange={(event) => onUpdate(waypoint.id, { rhythm: event.target.value })}
+              value={event.rhythm}
+              onChange={(changeEvent) => onUpdate(event.id, { rhythm: changeEvent.target.value })}
             >
               {calendarRhythms.map((rhythm) => (
                 <MenuItem key={rhythm} value={rhythm}>{formatRhythmLabel(rhythm)}</MenuItem>
@@ -92,8 +92,8 @@ const WaypointDetailsDrawer = ({
             <InputLabel>Lifecycle</InputLabel>
             <Select
               label="Lifecycle"
-              value={waypoint.lifecycle}
-              onChange={(event) => onUpdate(waypoint.id, { lifecycle: event.target.value })}
+              value={event.lifecycle}
+              onChange={(changeEvent) => onUpdate(event.id, { lifecycle: changeEvent.target.value })}
             >
               {Object.entries(calendarLifecycles).map(([value, item]) => (
                 <MenuItem key={value} value={value}>{item.label}</MenuItem>
@@ -103,25 +103,25 @@ const WaypointDetailsDrawer = ({
 
           <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <Typography variant="caption">{connectedLabel}</Typography>
-            <Typography variant="body1" fontWeight={700}>{waypoint.source?.label || waypoint.connectedWork}</Typography>
+            <Typography variant="body1" fontWeight={700}>{event.source?.label || event.connectedWork}</Typography>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
             <Box sx={{ p: 1.5, bgcolor: 'background.default', borderRadius: 1 }}>
               <Typography variant="caption">Property</Typography>
-              <Typography variant="body1">{waypoint.property}</Typography>
+              <Typography variant="body1">{event.property}</Typography>
             </Box>
             <Box sx={{ p: 1.5, bgcolor: 'background.default', borderRadius: 1 }}>
               <Typography variant="caption">Department</Typography>
-              <Typography variant="body1">{waypoint.department}</Typography>
+              <Typography variant="body1">{event.department}</Typography>
             </Box>
           </Box>
 
           <Stack direction="row" alignItems="center" gap={1}>
-            <UserAvatar user={waypoint.owner} size="sm" />
+            <UserAvatar user={event.owner} size="sm" />
             <Box>
               <Typography variant="caption">Owner</Typography>
-              <Typography variant="body1">{waypoint.owner?.name}</Typography>
+              <Typography variant="body1">{event.owner?.name}</Typography>
             </Box>
           </Stack>
 
@@ -130,22 +130,22 @@ const WaypointDetailsDrawer = ({
           {meaningFields.map(([label, field]) => (
             <Box key={field}>
               <Typography variant="caption">{label}</Typography>
-              <Typography variant="body1">{waypoint[field]}</Typography>
+              <Typography variant="body1">{event[field]}</Typography>
             </Box>
           ))}
 
-          {scope === 'personal' && waypoint.orgSubmissionState !== 'pending' && waypoint.orgSubmissionState !== 'approved' && (
-            <Button variant="contained" startIcon={<SendOutlinedIcon />} onClick={() => onSendToOrg(waypoint.id)}>
+          {scope === 'personal' && event.orgSubmissionState !== 'pending' && event.orgSubmissionState !== 'approved' && (
+            <Button variant="contained" startIcon={<SendOutlinedIcon />} onClick={() => onSendToOrg(event.id)}>
               Send to Organization Calendar
             </Button>
           )}
 
           {scope === 'organization' && isAdmin && pending && (
             <Stack direction="row" gap={1}>
-              <Button variant="contained" color="success" startIcon={<TaskAltIcon />} onClick={() => onApprove(waypoint.id)}>
+              <Button variant="contained" color="success" startIcon={<TaskAltIcon />} onClick={() => onApprove(event.id)}>
                 Approve
               </Button>
-              <Button variant="outlined" color="error" onClick={() => onDecline(waypoint.id)}>
+              <Button variant="outlined" color="error" onClick={() => onDecline(event.id)}>
                 Decline
               </Button>
             </Stack>
@@ -156,4 +156,4 @@ const WaypointDetailsDrawer = ({
   );
 };
 
-export default WaypointDetailsDrawer;
+export default CalendarEventDetailsDrawer;

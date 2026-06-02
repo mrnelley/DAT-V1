@@ -58,7 +58,7 @@ const TopBar = ({ onMenuClick }) => {
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='360' height='18' viewBox='0 0 360 18' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 9 C 18 8, 27 5, 42 8 S 72 15, 91 10 S 122 -1, 144 7 S 166 21, 188 10 S 211 1, 233 6 S 260 16, 282 8 S 318 3, 360 9' fill='none' stroke='%235eb8a8' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M0 9 C 30 2, 48 14, 71 9 S 111 3, 134 9 S 164 17, 191 8 S 229 0, 253 9 S 292 15, 319 8 S 345 6, 360 9' fill='none' stroke='%235eb8a8' stroke-width='1.2' stroke-opacity='.46' stroke-linecap='round'/%3E%3Cpath d='M0 9 C 22 11, 39 7, 57 9 S 88 12, 109 8 S 138 5, 158 9 S 190 13, 211 8 S 238 4, 259 9 S 296 13, 319 8 S 342 7, 360 9' fill='none' stroke='%235eb8a8' stroke-width='.85' stroke-opacity='.36' stroke-linecap='round'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat-x',
           backgroundSize: '360px 18px',
-          animation: 'pulseWaveDrift 22s linear infinite',
+          animation: 'compassWaveDrift 22s linear infinite',
         },
       }}
     >

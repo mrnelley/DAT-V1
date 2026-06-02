@@ -9,10 +9,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { metrics } from '../../data/mockData';
-import { useWaypoints } from '../../context/WaypointContext';
+import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useAuth } from '../../hooks/useAuth';
 import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
-import CompassCalendar from '../calendar/CompassCalendar';
+import CalendarPanel from '../calendar/CalendarPanel';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import CriticalNumbersSection from './CriticalNumbersSection';
@@ -72,19 +72,19 @@ const DashboardPage = ({ company = false }) => {
   const [calendarOpen, setCalendarOpen] = useState(opensCalendarFirst);
   const [selectedMetric, setSelectedMetric] = useState(null);
   const {
-    addWaypoint,
-    approveWaypoint,
-    declineWaypoint,
+    addCalendarEvent,
+    approveCalendarEvent,
+    declineCalendarEvent,
     isAdmin,
-    organizationWaypoints,
-    personalWaypoints,
+    organizationCalendarEvents,
+    personalCalendarEvents,
     sendToOrg,
-    updateWaypoint,
-  } = useWaypoints();
+    updateCalendarEvent,
+  } = useCalendarEvents();
   const defaultWidgetOrder = useMemo(() => (
     company ? ['strategicPlan', 'critical', 'organizationCalendar'] : ['focus', 'critical', 'kpis']
   ), [company]);
-  const layoutStorageKey = `hdc_pulse_dashboard_layout_${company ? 'company_v2' : user.id}`;
+  const layoutStorageKey = `hdc_compass_dashboard_layout_${company ? 'company_v2' : user.id}`;
   const [widgetOrder, setWidgetOrder] = useState(() => getStoredWidgetOrder(layoutStorageKey, defaultWidgetOrder));
 
   useEffect(() => {
@@ -114,11 +114,11 @@ const DashboardPage = ({ company = false }) => {
   };
 
   const calendarProps = {
-    onApprove: approveWaypoint,
-    onCreateWaypoint: addWaypoint,
-    onDecline: declineWaypoint,
+    onApprove: approveCalendarEvent,
+    onCreateCalendarEvent: addCalendarEvent,
+    onDecline: declineCalendarEvent,
     onSendToOrg: sendToOrg,
-    onUpdateWaypoint: updateWaypoint,
+    onUpdateCalendarEvent: updateCalendarEvent,
   };
 
   const renderWidget = (widgetId) => {
@@ -145,11 +145,11 @@ const DashboardPage = ({ company = false }) => {
 
     if (widgetId === 'organizationCalendar') {
       return (
-        <CompassCalendar
+        <CalendarPanel
           {...calendarProps}
+          events={organizationCalendarEvents}
           isAdmin={isAdmin}
           scope="organization"
-          waypoints={organizationWaypoints}
         />
       );
     }
@@ -240,10 +240,10 @@ const DashboardPage = ({ company = false }) => {
               {dashboardWidgets}
             </Box>
             <Box sx={{ width: '100%', flexShrink: 0, pl: { xs: 0, md: 1 } }}>
-              <CompassCalendar
+              <CalendarPanel
                 {...calendarProps}
+                events={personalCalendarEvents}
                 scope="personal"
-                waypoints={personalWaypoints}
               />
             </Box>
           </Box>

@@ -525,7 +525,7 @@ create table if not exists public.stucks (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists public.waypoints (
+create table if not exists public.calendar_events (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
   owner_id uuid references public.profiles(id) on delete set null,
@@ -533,7 +533,7 @@ create table if not exists public.waypoints (
   approved_by uuid references public.profiles(id) on delete set null,
   scope text not null check (scope in ('personal', 'organization')),
   title text not null,
-  label text not null default 'Beat' check (label in ('Beat', 'Marker', 'Commitment', 'Touchpoint')),
+  type text not null default 'Touchpoint' check (type in ('Touchpoint', 'Checkpoint', 'Milestone', 'Commitment')),
   rhythm text not null default 'once' check (rhythm in ('once', 'daily', 'weekly', 'monthly', 'quarterly', 'annual', 'custom')),
   lifecycle text not null default 'scheduled' check (lifecycle in ('scheduled', 'completed', 'rescheduled', 'cancelled')),
   source_status public.work_signal_status,
@@ -545,7 +545,7 @@ create table if not exists public.waypoints (
   action_item_id uuid references public.action_items(id) on delete set null,
   source_type text,
   source_id uuid,
-  origin_waypoint_id uuid references public.waypoints(id) on delete set null,
+  origin_calendar_event_id uuid references public.calendar_events(id) on delete set null,
   why_it_matters text,
   who_it_impacts text,
   support_needed text,
@@ -909,13 +909,13 @@ as $$
       source_type_value = 'calendar_event'
       and exists (
         select 1
-        from public.waypoints w
-        where w.id = source_id_value
+        from public.calendar_events ce
+        where ce.id = source_id_value
           and (
-            w.owner_id = auth.uid()
-            or w.submitted_by = auth.uid()
-            or w.approved_by = auth.uid()
-            or (w.scope = 'organization' and public.is_org_member(w.organization_id))
+            ce.owner_id = auth.uid()
+            or ce.submitted_by = auth.uid()
+            or ce.approved_by = auth.uid()
+            or (ce.scope = 'organization' and public.is_org_member(ce.organization_id))
           )
       )
     )
@@ -955,9 +955,9 @@ create index if not exists idx_weekly_action_tasks_entry on public.weekly_action
 create index if not exists idx_work_object_assignments_source on public.work_object_assignments(source_type, source_id);
 create index if not exists idx_work_object_assignments_profile on public.work_object_assignments(profile_id, assignment_role);
 create index if not exists idx_workplan_huddle_reviews_workplan on public.workplan_huddle_reviews(workplan_id, decision);
-create index if not exists idx_waypoints_owner_scope on public.waypoints(owner_id, scope);
-create index if not exists idx_waypoints_date on public.waypoints(starts_on);
-create index if not exists idx_waypoints_action_item on public.waypoints(action_item_id);
+create index if not exists idx_calendar_events_owner_scope on public.calendar_events(owner_id, scope);
+create index if not exists idx_calendar_events_date on public.calendar_events(starts_on);
+create index if not exists idx_calendar_events_action_item on public.calendar_events(action_item_id);
 create index if not exists idx_checklist_submissions_due on public.checklist_submissions(due_on, status);
 create index if not exists idx_checklist_submissions_property on public.checklist_submissions(property_id);
 create index if not exists idx_review_requests_reviewer on public.review_requests(reviewer_id, status);
@@ -979,7 +979,7 @@ begin
   foreach table_name in array array[
     'organizations', 'departments', 'profiles', 'properties', 'strategic_plans',
     'planning_cycles', 'strategic_pillars', 'quarterly_pillars', 'strategic_success_metrics', 'initiatives', 'workplans', 'priorities', 'key_objectives', 'objective_kpis', 'metrics',
-    'huddles', 'workplan_huddle_reviews', 'action_items', 'weekly_action_reports', 'weekly_action_entries', 'weekly_action_tasks', 'work_object_assignments', 'stucks', 'waypoints', 'review_requests',
+    'huddles', 'workplan_huddle_reviews', 'action_items', 'weekly_action_reports', 'weekly_action_entries', 'weekly_action_tasks', 'work_object_assignments', 'stucks', 'calendar_events', 'review_requests',
     'checklist_templates', 'checklist_submissions', 'checklist_responses',
     'workflow_definitions', 'teams_accounts', 'notification_events', 'comments', 'contacts', 'touchpoints',
     'brand_assets'
@@ -1020,7 +1020,7 @@ alter table public.weekly_action_entries enable row level security;
 alter table public.weekly_action_tasks enable row level security;
 alter table public.work_object_assignments enable row level security;
 alter table public.stucks enable row level security;
-alter table public.waypoints enable row level security;
+alter table public.calendar_events enable row level security;
 alter table public.review_requests enable row level security;
 alter table public.checklist_templates enable row level security;
 alter table public.checklist_sections enable row level security;
@@ -1549,16 +1549,16 @@ with check (
   )
 );
 
-create policy "users read own personal waypoints and org waypoints"
-on public.waypoints for select
+create policy "users read own personal calendar events and organization calendar events"
+on public.calendar_events for select
 using (
   public.is_admin()
   or (scope = 'personal' and owner_id = auth.uid())
   or (scope = 'organization' and public.is_org_member(organization_id) and review_state in ('approved', 'pending'))
 );
 
-create policy "users manage own personal waypoints"
-on public.waypoints for all
+create policy "users manage own personal calendar events"
+on public.calendar_events for all
 using (public.is_admin() or owner_id = auth.uid())
 with check (public.is_admin() or owner_id = auth.uid());
 

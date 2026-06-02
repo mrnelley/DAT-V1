@@ -22,7 +22,7 @@ button,
   touch-action: manipulation;
 }
 
-@keyframes pulseWaveDrift {
+@keyframes compassWaveDrift {
   from {
     background-position-x: 0;
   }

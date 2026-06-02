@@ -2,7 +2,7 @@
 
 ## First Persistence Pass
 
-The initial migration creates the shared operating model for Pulse:
+The initial migration creates the shared operating model for Compass:
 
 - `organizations`, `departments`, `profiles`: account identity, dashboard focus, admin state, and departmental ownership.
 - `properties`, `property_assignments`: HDC communities, ownership/management flags, coordinates, and PM assignments.
@@ -10,7 +10,7 @@ The initial migration creates the shared operating model for Pulse:
 - `initiatives`, `workplans`, `priorities`: the core accountability hierarchy.
 - `metrics`, `metric_values`: KPI definitions and periodic values.
 - `huddles`, `huddle_members`, `action_items`, `stucks`: operating rhythm and blocker tracking.
-- `waypoints`, `review_requests`: org/personal Pulse Calendar items and approval queues.
+- `calendar_events`, `review_requests`: organization and personal calendar items plus approval queues.
 - `checklist_templates`, `checklist_sections`, `checklist_items`, `checklist_submissions`, `checklist_responses`: reusable checklist workflows such as the quarterly curb appeal commitment.
 - `workflow_definitions`, `workflow_runs`, `teams_accounts`, `adaptive_card_deliveries`: Teams/Vercel automation plumbing.
 - `contacts`, `touchpoints`: Dana's advocacy CRM surface.
@@ -31,10 +31,10 @@ The current demo user selector should become a development-only impersonation co
 
 ## Landing Page Direction
 
-Logged-out users should see a branded HDC Pulse landing page with:
+Logged-out users should see a branded HDC Compass landing page with:
 
-- HDC Pulse product identity.
-- Short explanation of Pulse as the operating rhythm for priorities, workplans, beats, and review commitments.
+- HDC Compass product identity.
+- Short explanation of Compass as the operating system for priorities, workplans, calendar events, and review commitments.
 - `Sign in with Microsoft` as the primary action.
 - Secondary support copy for Teams-driven workflows: users can arrive from a Teams card and sign in before completing the task.
 
@@ -54,7 +54,7 @@ Teams delivery should be recorded in `adaptive_card_deliveries` so we can show w
 
 ## Calendar Pane Direction
 
-The Pulse Calendar should move out of the inline dashboard section and into a persistent off-screen pane.
+The calendar should move out of the inline dashboard section and into a persistent off-screen pane.
 
 Behavior:
 

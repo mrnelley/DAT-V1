@@ -6,7 +6,7 @@ import ViewAgendaOutlinedIcon from '@mui/icons-material/ViewAgendaOutlined';
 import { Box, Button, ButtonBase, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import {
-  calendarLabels,
+  calendarEventTypes,
   calendarRhythms,
   formatMonthLabel,
   formatRhythmLabel,
@@ -16,20 +16,20 @@ import {
   sortCalendarEventsByDate,
   sourceStatuses,
   toDateInputValue,
-} from '../../utils/waypoints';
-import WaypointDetailsDrawer from './WaypointDetailsDrawer';
-import WaypointFormDialog from './WaypointFormDialog';
+} from '../../utils/calendarEvents';
+import CalendarEventDetailsDrawer from './CalendarEventDetailsDrawer';
+import CalendarEventFormDialog from './CalendarEventFormDialog';
 
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const labelTones = {
+const typeTones = {
   Touchpoint: 'primary.main',
   Checkpoint: 'info.main',
   Milestone: 'secondary.main',
   Commitment: 'warning.main',
 };
 
-const labelBackgrounds = {
+const typeBackgrounds = {
   Touchpoint: 'rgba(7, 44, 94, 0.08)',
   Checkpoint: 'rgba(35, 139, 230, 0.1)',
   Milestone: 'rgba(94, 184, 168, 0.12)',
@@ -45,7 +45,7 @@ const CalendarEventPill = ({ compact = false, event, onClick }) => {
   return (
     <ButtonBase
       onClick={onClick}
-      aria-label={`${event.label}: ${event.title}${sourceStatus ? `. Source status ${sourceStatus.label}` : ''}${pending ? '. Pending approval' : ''}.`}
+      aria-label={`${event.type}: ${event.title}${sourceStatus ? `. Source status ${sourceStatus.label}` : ''}${pending ? '. Pending approval' : ''}.`}
       sx={{
         width: '100%',
         display: 'block',
@@ -54,16 +54,16 @@ const CalendarEventPill = ({ compact = false, event, onClick }) => {
         borderColor: pending ? 'divider' : 'transparent',
         borderStyle: pending ? 'dashed' : 'solid',
         borderRadius: 1,
-        bgcolor: pending ? 'rgba(90, 100, 117, 0.08)' : labelBackgrounds[event.label] || 'background.default',
+        bgcolor: pending ? 'rgba(90, 100, 117, 0.08)' : typeBackgrounds[event.type] || 'background.default',
         overflow: 'hidden',
       }}
     >
       <Box sx={{ display: 'grid', gridTemplateColumns: '4px 1fr', minHeight: compact ? 38 : 46 }}>
-        <Box sx={{ bgcolor: labelTones[event.label] || 'primary.main' }} />
+        <Box sx={{ bgcolor: typeTones[event.type] || 'primary.main' }} />
         <Box sx={{ p: compact ? 0.75 : 1 }}>
           <Stack direction="row" alignItems="center" gap={0.75} flexWrap="wrap">
-            <Typography variant="caption" sx={{ color: labelTones[event.label] || 'primary.main', fontWeight: 700, flexShrink: 0 }}>
-              {event.label}
+            <Typography variant="caption" sx={{ color: typeTones[event.type] || 'primary.main', fontWeight: 700, flexShrink: 0 }}>
+              {event.type}
             </Typography>
             {event.rhythm && (
               <Typography variant="caption" sx={{ color: 'text.secondary', flexShrink: 0 }}>
@@ -80,15 +80,15 @@ const CalendarEventPill = ({ compact = false, event, onClick }) => {
   );
 };
 
-const CompassCalendar = ({
+const CalendarPanel = ({
   isAdmin = false,
   onApprove,
-  onCreateWaypoint,
+  onCreateCalendarEvent,
   onDecline,
   onSendToOrg,
-  onUpdateWaypoint,
+  onUpdateCalendarEvent,
   scope = 'organization',
-  waypoints = [],
+  events = [],
 }) => {
   const [monthCursor, setMonthCursor] = useState(new Date(2026, 4, 1));
   const [view, setView] = useState('calendar');
@@ -98,12 +98,12 @@ const CompassCalendar = ({
   const [formOpen, setFormOpen] = useState(false);
 
   const visibleEvents = useMemo(() => (
-    sortCalendarEventsByDate(waypoints).filter((event) => (
-      (typeFilter === 'All' || event.label === typeFilter)
+    sortCalendarEventsByDate(events).filter((event) => (
+      (typeFilter === 'All' || event.type === typeFilter)
       && (rhythmFilter === 'All' || event.rhythm === rhythmFilter)
       && event.reviewState !== 'declined'
     ))
-  ), [typeFilter, rhythmFilter, waypoints]);
+  ), [typeFilter, rhythmFilter, events]);
 
   const monthDays = useMemo(() => getCalendarDays(monthCursor), [monthCursor]);
   const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
@@ -122,10 +122,10 @@ const CompassCalendar = ({
   };
 
   const handleCreate = (values) => {
-    onCreateWaypoint(values, scope);
+    onCreateCalendarEvent(values, scope);
   };
 
-  const pendingCount = waypoints.filter((event) => event.reviewState === 'pending').length;
+  const pendingCount = events.filter((event) => event.reviewState === 'pending').length;
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -154,8 +154,8 @@ const CompassCalendar = ({
           <InputLabel>Type</InputLabel>
           <Select label="Type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
             <MenuItem value="All">All</MenuItem>
-            {calendarLabels.map((label) => (
-              <MenuItem key={label} value={label}>{label}</MenuItem>
+            {calendarEventTypes.map((type) => (
+              <MenuItem key={type} value={type}>{type}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -245,18 +245,18 @@ const CompassCalendar = ({
         </Box>
       )}
 
-      <WaypointDetailsDrawer
+      <CalendarEventDetailsDrawer
         isAdmin={isAdmin}
         onApprove={onApprove}
         onClose={() => setSelectedEventId(null)}
         onDecline={onDecline}
         onSendToOrg={onSendToOrg}
-        onUpdate={onUpdateWaypoint}
+        onUpdate={onUpdateCalendarEvent}
         open={Boolean(selectedEvent)}
         scope={scope}
-        waypoint={selectedEvent}
+        event={selectedEvent}
       />
-      <WaypointFormDialog
+      <CalendarEventFormDialog
         defaultDate={toDateInputValue(monthCursor)}
         onClose={() => setFormOpen(false)}
         onCreate={handleCreate}
@@ -266,4 +266,4 @@ const CompassCalendar = ({
   );
 };
 
-export default CompassCalendar;
+export default CalendarPanel;

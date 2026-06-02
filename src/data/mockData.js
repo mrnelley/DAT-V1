@@ -1582,13 +1582,13 @@ export const initiatives = [
   },
 ];
 
-export const calendarWaypoints = [
+export const calendarEvents = [
   {
     id: 'cw1',
     title: 'HUD file audit readiness review',
     date: '2026-05-14',
     endDate: null,
-    label: 'Commitment',
+    type: 'Commitment',
     rhythm: 'once',
     lifecycle: 'scheduled',
     scope: 'organization',
@@ -1610,7 +1610,7 @@ export const calendarWaypoints = [
     title: 'Resident summer cookout',
     date: '2026-05-22',
     endDate: null,
-    label: 'Touchpoint',
+    type: 'Touchpoint',
     rhythm: 'once',
     lifecycle: 'scheduled',
     scope: 'organization',
@@ -1631,7 +1631,7 @@ export const calendarWaypoints = [
     title: 'Lease-up pipeline checkpoint',
     date: '2026-05-28',
     endDate: null,
-    label: 'Checkpoint',
+    type: 'Checkpoint',
     rhythm: 'weekly',
     lifecycle: 'scheduled',
     scope: 'organization',
@@ -1653,7 +1653,7 @@ export const calendarWaypoints = [
     title: 'Resident services intake workflow pilot',
     date: '2026-05-19',
     endDate: null,
-    label: 'Milestone',
+    type: 'Milestone',
     rhythm: 'once',
     lifecycle: 'scheduled',
     scope: 'organization',
@@ -1675,7 +1675,7 @@ export const calendarWaypoints = [
     title: 'Resolve lease packet approval stuck',
     date: '2026-05-12',
     endDate: null,
-    label: 'Checkpoint',
+    type: 'Checkpoint',
     rhythm: 'once',
     lifecycle: 'scheduled',
     scope: 'personal',
@@ -1698,7 +1698,7 @@ export const calendarWaypoints = [
     title: 'Prepare ELT priority notes',
     date: '2026-05-16',
     endDate: null,
-    label: 'Commitment',
+    type: 'Commitment',
     rhythm: 'once',
     lifecycle: 'scheduled',
     scope: 'personal',
@@ -2092,15 +2092,15 @@ export const departmentWorkplans = [
   },
 ];
 
-const pulseStatusLabels = {
+const compassStatusLabels = {
   'On Course': 'Steady',
   'Needs Attention': 'Watch',
   'Off Course': 'Alert',
 };
 
-const normalizePulseStatuses = (value) => {
+const normalizeCompassStatuses = (value) => {
   if (Array.isArray(value)) {
-    value.forEach(normalizePulseStatuses);
+    value.forEach(normalizeCompassStatuses);
     return;
   }
 
@@ -2109,12 +2109,12 @@ const normalizePulseStatuses = (value) => {
   }
 
   Object.entries(value).forEach(([key, item]) => {
-    if ((key === 'status' || key === 'roadmapStatus') && pulseStatusLabels[item]) {
-      value[key] = pulseStatusLabels[item];
+    if ((key === 'status' || key === 'roadmapStatus') && compassStatusLabels[item]) {
+      value[key] = compassStatusLabels[item];
       return;
     }
 
-    normalizePulseStatuses(item);
+    normalizeCompassStatuses(item);
   });
 };
 
@@ -2127,6 +2127,6 @@ const normalizePulseStatuses = (value) => {
   initiatives,
   priorities,
   weeklyPriorities,
-].forEach(normalizePulseStatuses);
+].forEach(normalizeCompassStatuses);
 
-q2Roadmap.statusOptions = q2Roadmap.statusOptions.map((status) => pulseStatusLabels[status] || status);
+q2Roadmap.statusOptions = q2Roadmap.statusOptions.map((status) => compassStatusLabels[status] || status);

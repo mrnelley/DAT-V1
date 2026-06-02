@@ -1,4 +1,4 @@
-export const calendarLabels = ['Touchpoint', 'Checkpoint', 'Milestone', 'Commitment'];
+export const calendarEventTypes = ['Touchpoint', 'Checkpoint', 'Milestone', 'Commitment'];
 
 export const calendarRhythms = ['once', 'weekly', 'monthly', 'quarterly', 'annual', 'custom'];
 
@@ -25,7 +25,7 @@ export const reviewStates = {
   returned: { label: 'Returned' },
 };
 
-export const connectedLabels = {
+export const connectedWorkLabels = {
   priority: 'Connected to Priority',
   initiative: 'Connected to Initiative',
   huddle: 'Connected to Huddle',
@@ -95,12 +95,12 @@ export const formatRhythmLabel = (rhythm = 'once') => (
   rhythm === 'once' ? 'One-time' : rhythm.charAt(0).toUpperCase() + rhythm.slice(1)
 );
 
-export const createNativeWaypoint = (values, user, scope) => ({
-  id: `wp-${Date.now()}`,
+export const createNativeCalendarEvent = (values, user, scope) => ({
+  id: `calendar-event-${Date.now()}`,
   title: values.title,
   date: values.date,
   endDate: values.endDate || null,
-  label: values.label || 'Touchpoint',
+  type: values.type || 'Touchpoint',
   rhythm: values.rhythm || 'once',
   lifecycle: values.lifecycle || 'scheduled',
   scope,
@@ -114,17 +114,17 @@ export const createNativeWaypoint = (values, user, scope) => ({
   property: values.property || 'Portfolio',
   whyItMatters: values.whyItMatters || 'This date matters to the operating rhythm.',
   whoItImpacts: values.whoItImpacts || 'Team members connected to this work',
-  connectedWork: connectedLabels.native,
+  connectedWork: connectedWorkLabels.native,
   supportNeeded: values.supportNeeded || 'No support needed yet.',
   outcomeExpected: values.outcomeExpected || 'A clear next step is completed by this date.',
 });
 
-export const waypointFromPriority = (priority, overrides = {}) => ({
-  id: `priority-${priority.id}-waypoint`,
+export const calendarEventFromPriority = (priority, overrides = {}) => ({
+  id: `priority-${priority.id}-calendar-event`,
   title: priority.name,
   date: overrides.date || '2026-05-28',
   endDate: null,
-  label: overrides.label || 'Checkpoint',
+  type: overrides.type || 'Checkpoint',
   rhythm: overrides.rhythm || 'once',
   lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
@@ -137,17 +137,17 @@ export const waypointFromPriority = (priority, overrides = {}) => ({
   property: overrides.property || 'Portfolio',
   whyItMatters: overrides.whyItMatters || priority.description,
   whoItImpacts: overrides.whoItImpacts || 'Teams connected to this priority',
-  connectedWork: connectedLabels.priority,
+  connectedWork: connectedWorkLabels.priority,
   supportNeeded: overrides.supportNeeded || 'Review progress and blockers before this date.',
   outcomeExpected: overrides.outcomeExpected || 'Priority owner confirms the work remains steady.',
 });
 
-export const waypointFromInitiative = (initiative, overrides = {}) => ({
-  id: `initiative-${initiative.id}-waypoint`,
+export const calendarEventFromInitiative = (initiative, overrides = {}) => ({
+  id: `initiative-${initiative.id}-calendar-event`,
   title: initiative.title,
   date: overrides.date || '2026-06-05',
   endDate: null,
-  label: overrides.label || 'Milestone',
+  type: overrides.type || 'Milestone',
   rhythm: overrides.rhythm || 'once',
   lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
@@ -160,17 +160,17 @@ export const waypointFromInitiative = (initiative, overrides = {}) => ({
   property: overrides.property || 'Portfolio',
   whyItMatters: overrides.whyItMatters || initiative.description,
   whoItImpacts: overrides.whoItImpacts || 'Departments connected to this initiative',
-  connectedWork: connectedLabels.initiative,
+  connectedWork: connectedWorkLabels.initiative,
   supportNeeded: overrides.supportNeeded || 'Confirm milestone readiness with initiative owner.',
   outcomeExpected: overrides.outcomeExpected || 'Initiative progress is visible before the next planning moment.',
 });
 
-export const waypointFromHuddle = (huddle, owner, overrides = {}) => ({
-  id: `huddle-${huddle.id}-waypoint`,
+export const calendarEventFromHuddle = (huddle, owner, overrides = {}) => ({
+  id: `huddle-${huddle.id}-calendar-event`,
   title: huddle.name,
   date: overrides.date || '2026-05-20',
   endDate: null,
-  label: overrides.label || 'Touchpoint',
+  type: overrides.type || 'Touchpoint',
   rhythm: overrides.rhythm || 'weekly',
   lifecycle: overrides.lifecycle || 'scheduled',
   scope: overrides.scope || 'organization',
@@ -183,7 +183,7 @@ export const waypointFromHuddle = (huddle, owner, overrides = {}) => ({
   property: overrides.property || 'Portfolio',
   whyItMatters: overrides.whyItMatters || `Keeps the ${huddle.recurrence.toLowerCase()} operating rhythm visible.`,
   whoItImpacts: overrides.whoItImpacts || 'Huddle members and connected teams',
-  connectedWork: connectedLabels.huddle,
+  connectedWork: connectedWorkLabels.huddle,
   supportNeeded: overrides.supportNeeded || 'Confirm agenda owners and follow-up items.',
   outcomeExpected: overrides.outcomeExpected || 'The huddle produces clear commitments.',
 });

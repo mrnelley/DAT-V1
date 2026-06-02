@@ -1,15 +1,15 @@
 {
-  "name": "HDC Pulse Data Model ERD",
+  "name": "HDC Compass Data Model ERD",
   "version": "2026-05-14",
   "status": "formalized-from-current-supabase-migration-and-front-end-mock-shapes",
   "notes": [
     "This file formalizes both existing Supabase tables and implicit React mock-data objects.",
-    "Calendar events use the corrected target language: label, rhythm, lifecycle. The current database table is public.waypoints and should migrate toward this shape during the Pulse pass.",
+    "Calendar events use the corrected target language: type, rhythm, lifecycle.",
     "Status for work objects belongs to the source work item. Calendar events only carry lifecycle unless they need to display sourceStatus as a denormalized read hint."
   ],
   "enums": {
     "workSignalStatus": ["steady", "watch", "alert", "complete", "paused", "no_data"],
-    "calendarLabel": ["Beat", "Marker", "Commitment", "Touchpoint"],
+    "calendarEventType": ["Touchpoint", "Checkpoint", "Milestone", "Commitment"],
     "calendarRhythm": ["once", "daily", "weekly", "monthly", "quarterly", "annual", "custom"],
     "calendarLifecycle": ["scheduled", "completed", "rescheduled", "cancelled"],
     "workObjectVisibility": ["involved", "department", "olt", "organization"],
@@ -671,8 +671,8 @@
       }
     },
     "CalendarEvent": {
-      "table": "waypoints_current__calendar_events_target",
-      "source": ["supabase public.waypoints", "src/data/mockData.js calendarWaypoints", "src/context/WaypointContext.jsx", "src/utils/waypoints.js"],
+      "table": "calendar_events",
+      "source": ["supabase public.calendar_events", "src/data/mockData.js calendarEvents", "src/context/CalendarEventContext.jsx", "src/utils/calendarEvents.js"],
       "primaryKey": "id",
       "fields": {
         "id": "uuid|string",
@@ -682,7 +682,7 @@
         "approvedBy": "Profile.id|null",
         "scope": "personal|organization",
         "title": "string",
-        "label": "calendarLabel",
+        "type": "calendarEventType",
         "rhythm": "calendarRhythm",
         "lifecycle": "calendarLifecycle",
         "reviewState": "reviewState",
@@ -706,13 +706,12 @@
       },
       "legacyFieldMap": {
         "date": "startsOn",
-        "endDate": "endsOn",
-        "originWaypointId": "originCalendarEventId"
+        "endDate": "endsOn"
       }
     },
     "ReviewRequest": {
       "table": "review_requests",
-      "source": ["supabase", "implicit from WaypointContext org review and CurbAppealContext review workflow"],
+      "source": ["supabase", "implicit from CalendarEventContext org review and CurbAppealContext review workflow"],
       "primaryKey": "id",
       "fields": {
         "id": "uuid",
@@ -1273,7 +1272,7 @@
     },
     {
       "area": "Review requests",
-      "gap": "Review workflows are implicit in WaypointContext and CurbAppealContext. Production should create ReviewRequest rows for org-calendar approvals and checklist review/follow-up."
+      "gap": "Review workflows are implicit in CalendarEventContext and CurbAppealContext. Production should create ReviewRequest rows for org-calendar approvals and checklist review/follow-up."
     },
     {
       "area": "Teams delivery",

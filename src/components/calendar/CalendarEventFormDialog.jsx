@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
-import { calendarLabels, calendarLifecycles, calendarRhythms, formatRhythmLabel, toDateInputValue } from '../../utils/waypoints';
+import { calendarEventTypes, calendarLifecycles, calendarRhythms, formatRhythmLabel, toDateInputValue } from '../../utils/calendarEvents';
 
 const emptyForm = (date) => ({
   title: '',
   date,
   endDate: '',
-  label: 'Touchpoint',
+  type: 'Touchpoint',
   rhythm: 'once',
   lifecycle: 'scheduled',
   department: '',
@@ -17,7 +17,7 @@ const emptyForm = (date) => ({
   outcomeExpected: '',
 });
 
-const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
+const CalendarEventFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
   const [form, setForm] = useState(emptyForm(defaultDate || toDateInputValue(new Date())));
 
   useEffect(() => {
@@ -49,9 +49,9 @@ const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
             <TextField label="Date" type="date" value={form.date} onChange={update('date')} InputLabelProps={{ shrink: true }} fullWidth />
             <FormControl fullWidth>
               <InputLabel>Type</InputLabel>
-              <Select label="Type" value={form.label} onChange={update('label')}>
-                {calendarLabels.map((label) => (
-                  <MenuItem key={label} value={label}>{label}</MenuItem>
+              <Select label="Type" value={form.type} onChange={update('type')}>
+                {calendarEventTypes.map((type) => (
+                  <MenuItem key={type} value={type}>{type}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -92,4 +92,4 @@ const WaypointFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
   );
 };
 
-export default WaypointFormDialog;
+export default CalendarEventFormDialog;

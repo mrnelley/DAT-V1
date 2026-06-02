@@ -109,8 +109,8 @@ const LocationProbe = () => {
 const renderWithProviders = (ui, path = '/') => {
   cleanup();
   window.localStorage.clear();
-  window.localStorage.setItem('hdc_pulse_demo_authenticated', 'true');
-  window.localStorage.setItem('hdc_pulse_demo_user_id', 'u1');
+  window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
+  window.localStorage.setItem('hdc_compass_demo_user_id', 'u1');
   return {
     user: userEvent.setup({ document: window.document }),
     ...render(

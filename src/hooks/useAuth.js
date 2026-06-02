@@ -5,19 +5,19 @@ const AuthContext = createContext(null);
 
 const getInitialUserId = () => {
   if (typeof window === 'undefined') return 'u1';
-  return window.localStorage.getItem('hdc_pulse_demo_user_id') || window.localStorage.getItem('hdc_compass_demo_user_id') || 'u1';
+  return window.localStorage.getItem('hdc_compass_demo_user_id') || 'u1';
 };
 
 const getInitialAuthState = () => {
   if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem('hdc_pulse_demo_authenticated') === 'true' || window.localStorage.getItem('hdc_compass_demo_authenticated') === 'true';
+  return window.localStorage.getItem('hdc_compass_demo_authenticated') === 'true';
 };
 
 const getInitialProfileOverrides = () => {
   if (typeof window === 'undefined') return {};
 
   try {
-    return JSON.parse(window.localStorage.getItem('hdc_pulse_profile_overrides')) || {};
+    return JSON.parse(window.localStorage.getItem('hdc_compass_profile_overrides')) || {};
   } catch {
     return {};
   }
@@ -33,14 +33,14 @@ export const AuthProvider = ({ children }) => {
   const saveProfileOverrides = (nextOverrides) => {
     setProfileOverrides(nextOverrides);
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('hdc_pulse_profile_overrides', JSON.stringify(nextOverrides));
+      window.localStorage.setItem('hdc_compass_profile_overrides', JSON.stringify(nextOverrides));
     }
   };
 
   const selectUserId = (nextUserId) => {
     setUserId(nextUserId);
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('hdc_pulse_demo_user_id', nextUserId);
+      window.localStorage.setItem('hdc_compass_demo_user_id', nextUserId);
     }
   };
 
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
       selectUserId(match.id);
       setIsAuthenticated(true);
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem('hdc_pulse_demo_authenticated', 'true');
+        window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
       }
     }
 
@@ -72,7 +72,6 @@ export const AuthProvider = ({ children }) => {
   const signOut = () => {
     setIsAuthenticated(false);
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('hdc_pulse_demo_authenticated');
       window.localStorage.removeItem('hdc_compass_demo_authenticated');
     }
   };

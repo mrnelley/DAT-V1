@@ -21,7 +21,7 @@ import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
 import { NotificationsProvider } from './context/NotificationsContext';
-import { WaypointProvider } from './context/WaypointContext';
+import { CalendarEventProvider } from './context/CalendarEventContext';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
 import theme from './theme';
@@ -71,11 +71,11 @@ const ProtectedApp = () => {
   return (
     <CurbAppealProvider>
       <NotificationsProvider>
-        <WaypointProvider>
+        <CalendarEventProvider>
           <AppShell>
             <AnimatedRoutes />
           </AppShell>
-        </WaypointProvider>
+        </CalendarEventProvider>
       </NotificationsProvider>
     </CurbAppealProvider>
   );
