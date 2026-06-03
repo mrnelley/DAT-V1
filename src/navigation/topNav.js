@@ -36,7 +36,8 @@ export const topNavMenus = [
 ];
 
 export const quickAddItems = [
-  { featureKey: 'actionItems', label: 'Action Item', path: '/action-items?new=1' },
+  { featureKey: 'weeklyTracker', label: 'Weekly Priority', path: '/weekly-tracker?new=priority' },
+  { featureKey: 'actionItems', label: 'One-Off Action', path: '/action-items?new=1' },
   { featureKey: 'priorities', label: 'Priority', path: '/priorities?new=1' },
   { featureKey: 'stucks', label: 'Stuck', path: '/stucks?new=1' },
   { featureKey: 'workplans', label: 'Workplan', path: '/workplans?new=1' },

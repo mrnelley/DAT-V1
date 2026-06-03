@@ -183,7 +183,7 @@ const TeamHealthPage = () => {
           title="Culture Signals"
           subtitle="Fast read on whether the operating system is creating clarity or friction."
         >
-          <SignalRow label="Follow-through load" helper={`${openActionItems} visible action items are still open or in progress.`} progress={68} status="Watch" />
+          <SignalRow label="Follow-through load" helper={`${openActionItems} visible actions are still open or in progress.`} progress={68} status="Watch" />
           <SignalRow label="Blocker pressure" helper={`${stucks.length} stucks have named helpers and can be worked in huddle.`} progress={82} status="Steady" />
           <SignalRow label="Workplan attention" helper={`${visibleWorkplans.length} workplans need focus before the next leadership review.`} progress={54} status="Watch" />
         </SectionPanel>
@@ -309,9 +309,9 @@ const ExportsPage = () => {
       })),
     },
     {
-      description: 'Action item owner, due date, status, visibility, and pillar.',
+      description: 'Action owner, due date, status, visibility, and pillar.',
       filename: 'compass-action-items.csv',
-      label: 'Action Items',
+      label: 'Action Views',
       rows: actionItems.map((item) => ({
         due: item.due,
         owner: item.owner.name,
@@ -407,7 +407,7 @@ const PermissionsPage = () => {
   const permissionRows = [
     { area: 'ELT', manage: 'Organization dashboards, initiatives, priorities, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
     { area: 'OLT', manage: 'Department workplans, weekly action tracker follow-through, and team huddle work.', members: users.filter((user) => user.workingGroup === 'OLT') },
-    { area: 'Team Member', manage: 'Assigned action items, personal dashboard signals, and related weekly commitments.', members: users.filter((user) => user.workingGroup === 'Team Member') },
+    { area: 'Team Member', manage: 'Assigned actions, personal dashboard signals, and related weekly commitments.', members: users.filter((user) => user.workingGroup === 'Team Member') },
   ];
 
   return (

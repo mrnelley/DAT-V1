@@ -274,7 +274,7 @@ const OperationalPriorityPage = () => {
             <Stack direction="row" justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
               <Box>
                 <Typography variant="overline" color="primary">Tasks</Typography>
-                <Typography variant="h2">Weekly commitments and action items</Typography>
+                <Typography variant="h2">Weekly commitments and related actions</Typography>
               </Box>
               <Chip icon={<TaskAltOutlinedIcon />} label={`${related.relatedActions.length} items`} color="primary" variant="outlined" />
             </Stack>
@@ -295,7 +295,7 @@ const OperationalPriorityPage = () => {
                   </Stack>
                 </Box>
               ))}
-              {!related.relatedActions.length && <Typography variant="body2">No action items are currently linked to this priority.</Typography>}
+              {!related.relatedActions.length && <Typography variant="body2">No actions are currently linked to this priority.</Typography>}
             </Stack>
           </Box>
 

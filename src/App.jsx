@@ -9,6 +9,7 @@ import DashboardPage from './components/dashboard/DashboardPage';
 import HuddlesPage from './components/huddles/HuddlesPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
+import LearnDictionaryPage from './components/learn/LearnDictionaryPage';
 import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
@@ -55,7 +56,7 @@ const AnimatedRoutes = () => {
         <Route path="/reports/exports" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="exports" /></FeatureGate>} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/learn" element={<PlaceholderPage title="Learn" />} />
+        <Route path="/learn" element={<LearnDictionaryPage />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
         <Route path="/admin/users" element={<FeatureGate featureKey="adminUsers"><CompassDestinationPage page="adminUsers" /></FeatureGate>} />
         <Route path="/admin/teams" element={<FeatureGate featureKey="adminTeams"><CompassDestinationPage page="adminTeams" /></FeatureGate>} />

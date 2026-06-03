@@ -28,7 +28,7 @@ const HuddlesPage = () => {
           </Tabs>
           {tab === 0 ? (
             <List>
-              {['Review monthly targets', 'Discuss stucks and owner follow-up', 'Confirm top action items'].map((item) => (
+              {['Review monthly targets', 'Discuss stucks and owner follow-up', 'Confirm top actions'].map((item) => (
                 <ListItem key={item}>
                   <ListItemIcon><FiberManualRecordIcon color="secondary" fontSize="small" /></ListItemIcon>
                   <ListItemText primary={item} />

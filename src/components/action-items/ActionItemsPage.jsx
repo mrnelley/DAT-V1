@@ -22,12 +22,26 @@ const chipColor = (due) => {
   return 'default';
 };
 
+const today = '2026-05-13';
+const weekEnd = '2026-05-19';
+
 const visibilityLabels = {
   private: 'Assigned and created by',
   department: 'Department',
   olt: 'OLT',
   organization: 'All users',
 };
+
+const sourceLabels = {
+  one_off: 'One-off action',
+  weekly_tracker: 'Weekly Tracker',
+};
+
+const actionViewOptions = ['Assigned to Me', 'Assigned by Me', 'Due This Week', 'Department', 'All Visible'];
+
+const normalizeStatus = (status) => String(status || '').toLowerCase().replaceAll('_', ' ');
+
+const isActiveStatus = (status) => !['complete', 'completed', 'cancelled'].includes(normalizeStatus(status));
 
 const buildInitialForm = (user) => ({
   description: '',
@@ -69,7 +83,8 @@ const ActionItemsPage = () => {
   const { unavailable } = useActionFeedback();
   const { addNotification } = useNotifications();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [scope, setScope] = useState('My Items');
+  const [scope, setScope] = useState('Assigned to Me');
+  const [statusFilter, setStatusFilter] = useState('Active');
   const [items, setItems] = useState(actionItems);
   const [completed, setCompleted] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,9 +94,15 @@ const ActionItemsPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const visibleItems = items.filter((item) => {
     if (!canViewActionItem(item, user)) return false;
-    if (scope === 'My Items') return isInvolved(item, user);
-    if (scope === 'Department') return item.visibility === 'department' && item.department === user.department;
-    if (scope === 'OLT') return item.visibility === 'olt' && user.workingGroup === 'OLT';
+    const matchesStatus = statusFilter === 'All'
+      || (statusFilter === 'Active' && isActiveStatus(item.status))
+      || normalizeStatus(item.status) === normalizeStatus(statusFilter);
+
+    if (!matchesStatus) return false;
+    if (scope === 'Assigned to Me') return item.owner?.id === user.id;
+    if (scope === 'Assigned by Me') return item.createdBy?.id === user.id;
+    if (scope === 'Due This Week') return item.due >= today && item.due <= weekEnd && isActiveStatus(item.status);
+    if (scope === 'Department') return item.department === user.department;
     return true;
   });
 
@@ -104,7 +125,7 @@ const ActionItemsPage = () => {
     setAssignmentForm(buildAssignmentForm());
   };
 
-  const addActionItem = () => {
+  const addOneOffAction = () => {
     const owner = users.find((candidate) => candidate.id === form.ownerId) || user;
     setItems((current) => [
       {
@@ -116,6 +137,7 @@ const ActionItemsPage = () => {
         due: form.due,
         status: form.status,
         visibility: form.visibility,
+        source: 'one_off',
         assignments: [
           { profile: owner, role: 'assignee' },
           { profile: user, role: 'assigned_by' },
@@ -130,7 +152,7 @@ const ActionItemsPage = () => {
 
   const openAssignmentWorkflow = (item) => {
     if (!canManageActionItem(item, user)) {
-      unavailable('only assigned users, creators, ELT, or OLT can update task assignments.');
+      unavailable('only assigned users, creators, ELT, or OLT can update action assignments.');
       return;
     }
 
@@ -179,25 +201,41 @@ const ActionItemsPage = () => {
       recipient: owner,
       sourceId: selectedItem.id,
       sourceType: 'action_item',
-      title: `${user.name} assigned you a task`,
+      title: `${user.name} assigned you an action`,
     });
     closeAssignmentDialog();
   };
 
   return (
     <PageWrapper>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h1">Action Items</Typography>
-        <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add Action Item</Button>
+      <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
+        <Box>
+          <Typography variant="h1">Action Views</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Inspect follow-through work created from weekly priorities, assignments, and one-off actions.
+          </Typography>
+        </Box>
+        <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add One-Off Action</Button>
       </Stack>
-      <Stack direction="row" gap={2} sx={{ mb: 2 }}>
-        <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)}>
-          <ToggleButton value="My Items">My Items</ToggleButton>
-          <ToggleButton value="Department">Department</ToggleButton>
-          <ToggleButton value="OLT">OLT</ToggleButton>
-          <ToggleButton value="All Items">All Visible</ToggleButton>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Weekly commitments start in the Weekly Tracker. Use Action Views to work the assignments that come out of those priorities, or to create a one-off action when it does not belong under a weekly priority.
+      </Alert>
+      <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
+        <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)} sx={{ flexWrap: 'wrap' }}>
+          {actionViewOptions.map((option) => (
+            <ToggleButton key={option} value={option}>{option}</ToggleButton>
+          ))}
         </ToggleButtonGroup>
-        <Select size="small" defaultValue="Open"><MenuItem value="Open">Open</MenuItem><MenuItem value="In Progress">In Progress</MenuItem><MenuItem value="Complete">Complete</MenuItem></Select>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel id="action-status-filter-label">Status</InputLabel>
+          <Select labelId="action-status-filter-label" label="Status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Open">Open</MenuItem>
+            <MenuItem value="In Progress">In Progress</MenuItem>
+            <MenuItem value="Complete">Complete</MenuItem>
+            <MenuItem value="All">All</MenuItem>
+          </Select>
+        </FormControl>
       </Stack>
       {assignmentEvents.length > 0 && (
         <Alert
@@ -209,6 +247,11 @@ const ActionItemsPage = () => {
         </Alert>
       )}
       <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+        {!visibleItems.length && (
+          <ListItem>
+            <Typography variant="body2" color="text.secondary">No actions match this view.</Typography>
+          </ListItem>
+        )}
         {visibleItems.map((item) => {
           const done = completed.includes(item.id);
           const canManage = canManageActionItem(item, user);
@@ -225,20 +268,24 @@ const ActionItemsPage = () => {
                   <UserAvatar user={item.owner} size="sm" />
                   <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
                   <Chip icon={<VisibilityOutlinedIcon />} label={visibilityLabels[item.visibility] || 'Assigned and created by'} variant="outlined" size="small" />
+                  <Chip label={sourceLabels[item.source] || 'Action'} variant="outlined" size="small" />
                   <Chip label={item.priority} color="primary" variant="outlined" size="small" />
                   <Chip label={item.strategicPillar} variant="outlined" size="small" />
                 </Stack>
               </Box>
-              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for action item ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
+              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for action ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
             </ListItem>
           );
         })}
       </List>
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add Action Item</DialogTitle>
+        <DialogTitle>Add One-Off Action</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
-            <TextField label="Task" value={form.description} onChange={update('description')} fullWidth />
+            <Alert severity="warning">
+              Use this only when the action is not pursuant to a weekly priority. Weekly priority work should be authored in the Weekly Tracker first.
+            </Alert>
+            <TextField label="Action" value={form.description} onChange={update('description')} fullWidth />
             <TextField select label="Owner" value={form.ownerId} onChange={update('ownerId')} fullWidth>
               {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
             </TextField>
@@ -266,15 +313,15 @@ const ActionItemsPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Cancel</Button>
-          <Button variant="contained" onClick={addActionItem} disabled={!form.description.trim()}>Create</Button>
+          <Button variant="contained" onClick={addOneOffAction} disabled={!form.description.trim()}>Create One-Off Action</Button>
         </DialogActions>
       </Dialog>
       <Dialog open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Task Assignment Workflow</DialogTitle>
+        <DialogTitle>Action Assignment Workflow</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Box>
-              <Typography variant="subtitle2" color="text.secondary">Action item</Typography>
+              <Typography variant="subtitle2" color="text.secondary">Action</Typography>
               <Typography>{selectedItem?.description}</Typography>
             </Box>
             <Divider />
@@ -301,7 +348,7 @@ const ActionItemsPage = () => {
             </FormControl>
             <TextField label="Assignment note" value={assignmentForm.note} onChange={updateAssignment('note')} minRows={3} multiline fullWidth />
             <Alert icon={<AssignmentIndOutlinedIcon />} severity="success">
-              Saving this assignment queues a Teams action card for the assigned user and keeps the task visible according to the selected visibility.
+              Saving this assignment queues a Teams action card for the assigned user and keeps the action visible according to the selected visibility.
             </Alert>
           </Stack>
         </DialogContent>

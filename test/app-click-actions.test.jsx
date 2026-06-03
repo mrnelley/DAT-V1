@@ -88,7 +88,7 @@ React.createElement = (type, props, ...children) => baseCreateElement(
 const { ThemeProvider } = await import('@mui/material/styles');
 const { CssBaseline } = await import('@mui/material');
 const { MemoryRouter, Route, Routes, useLocation } = await import('react-router-dom');
-const { cleanup, render, screen, waitFor, within } = await import('@testing-library/react');
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import('@testing-library/react');
 const { default: userEvent } = await import('@testing-library/user-event');
 const { AuthProvider } = await import('../src/hooks/useAuth.js');
 const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackContext.jsx');
@@ -98,23 +98,25 @@ const { default: theme } = await import('../src/theme/index.js');
 const { default: ActionItemsPage } = await import('../src/components/action-items/ActionItemsPage.jsx');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
+const { default: LearnDictionaryPage } = await import('../src/components/learn/LearnDictionaryPage.jsx');
 const { default: OperationalPriorityPage } = await import('../src/components/priorities/OperationalPriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: StucksPage } = await import('../src/components/stucks/StucksPage.jsx');
 const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
+const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 
 const LocationProbe = () => {
   const location = useLocation();
   return <div data-testid="location">{location.pathname}</div>;
 };
 
-const renderWithProviders = (ui, path = '/') => {
+const renderWithProviders = (ui, path = '/', userId = 'u1') => {
   cleanup();
   window.localStorage.clear();
   window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
-  window.localStorage.setItem('hdc_compass_demo_user_id', 'u1');
-  window.localStorage.setItem('hdc_compass_guided_practice_u1', 'complete');
+  window.localStorage.setItem('hdc_compass_demo_user_id', userId);
+  window.localStorage.setItem(`hdc_compass_guided_practice_${userId}`, 'complete');
   return {
     user: userEvent.setup({ document: window.document }),
     ...render(
@@ -142,22 +144,23 @@ describe('clickable user actions', () => {
     window.localStorage.clear();
   });
 
-  it('opens the action item creation dialog from Add Action Item', async () => {
+  it('opens the one-off action dialog from Action Views', async () => {
     const { user } = renderWithProviders(<ActionItemsPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add action item/i }));
+    await user.click(await screen.findByRole('button', { name: /add one-off action/i }));
 
     expect(screen.getByRole('dialog')).to.exist;
-    expect(screen.getByRole('heading', { name: /add action item/i })).to.exist;
+    expect(screen.getByRole('heading', { name: /add one-off action/i })).to.exist;
+    expect(screen.getByText(/weekly commitments start in the weekly tracker/i)).to.exist;
     expect(screen.getByText(/advanced visibility/i)).to.exist;
   });
 
-  it('creates a visible action item from the action item dialog', async () => {
+  it('creates a visible one-off action from Action Views', async () => {
     const { user } = renderWithProviders(<ActionItemsPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add action item/i }));
-    await user.type(screen.getByLabelText(/^task$/i), 'Confirm Teams card copy');
-    await user.click(screen.getByRole('button', { name: /create/i }));
+    await user.click(await screen.findByRole('button', { name: /add one-off action/i }));
+    await user.type(screen.getByLabelText(/^action$/i), 'Confirm Teams card copy');
+    await user.click(screen.getByRole('button', { name: /create one-off action/i }));
 
     expect(await screen.findByText('Confirm Teams card copy')).to.exist;
     await waitFor(() => {
@@ -165,17 +168,36 @@ describe('clickable user actions', () => {
     });
   });
 
-  it('opens and saves the task assignment workflow from an action item row', async () => {
+  it('opens and saves the action assignment workflow from an action row', async () => {
     const { user } = renderWithProviders(<ActionItemsPage />);
 
-    await user.click(await screen.findByRole('button', { name: /open assignment workflow for action item send final q2 priority draft to elt/i }));
+    await user.click(await screen.findByRole('button', { name: /open assignment workflow for action send final q2 priority draft to elt/i }));
 
-    expect(await screen.findByRole('heading', { name: /task assignment workflow/i })).to.exist;
+    expect(await screen.findByRole('heading', { name: /action assignment workflow/i })).to.exist;
     expect(screen.getByLabelText(/assign to/i)).to.exist;
 
     await user.click(screen.getByRole('button', { name: /save assignment/i }));
 
     expect(await screen.findByText(/teams action card queued for dana hanchin/i)).to.exist;
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).to.equal(null);
+    });
+  });
+
+  it('creates a weekly priority and supporting action from Weekly Tracker', async () => {
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11');
+
+    await user.click(await screen.findByRole('button', { name: /set my weekly priority/i }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: /set weekly priority/i })).to.exist;
+
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Publish operations support summary' } });
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /^supporting action$/i }), { target: { value: 'Send summary to Tammie' } });
+    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+
+    expect(await screen.findByText(/publish operations support summary/i)).to.exist;
+    expect(await screen.findByText(/send summary to tammie/i)).to.exist;
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).to.equal(null);
     });
@@ -314,23 +336,49 @@ describe('clickable user actions', () => {
     expect(await screen.findByRole('heading', { name: /edit operational priority/i })).to.exist;
   });
 
-  it('opens an existing create workflow from the quick add menu', async () => {
+  it('opens the weekly priority workflow from the quick add menu', async () => {
     const { user } = renderWithProviders(
       <>
         <TopBar onMenuClick={() => {}} />
         <LocationProbe />
         <Routes>
-          <Route path="/action-items" element={<ActionItemsPage />} />
+          <Route path="/weekly-tracker" element={<WeeklyActionTrackerPage />} />
         </Routes>
       </>,
       '/dashboard/me',
+      'u11',
     );
 
     await user.click(await screen.findByRole('button', { name: /open quick add menu/i }));
-    await user.click(await screen.findByRole('menuitem', { name: /new action item/i }));
+    await user.click(await screen.findByRole('menuitem', { name: /new weekly priority/i }));
 
-    expect((await screen.findByTestId('location')).textContent).to.equal('/action-items');
-    expect(await screen.findByRole('heading', { name: /add action item/i })).to.exist;
+    expect((await screen.findByTestId('location')).textContent).to.equal('/weekly-tracker');
+    expect(await screen.findByRole('heading', { name: /set weekly priority/i })).to.exist;
+  });
+
+  it('renders the Learn dictionary with programmatic and plain-English definitions', async () => {
+    renderWithProviders(<LearnDictionaryPage />, '/learn');
+
+    expect(await screen.findByRole('heading', { name: /^learn$/i })).to.exist;
+    expect(screen.getByRole('heading', { name: /compass dictionary/i })).to.exist;
+    expect(screen.getByRole('combobox', { name: /search dictionary/i })).to.exist;
+    expect(screen.getByText(/^programmatic distinction$/i)).to.exist;
+    expect(screen.getByText(/^plain english$/i)).to.exist;
+    expect(screen.getByText(/application shell/i)).to.exist;
+  });
+
+  it('selects a dictionary term from the autocomplete search', async () => {
+    const { user } = renderWithProviders(<LearnDictionaryPage />, '/learn');
+    const search = await screen.findByRole('combobox', { name: /search dictionary/i });
+
+    await user.click(search);
+    await user.type(search, 'signal');
+    const listbox = await screen.findByRole('listbox');
+    await user.click(within(listbox).getByText(/^Signal$/i));
+
+    expect(await screen.findByRole('heading', { name: /^signal$/i })).to.exist;
+    expect(screen.getByText(/company dashboard signal/i)).to.exist;
+    expect(screen.getByText(/same word, different source and use/i)).to.exist;
   });
 
   it('routes huddle stucks button to the stucks page', async () => {

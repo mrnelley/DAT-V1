@@ -75,7 +75,7 @@ const EditPriorityPanel = ({ open, onClose }) => {
               <FormControlLabel control={<Checkbox />} label="Company Priority" />
               <Autocomplete options={['Operational Excellence', 'Resident Experience']} renderInput={(params) => <TextField {...params} label="Annual Initiatives" />} />
               <Autocomplete multiple freeSolo options={['Q2', 'Company']} renderInput={(params) => <TextField {...params} label="Tags" />} />
-              <Button startIcon={<AddCircleOutlineIcon />} variant="outlined" onClick={() => unavailable('priority task creation belongs in the action item workflow now.')}>Add Task</Button>
+              <Button startIcon={<AddCircleOutlineIcon />} variant="outlined" onClick={() => unavailable('priority task creation belongs in the Weekly Tracker now.')}>Add Task</Button>
             </Stack>
           )}
           <Button variant="contained" color="success" onClick={() => unavailable('priority persistence is not connected yet.')}>Save</Button>

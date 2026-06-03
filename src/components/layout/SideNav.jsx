@@ -22,7 +22,7 @@ const navItems = [
   { featureKey: 'priorities', icon: TrendingUpIcon, label: 'Priorities', path: '/priorities' },
   { featureKey: 'workplans', icon: FactCheckOutlinedIcon, label: 'Workplans', path: '/workplans' },
   { featureKey: 'huddles', icon: GroupsIcon, label: 'Huddles', popout: true },
-  { featureKey: 'actionItems', icon: CheckCircleOutlineIcon, label: 'Action Items', path: '/action-items' },
+  { featureKey: 'actionItems', icon: CheckCircleOutlineIcon, label: 'Action Views', path: '/action-items' },
   { featureKey: 'weeklyTracker', icon: TodayOutlinedIcon, label: 'Weekly Tracker', path: '/weekly-tracker' },
   { icon: NotificationsNoneOutlinedIcon, label: 'Notifications', path: '/notifications' },
   { featureKey: 'metrics', icon: BarChartIcon, label: 'Metrics', path: '/metrics' },

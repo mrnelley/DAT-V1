@@ -1520,6 +1520,7 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
     due: priority.due,
     status: 'Open',
     visibility: 'private',
+    source: 'weekly_tracker',
     priority: priority.organizationalPriority || priority.alignedTo,
     strategicPillarId: priority.strategicPillarId,
     strategicPillar: priority.strategicPillar,
@@ -1533,6 +1534,7 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
     due: task.due,
     status: task.status,
     visibility: 'private',
+    source: 'weekly_tracker',
     priority: `Support: ${priority.outcome}`,
     strategicPillarId: priority.strategicPillarId,
     strategicPillar: priority.strategicPillar,
@@ -1540,9 +1542,9 @@ const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
 ]);
 
 export const actionItems = [
-  { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], createdBy: users[0], department: users[0].department, due: '2026-05-05', status: 'Open', visibility: 'olt', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
-  { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], createdBy: users[0], department: users[2].department, due: '2026-05-03', status: 'In Progress', visibility: 'department', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
-  { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], createdBy: users[6], department: users[6].department, due: '2026-05-10', status: 'Open', visibility: 'private', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
+  { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], createdBy: users[0], department: users[0].department, due: '2026-05-05', status: 'Open', visibility: 'olt', source: 'one_off', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
+  { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], createdBy: users[0], department: users[2].department, due: '2026-05-03', status: 'In Progress', visibility: 'department', source: 'one_off', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
+  { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], createdBy: users[6], department: users[6].department, due: '2026-05-10', status: 'Open', visibility: 'private', source: 'one_off', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
   ...weeklyPriorityActionItems,
 ];
 
@@ -1572,7 +1574,7 @@ export const notificationEvents = [
     notificationType: 'due_soon',
     priority: 'normal',
     channel: 'in_app',
-    title: 'Action item due date passed',
+    title: 'Action due date passed',
     body: 'Send final Q2 priority draft to ELT was due on 2026-05-05.',
     createdAt: '2026-05-13T08:10:00',
     readAt: null,
@@ -1588,7 +1590,7 @@ export const notificationEvents = [
     notificationType: 'task_assigned',
     priority: 'normal',
     channel: 'teams',
-    title: 'Dana assigned you an action item',
+    title: 'Dana assigned you an action',
     body: 'Upload maintenance backlog export is visible to Real Estate Development.',
     createdAt: '2026-05-12T14:30:00',
     readAt: '2026-05-12T15:05:00',
