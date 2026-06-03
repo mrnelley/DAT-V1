@@ -13,6 +13,7 @@ import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
+import OperationalPriorityPage from './components/priorities/OperationalPriorityPage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import FeatureGate from './components/shared/FeatureGate';
 import PlaceholderPage from './components/shared/PlaceholderPage';
@@ -36,6 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Navigate to="/dashboard/me" replace />} />
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
         <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><OperationalPriorityPage /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
         <Route path="/workplans" element={<FeatureGate featureKey="workplans"><WorkplansPage /></FeatureGate>} />

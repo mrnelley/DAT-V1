@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const steps = [
   {
-    body: 'Start with the company signal board. Green, yellow, and red priority health is the first read before anyone digs into details.',
+    body: 'Start with the company signal board. On-track, needs-attention, and off-track priority health is the first read before anyone digs into details.',
     title: 'Read The Signal',
   },
   {

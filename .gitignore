@@ -26,6 +26,9 @@ coverage/
 .eslintcache
 .parcel-cache/
 
+# Local product notes
+docs/role-based-walkthrough-stories.md
+
 # OS/editor noise
 .DS_Store
 Thumbs.db

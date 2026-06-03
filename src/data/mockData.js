@@ -487,7 +487,7 @@ export const priorities = [
         workplanTitle: 'NEPA Preservation Feasibility',
         workplanAccess: 'Real Estate Development',
         workplanSummary: 'Restructure underwriting and demonstrate feasibility for new properties added to the NEPA preservation deal.',
-        notes: 'Tracker status is green. Milestone updates split this into underwriting and scope-of-work outcomes.',
+        notes: 'Tracker status is on track. Milestone updates split this into underwriting and scope-of-work outcomes.',
         kpis: [
           {
             id: 'di-nepa-underwriting',

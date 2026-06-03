@@ -51,8 +51,8 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
               ))}
             </Box>
             <Stack direction="row" gap={1} sx={{ mb: 2 }}>
-              <Chip label={`Yellow ${metric.yellow}`} color="warning" size="small" />
-              <Chip label={`Green ${metric.green}`} color="success" size="small" />
+              <Chip label={`Needs Attention ${metric.yellow}`} color="warning" size="small" />
+              <Chip label={`On Track ${metric.green}`} color="success" size="small" />
             </Stack>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="body2">Show Target on Graph</Typography>

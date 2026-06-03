@@ -98,6 +98,7 @@ const { default: theme } = await import('../src/theme/index.js');
 const { default: ActionItemsPage } = await import('../src/components/action-items/ActionItemsPage.jsx');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
+const { default: OperationalPriorityPage } = await import('../src/components/priorities/OperationalPriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: StucksPage } = await import('../src/components/stucks/StucksPage.jsx');
@@ -271,6 +272,46 @@ describe('clickable user actions', () => {
     expect(screen.getByLabelText(/team filter/i)).to.exist;
     expect(screen.getByText(/6\/6 q2 objectives/i)).to.exist;
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
+  });
+
+  it('opens an operational priority detail route from a company dashboard card', async () => {
+    const { user } = renderWithProviders(
+      <>
+        <CompanyDashboardOverview
+          calendarEvents={[]}
+          calendarProps={{
+            onApprove: () => {},
+            onCreateCalendarEvent: () => {},
+            onDecline: () => {},
+            onSendToOrg: () => {},
+            onUpdateCalendarEvent: () => {},
+          }}
+          isAdmin
+        />
+        <LocationProbe />
+      </>,
+      '/dashboard/company',
+    );
+
+    await user.click(await screen.findByRole('button', { name: /open operational priority detail for operational efficiency/i }));
+
+    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/company/priorities/q2-operational-efficiency');
+  });
+
+  it('opens the permissioned edit modal on an operational priority page', async () => {
+    const { user } = renderWithProviders(
+      <Routes>
+        <Route path="/dashboard/company/priorities/:priorityId" element={<OperationalPriorityPage />} />
+      </Routes>,
+      '/dashboard/company/priorities/q2-operational-efficiency',
+    );
+
+    expect(await screen.findByRole('heading', { name: /operational efficiency/i })).to.exist;
+
+    await user.click(await screen.findByRole('button', { name: /^edit$/i }));
+
+    expect(await screen.findByRole('dialog')).to.exist;
+    expect(await screen.findByRole('heading', { name: /edit operational priority/i })).to.exist;
   });
 
   it('opens an existing create workflow from the quick add menu', async () => {

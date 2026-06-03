@@ -1,4 +1,5 @@
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
@@ -8,26 +9,27 @@ import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { priorities, q2Roadmap, strategicPlan2030 } from '../../data/mockData';
 import CalendarPanel from '../calendar/CalendarPanel';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusMeta = {
-  Alert: { border: '#b03a34', color: 'error', icon: ErrorOutlineOutlinedIcon, label: 'Red', order: 0, soft: 'rgba(176, 58, 52, 0.08)', tone: 'error.main' },
-  Complete: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Green', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
-  Completed: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Green', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
-  'Needs Attention': { border: '#f1ac49', color: 'warning', icon: WarningAmberOutlinedIcon, label: 'Yellow', order: 1, soft: 'rgba(241, 172, 73, 0.14)', tone: 'warning.main' },
+  Alert: { border: '#b03a34', color: 'error', icon: ErrorOutlineOutlinedIcon, label: 'Off Track', order: 0, soft: 'rgba(176, 58, 52, 0.08)', tone: 'error.main' },
+  Complete: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Complete', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
+  Completed: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Complete', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
+  'Needs Attention': { border: '#f1ac49', color: 'warning', icon: WarningAmberOutlinedIcon, label: 'Needs Attention', order: 1, soft: 'rgba(241, 172, 73, 0.14)', tone: 'warning.main' },
   'No Data': { border: '#5a6475', color: 'default', icon: RadioButtonUncheckedOutlinedIcon, label: 'No Data', order: 3, soft: 'rgba(90, 100, 117, 0.08)', tone: 'text.secondary' },
-  'Off Course': { border: '#b03a34', color: 'error', icon: ErrorOutlineOutlinedIcon, label: 'Red', order: 0, soft: 'rgba(176, 58, 52, 0.08)', tone: 'error.main' },
-  'On Course': { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Green', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
-  Steady: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'Green', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
-  Watch: { border: '#f1ac49', color: 'warning', icon: WarningAmberOutlinedIcon, label: 'Yellow', order: 1, soft: 'rgba(241, 172, 73, 0.14)', tone: 'warning.main' },
+  'Off Course': { border: '#b03a34', color: 'error', icon: ErrorOutlineOutlinedIcon, label: 'Off Track', order: 0, soft: 'rgba(176, 58, 52, 0.08)', tone: 'error.main' },
+  'On Course': { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'On Track', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
+  Steady: { border: '#006e5c', color: 'success', icon: CheckCircleOutlinedIcon, label: 'On Track', order: 2, soft: 'rgba(0, 110, 92, 0.08)', tone: 'success.main' },
+  Watch: { border: '#f1ac49', color: 'warning', icon: WarningAmberOutlinedIcon, label: 'Needs Attention', order: 1, soft: 'rgba(241, 172, 73, 0.14)', tone: 'warning.main' },
 };
 
 const statusGroups = [
-  { helper: 'Needs executive intervention', key: 'red', statuses: ['Alert', 'Off Course'], title: 'Red' },
-  { helper: 'Needs focused follow-through', key: 'yellow', statuses: ['Watch', 'Needs Attention'], title: 'Yellow' },
-  { helper: 'On track or complete', key: 'green', statuses: ['Steady', 'On Course', 'Complete', 'Completed'], title: 'Green' },
+  { helper: 'Needs executive intervention', key: 'offTrack', metaStatus: 'Alert', statuses: ['Alert', 'Off Course'], title: 'Off Track' },
+  { helper: 'Needs focused follow-through', key: 'needsAttention', metaStatus: 'Watch', statuses: ['Watch', 'Needs Attention'], title: 'Needs Attention' },
+  { helper: 'On track or complete', key: 'onTrack', metaStatus: 'Steady', statuses: ['Steady', 'On Course', 'Complete', 'Completed'], title: 'On Track' },
 ];
 
 const clampProgress = (value) => Math.min(100, Math.max(0, Math.round(Number(value) || 0)));
@@ -105,8 +107,8 @@ const StatusDot = ({ status }) => {
   return <Box aria-hidden sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: meta.tone, flexShrink: 0 }} />;
 };
 
-const SignalSummaryTile = ({ count, helper, title }) => {
-  const meta = title === 'Red' ? statusMeta.Alert : title === 'Yellow' ? statusMeta.Watch : statusMeta.Steady;
+const SignalSummaryTile = ({ count, helper, metaStatus, title }) => {
+  const meta = getStatusMeta(metaStatus);
   const Icon = meta.icon;
 
   return (
@@ -136,7 +138,7 @@ const ExecutiveSignalHeader = ({ averageObjectiveProgress, objectiveCount, prior
           <Typography variant="overline" color="primary">Pinned Priority Signal</Typography>
           <Typography variant="h2" sx={{ mt: 0.35 }}>Operational priority health</Typography>
           <Typography variant="body1" sx={{ mt: 0.75, color: 'text.primary', maxWidth: 720 }}>
-            Q2 objectives with green-yellow-red health and progress toward goal for the executive read.
+            Q2 objectives with operational health and progress toward goal for the executive read.
           </Typography>
         </Box>
         <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 280 } }}>
@@ -156,7 +158,7 @@ const ExecutiveSignalHeader = ({ averageObjectiveProgress, objectiveCount, prior
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1.15fr' }, gap: 1.25, mt: 2 }}>
         {statusCounts.map((group) => (
-          <SignalSummaryTile key={group.key} count={group.count} helper={group.helper} title={group.title} />
+          <SignalSummaryTile key={group.key} count={group.count} helper={group.helper} metaStatus={group.metaStatus} title={group.title} />
         ))}
         <Box sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: 1, p: 1.25, minHeight: 112 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
@@ -177,7 +179,7 @@ const ExecutiveSignalHeader = ({ averageObjectiveProgress, objectiveCount, prior
   </Box>
 );
 
-const ObjectiveCard = ({ priority }) => {
+const ObjectiveCard = ({ onOpen, priority }) => {
   const status = getPriorityStatus(priority);
   const meta = getStatusMeta(status);
   const Icon = meta.icon;
@@ -185,11 +187,38 @@ const ObjectiveCard = ({ priority }) => {
   const objectives = priority.keyObjectives || [];
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderTop: '6px solid', borderTopColor: meta.border, borderRadius: 1, p: 1.5, minHeight: 332, display: 'flex', flexDirection: 'column' }}>
+    <Box
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpen();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open operational priority detail for ${priority.name}`}
+      sx={{
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderTop: '6px solid',
+        borderTopColor: meta.border,
+        borderRadius: 1,
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 332,
+        p: 1.5,
+        transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+        '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 3 },
+        '&:hover': { borderColor: 'primary.light', boxShadow: 3, transform: 'translateY(-2px)' },
+      }}
+    >
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
         <Box sx={{ minWidth: 0 }}>
           <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap">
-            <Chip icon={<Icon />} label={`${meta.label}: ${status}`} color={meta.color} size="small" />
+            <Chip icon={<Icon />} label={meta.label} color={meta.color} size="small" />
             <Chip label={priority.period} size="small" variant="outlined" />
           </Stack>
           <Typography variant="h3" sx={{ mt: 1 }}>{priority.name}</Typography>
@@ -237,6 +266,7 @@ const ObjectiveCard = ({ priority }) => {
       <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{ mt: 'auto', pt: 1.25 }}>
         <Chip label={`${objectives.length} objective${objectives.length === 1 ? '' : 's'}`} size="small" variant="outlined" />
         <Chip label={priority.owner.name} size="small" variant="outlined" />
+        <Chip icon={<ArrowForwardOutlinedIcon />} label="View Detail" color="primary" size="small" sx={{ ml: 'auto' }} />
       </Stack>
     </Box>
   );
@@ -262,7 +292,7 @@ const ObjectiveTracker = ({ objectiveRows }) => (
             <Box sx={{ minWidth: 0 }}>
               <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{ mb: 0.35 }}>
                 <Icon sx={{ color: meta.tone, fontSize: 18 }} />
-                <Chip label={`${meta.label}: ${objective.status}`} color={meta.color} size="small" />
+                <Chip label={meta.label} color={meta.color} size="small" />
                 <Chip label={priority.name} size="small" variant="outlined" />
               </Stack>
               <Typography variant="body1" color="text.primary" fontWeight={800}>{objective.title}</Typography>
@@ -332,6 +362,7 @@ const PillarCoverage = ({ companyPriorities }) => (
 );
 
 const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) => {
+  const navigate = useNavigate();
   const [team, setTeam] = useState('All Teams');
   const companyPriorities = useMemo(() => priorities.filter((priority) => priority.company), []);
   const teamOptions = useMemo(() => getTeamOptions(companyPriorities), [companyPriorities]);
@@ -380,7 +411,11 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))' }, gap: 1.35 }}>
         {sortedPriorities.map((priority) => (
-          <ObjectiveCard key={priority.id} priority={priority} />
+          <ObjectiveCard
+            key={priority.id}
+            priority={priority}
+            onOpen={() => navigate(`/dashboard/company/priorities/${priority.id}`)}
+          />
         ))}
       </Box>
 
