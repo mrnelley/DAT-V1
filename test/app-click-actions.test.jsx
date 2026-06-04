@@ -191,6 +191,7 @@ describe('clickable user actions', () => {
   it('orders the side navigation and keeps Data Table admin-only', async () => {
     renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u11');
 
+    const dashboards = await screen.findByText('Dashboards');
     const companyDashboard = await screen.findByText('Company Dashboard');
     const myDashboard = screen.getByText('My Dashboard');
     const annualInitiatives = screen.getByText('Annual Initiatives');
@@ -198,6 +199,7 @@ describe('clickable user actions', () => {
     const weeklyTracker = screen.getByText('Weekly Tracker');
     const actionViews = screen.getByText('Action Views');
 
+    expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(myDashboard.compareDocumentPosition(annualInitiatives) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(annualInitiatives.compareDocumentPosition(operationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);

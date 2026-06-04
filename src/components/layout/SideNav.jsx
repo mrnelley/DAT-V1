@@ -1,29 +1,30 @@
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TableViewOutlinedIcon from '@mui/icons-material/TableViewOutlined';
-import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery } from '@mui/material';
+import { Box, Collapse, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
+const dashboardItems = [
+  { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+  { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
+  { featureKey: 'initiatives', label: 'Annual Initiatives', path: '/initiatives' },
+  { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },
+];
+
 const navSections = [
-  [
-    { featureKey: 'companyDashboard', icon: DashboardOutlinedIcon, label: 'Company Dashboard', path: '/dashboard/company' },
-    { featureKey: 'myDashboard', icon: DashboardOutlinedIcon, label: 'My Dashboard', path: '/dashboard/me' },
-    { featureKey: 'initiatives', icon: AssignmentOutlinedIcon, label: 'Annual Initiatives', path: '/initiatives' },
-    { featureKey: 'dataTable', icon: TableViewOutlinedIcon, label: 'Data Table', path: '/metrics/table' },
-  ],
   [
     { featureKey: 'priorities', icon: TrendingUpIcon, label: 'Operational Priorities', path: '/priorities' },
     { featureKey: 'workplans', icon: FactCheckOutlinedIcon, label: 'Department Workplans', path: '/workplans' },
@@ -83,24 +84,91 @@ const isNavActive = (location, item) => {
   return location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 };
 
+const isDashboardSectionActive = (location, items) => items.some((item) => (
+  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+));
+
 const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
   const { user } = useAuth();
   const { isFeatureEnabled } = useFeatureAccess();
   const navigate = useNavigate();
   const location = useLocation();
   const mobile = useMediaQuery((theme) => theme.breakpoints.down('md'));
+  const [dashOpen, setDashOpen] = useState(true);
   const width = open ? 240 : 64;
+  const visibleDashboardItems = dashboardItems.filter((item) => !item.featureKey || isFeatureEnabled(item.featureKey));
   const visibleSections = navSections
     .map((section) => section.filter((item) => !item.featureKey || isFeatureEnabled(item.featureKey)))
     .filter((section) => section.length);
+  const dashboardActive = isDashboardSectionActive(location, visibleDashboardItems);
 
   const content = (
     <Box component={motion.div} animate={{ width: mobile ? 240 : width }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} sx={{ width, height: '100%', color: 'common.white', overflowX: 'hidden' }}>
       <Toolbar />
       <List sx={{ px: 1, pb: 12 }}>
+        {visibleDashboardItems.length > 0 && (
+          <Box>
+            <ListItemButton
+              onClick={() => setDashOpen((value) => !value)}
+              sx={{
+                minHeight: 48,
+                borderRadius: 1,
+                borderLeft: dashboardActive ? '3px solid #5eb8a8' : '3px solid transparent',
+                bgcolor: dashboardActive ? 'rgba(94,184,168,0.18)' : 'transparent',
+                color: dashboardActive ? 'secondary.main' : 'common.white',
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 42 }}><DashboardOutlinedIcon /></ListItemIcon>
+              <ListItemText primary="Dashboards" primaryTypographyProps={{ fontWeight: 600 }} sx={{ opacity: open || mobile ? 1 : 0 }} />
+              {(open || mobile) && <ExpandMoreIcon sx={{ transform: dashOpen ? 'rotate(180deg)' : 'none' }} />}
+            </ListItemButton>
+            <Collapse in={dashOpen && (open || mobile)} timeout="auto">
+              <List dense sx={{ pl: 4, pr: 0.5 }}>
+                {visibleDashboardItems.map(({ label, path }) => {
+                  const selected = location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+                  return (
+                    <ListItemButton
+                      key={path}
+                      onClick={() => {
+                        navigate(path);
+                        if (mobile) onMobileClose();
+                      }}
+                      selected={selected}
+                      sx={{
+                        borderRadius: 1,
+                        color: selected ? '#ffffff' : 'rgba(255,255,255,0.86)',
+                        minHeight: 38,
+                        '&:hover': {
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          color: '#ffffff',
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: 'rgba(94,184,168,0.24)',
+                          color: '#ffffff',
+                        },
+                        '&.Mui-selected:hover': {
+                          bgcolor: 'rgba(94,184,168,0.32)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={label}
+                        primaryTypographyProps={{
+                          fontWeight: selected ? 700 : 500,
+                          sx: { color: 'inherit' },
+                        }}
+                      />
+                    </ListItemButton>
+                  );
+                })}
+              </List>
+            </Collapse>
+          </Box>
+        )}
         {visibleSections.map((section, sectionIndex) => (
           <Box key={section.map((item) => item.label).join('-')}>
-            {sectionIndex > 0 && <SectionSeparator />}
+            {(sectionIndex > 0 || visibleDashboardItems.length > 0) && <SectionSeparator />}
             {section.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(location, item);
