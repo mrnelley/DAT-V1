@@ -44,10 +44,34 @@ const SectionSeparator = () => (
   <Box
     aria-hidden="true"
     sx={{
-      background: 'linear-gradient(90deg, rgba(94,184,168,0) 0%, rgba(94,184,168,0.08) 20%, rgba(239,220,156,0.72) 50%, rgba(94,184,168,0.08) 80%, rgba(94,184,168,0) 100%)',
-      height: 1,
-      mx: 1.25,
-      my: 1.15,
+      height: 14,
+      mx: 0.5,
+      my: 1.1,
+      opacity: 0.98,
+      position: 'relative',
+      '&::before': {
+        background: 'linear-gradient(90deg, rgba(239,220,156,0) 0%, rgba(239,220,156,0) 18%, rgba(94,184,168,0.72) 34%, rgba(239,220,156,0.96) 50%, rgba(94,184,168,0.72) 66%, rgba(239,220,156,0) 82%, rgba(239,220,156,0) 100%)',
+        borderRadius: 999,
+        boxShadow: '0 0 10px rgba(239,220,156,0.34), 0 0 14px rgba(94,184,168,0.18)',
+        content: '""',
+        height: 2,
+        left: 0,
+        position: 'absolute',
+        right: 0,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 1,
+      },
+      '&::after': {
+        background: 'linear-gradient(90deg, rgba(94,184,168,0) 0%, rgba(94,184,168,0.1) 20%, rgba(94,184,168,0.22) 50%, rgba(94,184,168,0.1) 80%, rgba(94,184,168,0) 100%)',
+        content: '""',
+        height: 10,
+        left: 0,
+        position: 'absolute',
+        right: 0,
+        top: 2,
+        zIndex: 0,
+      },
     }}
   />
 );
