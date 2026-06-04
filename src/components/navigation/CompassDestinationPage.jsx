@@ -17,6 +17,7 @@ import {
   users,
   weeklyActionReports,
 } from '../../data/mockData';
+import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import FeatureRolloutPage from '../admin/FeatureRolloutPage';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -129,10 +130,12 @@ const SignalRow = ({ helper, label, progress, status }) => (
 
 const ActionButtons = ({ actions }) => {
   const navigate = useNavigate();
+  const { isFeatureEnabled } = useFeatureAccess();
+  const visibleActions = actions.filter((action) => !action.featureKey || isFeatureEnabled(action.featureKey));
 
   return (
     <Stack direction="row" gap={1} flexWrap="wrap">
-      {actions.map((action, index) => (
+      {visibleActions.map((action, index) => (
         <Button
           key={action.path}
           endIcon={<ArrowForwardOutlinedIcon />}
@@ -438,7 +441,7 @@ const pageActions = {
   adminTeams: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Users', path: '/admin/users' }],
   adminUsers: [{ label: 'Open Profile', path: '/profile' }, { label: 'View Permissions', path: '/admin/permissions' }],
   executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Priority Map', path: '/priorities' }],
-  exports: [{ label: 'Open Data Table', path: '/metrics/table' }, { label: 'Company Dashboard', path: '/dashboard/company' }],
+  exports: [{ featureKey: 'dataTable', label: 'Open Data Table', path: '/metrics/table' }, { label: 'Company Dashboard', path: '/dashboard/company' }],
   teamHealth: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Stucks', path: '/stucks' }],
 };
 

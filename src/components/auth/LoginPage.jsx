@@ -5,17 +5,24 @@ import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import MicrosoftIcon from '@mui/icons-material/Microsoft';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
+import { getPrimaryDashboardPath } from '../../utils/dashboardRouting';
 
 const demoNames = ['Dana', 'Sam', 'Shar', 'Ann', 'Kim', 'Chris', 'Jaime', 'Angie', 'Michele', 'Meg', 'Tammie', 'Michael'];
 
 const LoginPage = () => {
-  const { signInByName } = useAuth();
+  const { isAuthenticated, primaryDashboardPath, signInByName } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(primaryDashboardPath, { replace: true });
+    }
+  }, [isAuthenticated, navigate, primaryDashboardPath]);
 
   const signInAs = (value) => {
     const match = signInByName(value);
@@ -26,7 +33,7 @@ const LoginPage = () => {
     }
 
     setError('');
-    navigate('/dashboard/me');
+    navigate(getPrimaryDashboardPath(match));
   };
 
   return (

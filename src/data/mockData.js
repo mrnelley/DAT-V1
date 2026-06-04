@@ -1,4 +1,4 @@
-export const users = [
+const userSeed = [
   {
     id: 'u1',
     name: 'Dana Hanchin',
@@ -198,6 +198,13 @@ export const users = [
     teams: ['Property Management', 'Leasing', 'Marketing'],
   },
 ];
+
+const defaultPrimaryDashboardFor = (user) => (user.workingGroup === 'ELT' ? 'company' : 'individual');
+
+export const users = userSeed.map((user) => ({
+  ...user,
+  primaryDashboard: user.primaryDashboard || defaultPrimaryDashboardFor(user),
+}));
 
 export const strategicPlan2030 = {
   id: 'sp-2030',

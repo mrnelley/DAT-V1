@@ -99,9 +99,11 @@ const { default: ActionItemsPage } = await import('../src/components/action-item
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
 const { default: LearnDictionaryPage } = await import('../src/components/learn/LearnDictionaryPage.jsx');
+const { default: LoginPage } = await import('../src/components/auth/LoginPage.jsx');
 const { default: OperationalPriorityPage } = await import('../src/components/priorities/OperationalPriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
+const { default: SideNav } = await import('../src/components/layout/SideNav.jsx');
 const { default: StucksPage } = await import('../src/components/stucks/StucksPage.jsx');
 const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
@@ -138,6 +140,25 @@ const renderWithProviders = (ui, path = '/', userId = 'u1') => {
   };
 };
 
+const renderLoginFlow = () => {
+  cleanup();
+  window.localStorage.clear();
+  return {
+    user: userEvent.setup({ document: window.document }),
+    ...render(
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <MemoryRouter initialEntries={['/']}>
+          <AuthProvider>
+            <LoginPage />
+            <LocationProbe />
+          </AuthProvider>
+        </MemoryRouter>
+      </ThemeProvider>,
+    ),
+  };
+};
+
 describe('clickable user actions', () => {
   afterEach(() => {
     cleanup();
@@ -153,6 +174,41 @@ describe('clickable user actions', () => {
     expect(screen.getByRole('heading', { name: /add one-off action/i })).to.exist;
     expect(screen.getByText(/weekly commitments start in the weekly tracker/i)).to.exist;
     expect(screen.getByText(/advanced visibility/i)).to.exist;
+  });
+
+  it('uses the user primary dashboard on demo sign in', async () => {
+    const { user } = renderLoginFlow();
+
+    await user.click(await screen.findByText('Dana'));
+    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/company');
+
+    cleanup();
+    const next = renderLoginFlow();
+    await next.user.click(await screen.findByText('Michael'));
+    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/me');
+  });
+
+  it('orders the side navigation and keeps Data Table admin-only', async () => {
+    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u11');
+
+    const companyDashboard = await screen.findByText('Company Dashboard');
+    const myDashboard = screen.getByText('My Dashboard');
+    const annualInitiatives = screen.getByText('Annual Initiatives');
+    const operationalPriorities = screen.getByText('Operational Priorities');
+    const weeklyTracker = screen.getByText('Weekly Tracker');
+    const actionViews = screen.getByText('Action Views');
+
+    expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(myDashboard.compareDocumentPosition(annualInitiatives) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(annualInitiatives.compareDocumentPosition(operationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(operationalPriorities.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(weeklyTracker.compareDocumentPosition(actionViews) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(screen.queryByText('Notifications')).to.equal(null);
+    expect(screen.queryByText('Data Table')).to.equal(null);
+
+    cleanup();
+    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u1');
+    expect(await screen.findByText('Data Table')).to.exist;
   });
 
   it('creates a visible one-off action from Action Views', async () => {

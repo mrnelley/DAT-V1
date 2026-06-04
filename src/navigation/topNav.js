@@ -19,7 +19,7 @@ export const topNavMenus = [
   {
     label: 'Reports',
     items: [
-      { featureKey: 'metrics', label: 'Data Table', path: '/metrics/table' },
+      { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },
       { featureKey: 'reports', label: 'Executive Summary', path: '/reports/executive-summary' },
       { featureKey: 'reports', label: 'Exports', path: '/reports/exports' },
     ],

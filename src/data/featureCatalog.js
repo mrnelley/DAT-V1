@@ -75,6 +75,12 @@ export const featureCatalog = [
     label: 'Metrics',
   },
   {
+    category: 'Administration',
+    description: 'Administrator-only structured data table for inspecting raw operating records.',
+    key: 'dataTable',
+    label: 'Data Table',
+  },
+  {
     category: 'Reporting',
     description: 'Leadership summaries and report exports.',
     key: 'reports',

@@ -32,10 +32,12 @@ import theme from './theme';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { primaryDashboardPath } = useAuth();
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Navigate to="/dashboard/me" replace />} />
+        <Route path="/" element={<Navigate to={primaryDashboardPath} replace />} />
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
         <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
         <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><OperationalPriorityPage /></FeatureGate>} />
@@ -51,7 +53,7 @@ const AnimatedRoutes = () => {
         <Route path="/action-items" element={<FeatureGate featureKey="actionItems"><ActionItemsPage /></FeatureGate>} />
         <Route path="/weekly-tracker" element={<FeatureGate featureKey="weeklyTracker"><WeeklyActionTrackerPage /></FeatureGate>} />
         <Route path="/metrics" element={<FeatureGate featureKey="metrics"><PlaceholderPage title="Metrics Management" /></FeatureGate>} />
-        <Route path="/metrics/table" element={<FeatureGate featureKey="metrics"><DataTablePage /></FeatureGate>} />
+        <Route path="/metrics/table" element={<FeatureGate featureKey="dataTable"><DataTablePage /></FeatureGate>} />
         <Route path="/reports/executive-summary" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="executiveSummary" /></FeatureGate>} />
         <Route path="/reports/exports" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="exports" /></FeatureGate>} />
         <Route path="/notifications" element={<NotificationsPage />} />

@@ -1,5 +1,6 @@
 import { createContext, createElement, useContext, useMemo, useState } from 'react';
 import { users } from '../data/mockData';
+import { getPrimaryDashboardPath } from '../utils/dashboardRouting';
 
 const AuthContext = createContext(null);
 
@@ -94,6 +95,7 @@ export const AuthProvider = ({ children }) => {
     demoUsers: users,
     getToken: async () => 'development-token',
     isAuthenticated,
+    primaryDashboardPath: getPrimaryDashboardPath(user),
     resetUserProfile,
     setUserId: selectUserId,
     signInByName,
