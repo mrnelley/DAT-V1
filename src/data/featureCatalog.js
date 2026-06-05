@@ -52,9 +52,9 @@ export const featureCatalog = [
   },
   {
     category: 'Operating Rhythm',
-    description: 'Views for assigned follow-through work, due dates, visibility, and one-off actions.',
-    key: 'actionItems',
-    label: 'Action Views',
+    description: 'Views for assigned follow-through work, due dates, visibility, and queued tasks.',
+    key: 'taskViews',
+    label: 'Task Views',
   },
   {
     category: 'Operating Rhythm',

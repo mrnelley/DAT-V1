@@ -31,7 +31,7 @@ const navSections = [
   ],
   [
     { featureKey: 'weeklyTracker', icon: TodayOutlinedIcon, label: 'Weekly Tracker', path: '/weekly-tracker' },
-    { featureKey: 'actionItems', icon: CheckCircleOutlineIcon, label: 'Action Views', path: '/action-items' },
+    { featureKey: 'taskViews', icon: CheckCircleOutlineIcon, label: 'Task Views', path: '/task-views' },
     { featureKey: 'huddles', icon: GroupsIcon, label: 'Huddles', popout: true },
     { featureKey: 'stucks', icon: WarningAmberOutlinedIcon, label: 'Stucks', path: '/stucks' },
   ],

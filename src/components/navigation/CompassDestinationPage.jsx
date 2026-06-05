@@ -168,7 +168,7 @@ const buildTeamSummaries = () => {
 
 const TeamHealthPage = () => {
   const teamSummaries = useMemo(buildTeamSummaries, []);
-  const openActionItems = actionItems.filter((item) => item.status !== 'Complete').length;
+  const openTaskItems = actionItems.filter((item) => item.status !== 'Complete').length;
   const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status));
 
   return (
@@ -186,7 +186,7 @@ const TeamHealthPage = () => {
           title="Culture Signals"
           subtitle="Fast read on whether the operating system is creating clarity or friction."
         >
-          <SignalRow label="Follow-through load" helper={`${openActionItems} visible actions are still open or in progress.`} progress={68} status="Watch" />
+          <SignalRow label="Follow-through load" helper={`${openTaskItems} visible tasks are still open or in progress.`} progress={68} status="Watch" />
           <SignalRow label="Blocker pressure" helper={`${stucks.length} stucks have named helpers and can be worked in huddle.`} progress={82} status="Steady" />
           <SignalRow label="Workplan attention" helper={`${visibleWorkplans.length} workplans need focus before the next leadership review.`} progress={54} status="Watch" />
         </SectionPanel>
@@ -312,9 +312,9 @@ const ExportsPage = () => {
       })),
     },
     {
-      description: 'Action owner, due date, status, visibility, and pillar.',
-      filename: 'compass-action-items.csv',
-      label: 'Action Views',
+      description: 'Task owner, due date, status, visibility, and pillar.',
+      filename: 'compass-task-views.csv',
+      label: 'Task Views',
       rows: actionItems.map((item) => ({
         due: item.due,
         owner: item.owner.name,

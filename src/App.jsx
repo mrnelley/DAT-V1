@@ -2,7 +2,6 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import ActionItemsPage from './components/action-items/ActionItemsPage';
 import LoginPage from './components/auth/LoginPage';
 import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
 import DashboardPage from './components/dashboard/DashboardPage';
@@ -19,6 +18,7 @@ import PrioritiesPage from './components/priorities/PrioritiesPage';
 import FeatureGate from './components/shared/FeatureGate';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
+import TaskViewsPage from './components/task-views/TaskViewsPage';
 import WeeklyActionTrackerPage from './components/weekly-tracker/WeeklyActionTrackerPage';
 import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
@@ -50,7 +50,7 @@ const AnimatedRoutes = () => {
         <Route path="/huddles/:id" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
         <Route path="/stucks" element={<FeatureGate featureKey="stucks"><StucksPage /></FeatureGate>} />
         <Route path="/culture/team-health" element={<FeatureGate featureKey="teamHealth"><CompassDestinationPage page="teamHealth" /></FeatureGate>} />
-        <Route path="/action-items" element={<FeatureGate featureKey="actionItems"><ActionItemsPage /></FeatureGate>} />
+        <Route path="/task-views" element={<FeatureGate featureKey="taskViews"><TaskViewsPage /></FeatureGate>} />
         <Route path="/weekly-tracker" element={<FeatureGate featureKey="weeklyTracker"><WeeklyActionTrackerPage /></FeatureGate>} />
         <Route path="/metrics" element={<FeatureGate featureKey="metrics"><PlaceholderPage title="Metrics Management" /></FeatureGate>} />
         <Route path="/metrics/table" element={<FeatureGate featureKey="dataTable"><DataTablePage /></FeatureGate>} />

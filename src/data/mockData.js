@@ -1586,7 +1586,7 @@ export const notificationEvents = [
     createdAt: '2026-05-13T08:10:00',
     readAt: null,
     status: 'queued',
-    actionPath: '/action-items',
+    actionPath: '/task-views',
   },
   {
     id: 'n3',
@@ -1602,7 +1602,7 @@ export const notificationEvents = [
     createdAt: '2026-05-12T14:30:00',
     readAt: '2026-05-12T15:05:00',
     status: 'sent',
-    actionPath: '/action-items',
+    actionPath: '/task-views',
   },
   {
     id: 'n4',

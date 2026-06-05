@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useNotifications } from '../../context/NotificationsContext';
-import { actionItems, users } from '../../data/mockData';
+import { actionItems as taskItems, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -33,11 +33,11 @@ const visibilityLabels = {
 };
 
 const sourceLabels = {
-  one_off: 'One-off action',
+  one_off: 'Queued task',
   weekly_tracker: 'Weekly Tracker',
 };
 
-const actionViewOptions = ['Assigned to Me', 'Assigned by Me', 'Due This Week', 'Department', 'All Visible'];
+const taskViewOptions = ['Assigned to Me', 'Assigned by Me', 'Due This Week', 'Department', 'All Visible'];
 
 const normalizeStatus = (status) => String(status || '').toLowerCase().replaceAll('_', ' ');
 
@@ -69,23 +69,23 @@ const isInvolved = (item, user) => (
   || item.assignments?.some((assignment) => assignment.profile?.id === user.id)
 );
 
-const canManageActionItem = (item, user) => isLeadershipUser(user) || isInvolved(item, user);
+const canManageTask = (item, user) => isLeadershipUser(user) || isInvolved(item, user);
 
-const canViewActionItem = (item, user) => (
+const canViewTask = (item, user) => (
   isInvolved(item, user)
   || item.visibility === 'organization'
   || (item.visibility === 'department' && item.department === user.department)
   || (item.visibility === 'olt' && user.workingGroup === 'OLT')
 );
 
-const ActionItemsPage = () => {
+const TaskViewsPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
   const { addNotification } = useNotifications();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('Assigned to Me');
   const [statusFilter, setStatusFilter] = useState('Active');
-  const [items, setItems] = useState(actionItems);
+  const [items, setItems] = useState(taskItems);
   const [completed, setCompleted] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(buildInitialForm(user));
@@ -93,7 +93,7 @@ const ActionItemsPage = () => {
   const [assignmentForm, setAssignmentForm] = useState(buildAssignmentForm());
   const [selectedItem, setSelectedItem] = useState(null);
   const visibleItems = items.filter((item) => {
-    if (!canViewActionItem(item, user)) return false;
+    if (!canViewTask(item, user)) return false;
     const matchesStatus = statusFilter === 'All'
       || (statusFilter === 'Active' && isActiveStatus(item.status))
       || normalizeStatus(item.status) === normalizeStatus(statusFilter);
@@ -107,7 +107,7 @@ const ActionItemsPage = () => {
   });
 
   useEffect(() => {
-    if (searchParams.get('new') !== '1') return;
+    if (!['1', 'queue'].includes(searchParams.get('new'))) return;
 
     setDialogOpen(true);
     const nextParams = new URLSearchParams(searchParams);
@@ -125,11 +125,11 @@ const ActionItemsPage = () => {
     setAssignmentForm(buildAssignmentForm());
   };
 
-  const addOneOffAction = () => {
+  const addQueuedTask = () => {
     const owner = users.find((candidate) => candidate.id === form.ownerId) || user;
     setItems((current) => [
       {
-        id: `action-custom-${Date.now()}`,
+        id: `task-custom-${Date.now()}`,
         description: form.description,
         owner,
         createdBy: user,
@@ -152,7 +152,7 @@ const ActionItemsPage = () => {
 
   const openAssignmentWorkflow = (item) => {
     if (!canManageActionItem(item, user)) {
-      unavailable('only assigned users, creators, ELT, or OLT can update action assignments.');
+      unavailable('only assigned users, creators, ELT, or OLT can update task assignments.');
       return;
     }
 
@@ -166,7 +166,7 @@ const ActionItemsPage = () => {
     const owner = users.find((candidate) => candidate.id === assignmentForm.ownerId) || selectedItem.owner;
     const event = {
       id: `assignment-event-${Date.now()}`,
-      actionItemId: selectedItem.id,
+      taskId: selectedItem.id,
       actor: user,
       recipient: owner,
       message: `${user.name} assigned "${selectedItem.description}" to ${owner.name}.`,
@@ -193,15 +193,15 @@ const ActionItemsPage = () => {
     )));
     setAssignmentEvents((current) => [event, ...current]);
     addNotification({
-      actionPath: '/action-items',
+      actionPath: '/task-views',
       actor: user,
       body: `${selectedItem.description} is due on ${assignmentForm.due}. ${assignmentForm.note}`.trim(),
       channel: 'in_app',
       notificationType: 'task_assigned',
       recipient: owner,
       sourceId: selectedItem.id,
-      sourceType: 'action_item',
-      title: `${user.name} assigned you an action`,
+      sourceType: 'task',
+      title: `${user.name} assigned you a task`,
     });
     closeAssignmentDialog();
   };
@@ -210,19 +210,19 @@ const ActionItemsPage = () => {
     <PageWrapper>
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Box>
-          <Typography variant="h1">Action Views</Typography>
+          <Typography variant="h1">Task Views</Typography>
           <Typography variant="body2" color="text.secondary">
-            Inspect follow-through work created from weekly priorities, assignments, and one-off actions.
+            Inspect follow-through work created from weekly priorities, assignments, and queued tasks.
           </Typography>
         </Box>
-        <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add One-Off Action</Button>
+        <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Weekly commitments start in the Weekly Tracker. Use Action Views to work the assignments that come out of those priorities, or to create a one-off action when it does not belong under a weekly priority.
+        Weekly commitments start in the Weekly Tracker. Use Task Views to work the assignments that come out of those priorities, or to queue a task when it does not belong under a weekly priority yet.
       </Alert>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
         <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)} sx={{ flexWrap: 'wrap' }}>
-          {actionViewOptions.map((option) => (
+          {taskViewOptions.map((option) => (
             <ToggleButton key={option} value={option}>{option}</ToggleButton>
           ))}
         </ToggleButtonGroup>
@@ -243,18 +243,18 @@ const ActionItemsPage = () => {
           severity="info"
           sx={{ mb: 2 }}
         >
-          Teams action card queued for {assignmentEvents[0].recipient.name}: {assignmentEvents[0].message}
+          Teams task card queued for {assignmentEvents[0].recipient.name}: {assignmentEvents[0].message}
         </Alert>
       )}
       <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
         {!visibleItems.length && (
           <ListItem>
-            <Typography variant="body2" color="text.secondary">No actions match this view.</Typography>
+            <Typography variant="body2" color="text.secondary">No tasks match this view.</Typography>
           </ListItem>
         )}
         {visibleItems.map((item) => {
           const done = completed.includes(item.id);
-          const canManage = canManageActionItem(item, user);
+          const canManage = canManageTask(item, user);
           return (
             <ListItem
               key={item.id}
@@ -268,24 +268,24 @@ const ActionItemsPage = () => {
                   <UserAvatar user={item.owner} size="sm" />
                   <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
                   <Chip icon={<VisibilityOutlinedIcon />} label={visibilityLabels[item.visibility] || 'Assigned and created by'} variant="outlined" size="small" />
-                  <Chip label={sourceLabels[item.source] || 'Action'} variant="outlined" size="small" />
+                  <Chip label={sourceLabels[item.source] || 'Task'} variant="outlined" size="small" />
                   <Chip label={item.priority} color="primary" variant="outlined" size="small" />
                   <Chip label={item.strategicPillar} variant="outlined" size="small" />
                 </Stack>
               </Box>
-              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for action ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
+              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for task ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
             </ListItem>
           );
         })}
       </List>
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add One-Off Action</DialogTitle>
+        <DialogTitle>Add Task to Queue</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Alert severity="warning">
-              Use this only when the action is not pursuant to a weekly priority. Weekly priority work should be authored in the Weekly Tracker first.
+              Use this only when the task is not pursuant to a weekly priority. Weekly priority work should be authored in the Weekly Tracker first.
             </Alert>
-            <TextField label="Action" value={form.description} onChange={update('description')} fullWidth />
+            <TextField label="Task" value={form.description} onChange={update('description')} fullWidth />
             <TextField select label="Owner" value={form.ownerId} onChange={update('ownerId')} fullWidth>
               {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
             </TextField>
@@ -313,15 +313,15 @@ const ActionItemsPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Cancel</Button>
-          <Button variant="contained" onClick={addOneOffAction} disabled={!form.description.trim()}>Create One-Off Action</Button>
+          <Button variant="contained" onClick={addQueuedTask} disabled={!form.description.trim()}>Add Task to Queue</Button>
         </DialogActions>
       </Dialog>
       <Dialog open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Action Assignment Workflow</DialogTitle>
+        <DialogTitle>Task Assignment Workflow</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Box>
-              <Typography variant="subtitle2" color="text.secondary">Action</Typography>
+              <Typography variant="subtitle2" color="text.secondary">Task</Typography>
               <Typography>{selectedItem?.description}</Typography>
             </Box>
             <Divider />
@@ -348,7 +348,7 @@ const ActionItemsPage = () => {
             </FormControl>
             <TextField label="Assignment note" value={assignmentForm.note} onChange={updateAssignment('note')} minRows={3} multiline fullWidth />
             <Alert icon={<AssignmentIndOutlinedIcon />} severity="success">
-              Saving this assignment queues a Teams action card for the assigned user and keeps the action visible according to the selected visibility.
+              Saving this assignment queues a Teams task card for the assigned user and keeps the task visible according to the selected visibility.
             </Alert>
           </Stack>
         </DialogContent>
@@ -361,4 +361,4 @@ const ActionItemsPage = () => {
   );
 };
 
-export default ActionItemsPage;
+export default TaskViewsPage;
