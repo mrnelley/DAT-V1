@@ -33,19 +33,27 @@ const statusColors = {
 
 const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over'];
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
-const baseReport = weeklyActionReports[0];
+const baseReport = weeklyActionReports[0] || {
+  id: 'war-2026-06-08',
+  label: 'Current week',
+  reviewMeetingAt: '2026-06-12T10:00:00-04:00',
+  status: 'planning',
+  submissionDueAt: '2026-06-12T12:00:00-04:00',
+  weekEnd: '2026-06-12',
+  weekStart: '2026-06-08',
+};
 const weeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
 
 const weekOptions = [
   {
     ...baseReport,
-    id: 'war-2026-05-11',
+    id: 'war-2026-06-01',
     label: 'Previous week',
-    reviewMeetingAt: '2026-05-11T10:00:00-04:00',
+    reviewMeetingAt: '2026-06-05T10:00:00-04:00',
     status: 'locked',
-    submissionDueAt: '2026-05-08T12:00:00-04:00',
-    weekEnd: '2026-05-15',
-    weekStart: '2026-05-11',
+    submissionDueAt: '2026-06-05T12:00:00-04:00',
+    weekEnd: '2026-06-05',
+    weekStart: '2026-06-01',
   },
   {
     ...baseReport,
@@ -53,13 +61,13 @@ const weekOptions = [
   },
   {
     ...baseReport,
-    id: 'war-2026-05-25',
+    id: 'war-2026-06-15',
     label: 'Upcoming week',
-    reviewMeetingAt: '2026-05-25T10:00:00-04:00',
+    reviewMeetingAt: '2026-06-19T10:00:00-04:00',
     status: 'planning',
-    submissionDueAt: '2026-05-22T12:00:00-04:00',
-    weekEnd: '2026-05-29',
-    weekStart: '2026-05-25',
+    submissionDueAt: '2026-06-19T12:00:00-04:00',
+    weekEnd: '2026-06-19',
+    weekStart: '2026-06-15',
   },
 ];
 

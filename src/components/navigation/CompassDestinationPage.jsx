@@ -36,7 +36,7 @@ const pageMeta = {
   exports: {
     eyebrow: 'Reports',
     title: 'Exports',
-    subtitle: 'Download focused CSV slices from the current Compass demo data.',
+    subtitle: 'Download focused CSV slices from the current Compass records.',
   },
   adminUsers: {
     eyebrow: 'Administration',
@@ -223,8 +223,10 @@ const ExecutiveSummaryPage = () => {
     const status = priority.roadmapStatus || priority.status || 'No Data';
     return { ...counts, [status]: (counts[status] || 0) + 1 };
   }, {});
-  const metricAverage = Math.round(metrics.reduce((total, metric) => total + ((metric.current / metric.target) * 100), 0) / metrics.length);
-  const report = weeklyActionReports[0];
+  const metricAverage = metrics.length
+    ? Math.round(metrics.reduce((total, metric) => total + ((metric.current / metric.target) * 100), 0) / metrics.length)
+    : 0;
+  const report = weeklyActionReports[0] || null;
 
   return (
     <>
@@ -232,7 +234,7 @@ const ExecutiveSummaryPage = () => {
         <StatTile label="Priority Health" value={`${priorityCounts.Steady || 0}/${priorities.length}`} helper="Steady quarterly priorities" />
         <StatTile label="Needs Focus" value={(priorityCounts.Watch || 0) + (priorityCounts.Alert || 0)} helper="Watch or alert priorities" />
         <StatTile label="Critical Number Pace" value={`${metricAverage}%`} helper="Average current-to-target" />
-        <StatTile label="Weekly Review" value={report.status} helper={`${report.weekStart} to ${report.weekEnd}`} />
+        <StatTile label="Weekly Review" value={report?.status || 'Not scheduled'} helper={report ? `${report.weekStart} to ${report.weekEnd}` : 'No weekly review created yet'} />
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.1fr 0.9fr' }, gap: 2 }}>
@@ -242,7 +244,7 @@ const ExecutiveSummaryPage = () => {
           subtitle="Items that should be visible before the next executive discussion."
         >
           <Stack gap={1}>
-            {priorities.slice(0, 5).map((priority) => (
+            {priorities.length ? priorities.slice(0, 5).map((priority) => (
               <Box key={priority.id} sx={{ borderTop: '1px solid', borderColor: 'divider', py: 1.25 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
                   <Box>
@@ -252,7 +254,9 @@ const ExecutiveSummaryPage = () => {
                   <Chip label={priority.roadmapStatus || priority.status} color={statusColor[priority.roadmapStatus] || 'default'} size="small" />
                 </Stack>
               </Box>
-            ))}
+            )) : (
+              <Typography variant="body2" color="text.secondary">No enterprise priorities have been created yet.</Typography>
+            )}
           </Stack>
         </SectionPanel>
 
@@ -262,7 +266,7 @@ const ExecutiveSummaryPage = () => {
           subtitle="Current target progress by metric owner."
         >
           <Stack gap={1}>
-            {metrics.map((metric) => {
+            {metrics.length ? metrics.map((metric) => {
               const progress = Math.min(100, Math.round((metric.current / metric.target) * 100));
               return (
                 <Box key={metric.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
@@ -276,7 +280,9 @@ const ExecutiveSummaryPage = () => {
                   <LinearProgress value={progress} variant="determinate" sx={{ mt: 1 }} />
                 </Box>
               );
-            })}
+            }) : (
+              <Typography variant="body2" color="text.secondary">No critical numbers have been created yet.</Typography>
+            )}
           </Stack>
         </SectionPanel>
       </Box>
@@ -341,7 +347,7 @@ const ExportsPage = () => {
                 <Typography variant="body2">{item.description}</Typography>
                 <Chip label={`${item.rows.length} rows`} size="small" variant="outlined" sx={{ mt: 1 }} />
               </Box>
-              <Button startIcon={<DownloadOutlinedIcon />} variant="contained" onClick={() => downloadCsv(item.filename, item.rows)}>
+              <Button disabled={!item.rows.length} startIcon={<DownloadOutlinedIcon />} variant="contained" onClick={() => downloadCsv(item.filename, item.rows)}>
                 Download CSV
               </Button>
             </Stack>

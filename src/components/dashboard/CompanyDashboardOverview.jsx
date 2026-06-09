@@ -300,7 +300,7 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
     </Stack>
 
     <Stack gap={0.85}>
-      {objectiveRows.map(({ goal, objective, priority, progress }) => {
+      {objectiveRows.length ? objectiveRows.map(({ goal, objective, priority, progress }) => {
         const meta = getStatusMeta(objective.status);
         const Icon = meta.icon;
 
@@ -380,7 +380,11 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
             </Box>
           </Box>
         );
-      })}
+      }) : (
+        <Typography variant="body2" color="text.secondary">
+          No workplan objectives have been connected to enterprise priorities yet.
+        </Typography>
+      )}
     </Stack>
   </Box>
 );
@@ -464,7 +468,8 @@ const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
   }, [engagement, open]);
 
   const recipient = engagement?.teammates?.find((teammate) => teammate.id === recipientId);
-  const meta = getStatusMeta(engagement?.status);
+  const meta = Object.values(statusMeta).find((candidate) => candidate.label === engagement?.status)
+    || getStatusMeta(engagement?.status);
 
   return (
     <Dialog
@@ -494,29 +499,40 @@ const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>{engagement.goal}</Typography>
               </Box>
 
-              <TextField select label="Connect with" value={recipientId} onChange={(event) => setRecipientId(event.target.value)} fullWidth>
-                {engagement.teammates.map((teammate) => (
-                  <MenuItem key={teammate.id} value={teammate.id}>
-                    <Stack direction="row" gap={1} alignItems="center">
-                      <UserAvatar user={teammate} size="sm" />
-                      <Box>
-                        <Typography variant="body2" fontWeight={700}>{teammate.name}</Typography>
-                        <Typography variant="caption">{teammate.department}</Typography>
-                      </Box>
-                    </Stack>
-                  </MenuItem>
-                ))}
-              </TextField>
+              {engagement.teammates.length ? (
+                <>
+                  <TextField select label="Connect with" value={recipientId} onChange={(event) => setRecipientId(event.target.value)} fullWidth>
+                    {engagement.teammates.map((teammate) => (
+                      <MenuItem key={teammate.id} value={teammate.id}>
+                        <Stack direction="row" gap={1} alignItems="center">
+                          <UserAvatar user={teammate} size="sm" />
+                          <Box>
+                            <Typography variant="body2" fontWeight={700}>{teammate.name}</Typography>
+                            <Typography variant="caption">{teammate.department}</Typography>
+                          </Box>
+                        </Stack>
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-              <TextField
-                autoFocus
-                label="Note"
-                multiline
-                minRows={3}
-                onChange={(event) => setMessage(event.target.value)}
-                placeholder="What do you want to coordinate, clarify, or offer?"
-                value={message}
-              />
+                  <TextField
+                    autoFocus
+                    label="Note"
+                    multiline
+                    minRows={3}
+                    onChange={(event) => setMessage(event.target.value)}
+                    placeholder="What do you want to coordinate, clarify, or offer?"
+                    value={message}
+                  />
+                </>
+              ) : (
+                <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+                  <Typography variant="body1" fontWeight={800}>No teammates connected yet</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.35 }}>
+                    Create an enterprise priority or linked workplan objective under this pillar before sending teammate notes.
+                  </Typography>
+                </Box>
+              )}
             </Stack>
           )}
         </DialogContent>
@@ -602,13 +618,20 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
       />
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))' }, gap: 1.35 }}>
-        {sortedPriorities.map((priority) => (
+        {sortedPriorities.length ? sortedPriorities.map((priority) => (
           <ObjectiveCard
             key={priority.id}
             priority={priority}
             onOpen={() => navigate(`/dashboard/company/priorities/${priority.id}`)}
           />
-        ))}
+        )) : (
+          <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+            <Typography variant="h3">No enterprise priorities yet</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              When leadership creates priorities, their status and progress cards will appear here.
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       <ObjectiveTracker objectiveRows={objectiveRows} onEngage={setEngagement} />
