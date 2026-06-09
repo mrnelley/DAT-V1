@@ -77,7 +77,7 @@ const canViewTask = (item, user) => (
   || (item.visibility === 'olt' && user.workingGroup === 'OLT')
 );
 
-const TaskViewsPage = () => {
+const TaskViewPage = () => {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
   const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, updateQueuedTask } = useOperatingData();
@@ -184,7 +184,7 @@ const TaskViewsPage = () => {
     });
     setAssignmentEvents((current) => [event, ...current]);
     addNotification({
-      actionPath: '/task-views',
+      actionPath: '/task-view',
       actor: user,
       body: `${selectedItem.description} is due on ${assignmentForm.due}. ${assignmentForm.note}`.trim(),
       channel: 'in_app',
@@ -199,9 +199,17 @@ const TaskViewsPage = () => {
 
   return (
     <PageWrapper>
+      <Box
+        sx={{
+          bgcolor: '#f4e5b5',
+          m: { xs: -2, md: -3 },
+          minHeight: 'calc(100vh - 64px)',
+          p: { xs: 2, md: 3 },
+        }}
+      >
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Box>
-          <Typography variant="h1">Task Views</Typography>
+          <Typography variant="h1">Task View</Typography>
           <Typography variant="body2" color="text.secondary">
             Work standalone queued tasks, assignments, and optional department workplan links.
           </Typography>
@@ -209,7 +217,7 @@ const TaskViewsPage = () => {
         <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Weekly commitments and their Action Items live in the Weekly Tracker. Use Task Views to queue and manage standalone tasks that do not belong under a weekly priority.
+        Weekly commitments and their Action Items live in the Weekly Tracker. Use Task View to queue and manage standalone tasks that do not belong under a weekly priority.
       </Alert>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
         <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)} sx={{ flexWrap: 'wrap' }}>
@@ -237,7 +245,15 @@ const TaskViewsPage = () => {
           Teams task card queued for {assignmentEvents[0].recipient.name}: {assignmentEvents[0].message}
         </Alert>
       )}
-      <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+      <List
+        sx={{
+          bgcolor: '#fff8df',
+          border: '1px solid #d4bd73',
+          borderRadius: 1,
+          boxShadow: '0 8px 18px rgba(103, 82, 20, 0.12)',
+          overflow: 'hidden',
+        }}
+      >
         {!visibleItems.length && (
           <ListItem>
             <Typography variant="body2" color="text.secondary">No tasks match this view.</Typography>
@@ -251,7 +267,7 @@ const TaskViewsPage = () => {
             <ListItem
               key={item.id}
               divider
-              sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(90, 100, 117, 0.08)' : 'transparent' }}
+              sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(94, 184, 168, 0.12)' : 'transparent' }}
             >
               <Checkbox disabled={!canManage} checked={done} onChange={() => updateQueuedTask(item.id, { status: done ? 'Open' : 'Complete' })} sx={{ mt: 0.25 }} />
               <Box sx={{ flex: 1, minWidth: 240 }}>
@@ -374,8 +390,9 @@ const TaskViewsPage = () => {
         tasks={getTasksForUser(user.id)}
         user={user}
       />
+      </Box>
     </PageWrapper>
   );
 };
 
-export default TaskViewsPage;
+export default TaskViewPage;

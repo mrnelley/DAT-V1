@@ -53,8 +53,8 @@ export const featureCatalog = [
   {
     category: 'Operating Rhythm',
     description: 'Views for assigned follow-through work, due dates, visibility, and queued tasks.',
-    key: 'taskViews',
-    label: 'Task Views',
+    key: 'taskView',
+    label: 'Task View',
   },
   {
     category: 'Operating Rhythm',

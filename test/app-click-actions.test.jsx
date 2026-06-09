@@ -100,14 +100,14 @@ const { default: CompanyDashboardOverview } = await import('../src/components/da
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
-const { default: LearnDictionaryPage } = await import('../src/components/learn/LearnDictionaryPage.jsx');
+const { default: LearnPage } = await import('../src/components/learn/LearnPage.jsx');
 const { default: LoginPage } = await import('../src/components/auth/LoginPage.jsx');
 const { default: OperationalPriorityPage } = await import('../src/components/priorities/OperationalPriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: SideNav } = await import('../src/components/layout/SideNav.jsx');
 const { default: StucksPage } = await import('../src/components/stucks/StucksPage.jsx');
-const { default: TaskViewsPage } = await import('../src/components/task-views/TaskViewsPage.jsx');
+const { default: TaskViewPage } = await import('../src/components/task-view/TaskViewPage.jsx');
 const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 
@@ -170,8 +170,8 @@ describe('clickable user actions', () => {
     window.localStorage.clear();
   });
 
-  it('opens the one-off task dialog from Task Views', async () => {
-    const { user } = renderWithProviders(<TaskViewsPage />);
+  it('opens the one-off task dialog from Task View', async () => {
+    const { user } = renderWithProviders(<TaskViewPage />);
 
     await user.click(await screen.findByRole('button', { name: /add to queue/i }));
 
@@ -202,14 +202,14 @@ describe('clickable user actions', () => {
     const annualInitiatives = screen.getByText('Annual Initiatives');
     const operationalPriorities = screen.getByText('Operational Priorities');
     const weeklyTracker = screen.getByText('Weekly Tracker');
-    const taskViews = screen.getByText('Task Views');
+    const taskView = screen.getByText('Task View');
 
     expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(myDashboard.compareDocumentPosition(annualInitiatives) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(annualInitiatives.compareDocumentPosition(operationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(operationalPriorities.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(weeklyTracker.compareDocumentPosition(taskViews) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(weeklyTracker.compareDocumentPosition(taskView) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(screen.queryByText('Notifications')).to.equal(null);
     expect(screen.queryByText('Data Table')).to.equal(null);
 
@@ -218,8 +218,8 @@ describe('clickable user actions', () => {
     expect(await screen.findByText('Data Table')).to.exist;
   });
 
-  it('creates and persists a visible one-off task from Task Views', async () => {
-    const { user } = renderWithProviders(<TaskViewsPage />);
+  it('creates and persists a visible one-off task from Task View', async () => {
+    const { user } = renderWithProviders(<TaskViewPage />);
 
     await user.click(await screen.findByRole('button', { name: /add to queue/i }));
     await user.type(screen.getByLabelText(/^task$/i), 'Confirm Teams card copy');
@@ -238,7 +238,7 @@ describe('clickable user actions', () => {
   });
 
   it('opens and saves the task assignment workflow from a task row', async () => {
-    const { user } = renderWithProviders(<TaskViewsPage />);
+    const { user } = renderWithProviders(<TaskViewPage />);
 
     await user.click(await screen.findByRole('button', { name: /open assignment workflow for task send final q2 priority draft to elt/i }));
 
@@ -353,7 +353,7 @@ describe('clickable user actions', () => {
     await user.click(await screen.findByRole('button', { name: /issue a stuck/i }));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByLabelText(/task i am stuck on/i));
-    await user.click(await screen.findByRole('option', { name: /send final q2 priority draft to elt - task views/i }));
+    await user.click(await screen.findByRole('option', { name: /send final q2 priority draft to elt - task view/i }));
     await user.type(within(dialog).getByLabelText(/stuck description/i), 'Need a decision before this can move');
     await user.click(within(dialog).getByLabelText(/need help from/i));
     await user.click(await screen.findByRole('option', { name: /sam jordan - finance/i }));
@@ -387,7 +387,7 @@ describe('clickable user actions', () => {
         <TopBar onMenuClick={() => {}} />
         <LocationProbe />
       </>,
-      '/task-views',
+      '/task-view',
     );
 
     const destinations = [
@@ -499,9 +499,10 @@ describe('clickable user actions', () => {
   });
 
   it('renders the Learn dictionary with programmatic and plain-English definitions', async () => {
-    renderWithProviders(<LearnDictionaryPage />, '/learn');
+    const { user } = renderWithProviders(<LearnPage />, '/learn');
 
     expect(await screen.findByRole('heading', { name: /^learn$/i })).to.exist;
+    await user.click(screen.getByRole('button', { name: /dictionary/i }));
     expect(screen.getByRole('heading', { name: /compass dictionary/i })).to.exist;
     expect(screen.getByRole('combobox', { name: /search dictionary/i })).to.exist;
     expect(screen.getByText(/^programmatic distinction$/i)).to.exist;
@@ -510,7 +511,8 @@ describe('clickable user actions', () => {
   });
 
   it('selects a dictionary term from the autocomplete search', async () => {
-    const { user } = renderWithProviders(<LearnDictionaryPage />, '/learn');
+    const { user } = renderWithProviders(<LearnPage />, '/learn');
+    await user.click(await screen.findByRole('button', { name: /dictionary/i }));
     const search = await screen.findByRole('combobox', { name: /search dictionary/i });
 
     await user.click(search);

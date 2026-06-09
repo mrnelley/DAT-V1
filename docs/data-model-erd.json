@@ -503,7 +503,7 @@
     "ActionItem": {
       "table": "action_items",
       "source": ["supabase legacy action_items table", "src/data/mockData.js queuedTasks"],
-      "meaning": "Queued Task records shown in Task Views; not Weekly Tracker Action Items.",
+      "meaning": "Queued Task records shown in Task View; not Weekly Tracker Action Items.",
       "primaryKey": "id",
       "fields": {
         "id": "uuid|string",

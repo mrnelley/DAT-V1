@@ -1,4 +1,6 @@
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
@@ -89,7 +91,8 @@ const DefinitionRow = ({ section, term }) => {
   );
 };
 
-const LearnDictionaryPage = () => {
+const LearnPage = () => {
+  const [activeTool, setActiveTool] = useState(null);
   const [category, setCategory] = useState('All');
   const [letter, setLetter] = useState('All');
   const [query, setQuery] = useState('');
@@ -126,8 +129,8 @@ const LearnDictionaryPage = () => {
         sx={{
           bgcolor: '#202441',
           color: '#ffffff',
-          minHeight: 'calc(100vh - 96px)',
-          mx: { xs: -1, md: 0 },
+          minHeight: 'calc(100vh - 64px)',
+          m: { xs: -2, md: -3 },
           overflow: 'hidden',
           position: 'relative',
           '&::before': {
@@ -150,17 +153,65 @@ const LearnDictionaryPage = () => {
         }}
       >
         <Box sx={{ position: 'relative', px: { xs: 2, md: 3 }, py: { xs: 2.5, md: 3 } }}>
+          {activeTool !== 'dictionary' ? (
+            <Stack sx={{ minHeight: 'calc(100vh - 112px)' }}>
+              <Box sx={{ maxWidth: 760, mb: { xs: 5, md: 8 } }}>
+                <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
+                  <AutoStoriesOutlinedIcon sx={{ color: 'background.accent' }} />
+                  <Typography variant="overline" sx={{ color: 'background.accent', letterSpacing: 1 }}>Learn</Typography>
+                </Stack>
+                <Typography variant="h1" sx={{ color: '#ffffff', fontSize: { xs: '2rem', md: '2.7rem' }, lineHeight: 1.05 }}>
+                  Learn
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.74)', maxWidth: 650, mt: 1 }}>
+                  Build fluency in Compass and the operating model behind it.
+                </Typography>
+              </Box>
+
+              <List disablePadding sx={{ borderTop: '1px solid rgba(239,220,156,0.45)' }}>
+                <ListItemButton
+                  onClick={() => setActiveTool('dictionary')}
+                  sx={{
+                    borderBottom: '1px solid rgba(239,220,156,0.45)',
+                    borderRadius: 0,
+                    color: '#ffffff',
+                    gap: 2,
+                    px: { xs: 0, md: 1.5 },
+                    py: { xs: 2.25, md: 2.75 },
+                    '&:hover': { bgcolor: 'rgba(94,184,168,0.12)' },
+                  }}
+                >
+                  <MenuBookOutlinedIcon sx={{ color: 'background.accent', fontSize: 34 }} />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h2" sx={{ color: '#ffffff' }}>Dictionary</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.68)', mt: 0.5 }}>
+                      Software definitions, plain-English translations, and programmatic distinctions.
+                    </Typography>
+                  </Box>
+                  <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
+                </ListItemButton>
+              </List>
+            </Stack>
+          ) : (
+            <>
           <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={2} sx={{ mb: 2.5 }}>
             <Box sx={{ maxWidth: 760 }}>
+              <Button
+                onClick={() => setActiveTool(null)}
+                startIcon={<ArrowBackOutlinedIcon />}
+                sx={{ color: 'rgba(255,255,255,0.74)', mb: 1, px: 0 }}
+              >
+                Learn
+              </Button>
               <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
-                <AutoStoriesOutlinedIcon sx={{ color: 'background.accent' }} />
-                <Typography variant="overline" sx={{ color: 'background.accent', letterSpacing: 1 }}>Learn</Typography>
+                <MenuBookOutlinedIcon sx={{ color: 'background.accent' }} />
+                <Typography variant="overline" sx={{ color: 'background.accent', letterSpacing: 1 }}>Dictionary</Typography>
               </Stack>
               <Typography variant="h1" sx={{ color: '#ffffff', fontSize: { xs: '2rem', md: '2.7rem' }, lineHeight: 1.05 }}>
-                Learn
+                Compass Dictionary
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.74)', maxWidth: 650, mt: 1 }}>
-                The dictionary is the first layer: software definitions, plain-English translations, and programmatic distinctions for the operating model.
+                Software definitions, plain-English translations, and programmatic distinctions for the operating model.
               </Typography>
             </Box>
             <Box sx={{ width: { xs: '100%', lg: 430 } }}>
@@ -210,10 +261,6 @@ const LearnDictionaryPage = () => {
           </Stack>
 
           <Stack gap={1.25} sx={{ mb: 2 }}>
-            <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-              <Typography variant="h2" sx={{ color: '#ffffff', mr: 1 }}>Compass Dictionary</Typography>
-              <Chip label="Dictionary" sx={{ bgcolor: 'background.accent', color: 'text.primary' }} />
-            </Stack>
             <ToggleButtonGroup
               exclusive
               value={category}
@@ -413,10 +460,12 @@ const LearnDictionaryPage = () => {
               </Stack>
             </Box>
           </Box>
+            </>
+          )}
         </Box>
       </Box>
     </PageWrapper>
   );
 };
 
-export default LearnDictionaryPage;
+export default LearnPage;
