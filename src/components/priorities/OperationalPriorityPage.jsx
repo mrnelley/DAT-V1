@@ -21,7 +21,8 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { departmentWorkplans, priorities, q2Roadmap, queuedTasks, stucks, weeklyPriorities } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { priorities, q2Roadmap, weeklyPriorities } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EmptyState from '../shared/EmptyState';
@@ -65,7 +66,7 @@ const priorityStatus = (priority) => priority.roadmapStatus || priority.status |
 
 const matchesPriority = (value, priority) => value?.toLowerCase().includes(priority.name.toLowerCase());
 
-const getRelatedWork = (priority) => {
+const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
   const objectiveTitles = new Set((priority.keyObjectives || []).map((objective) => objective.workplanTitle));
   const relatedWorkplans = departmentWorkplans.filter((workplan) => (
     (workplan.priorityLinks || []).includes(priority.name)
@@ -124,6 +125,7 @@ const OperationalPriorityPage = () => {
   const { priorityId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { departmentWorkplans, queuedTasks, stucks } = useOperatingData();
   const sourcePriority = priorities.find((candidate) => candidate.id === priorityId);
   const [localPriority, setLocalPriority] = useState(sourcePriority);
   const [editOpen, setEditOpen] = useState(false);
@@ -135,7 +137,9 @@ const OperationalPriorityPage = () => {
   }));
 
   const priority = localPriority || sourcePriority;
-  const related = useMemo(() => (priority ? getRelatedWork(priority) : null), [priority]);
+  const related = useMemo(() => (
+    priority ? getRelatedWork(priority, departmentWorkplans, queuedTasks, stucks) : null
+  ), [departmentWorkplans, priority, queuedTasks, stucks]);
 
   if (!priority) {
     return (

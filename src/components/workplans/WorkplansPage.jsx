@@ -24,7 +24,8 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { departmentWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -295,10 +296,10 @@ const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
 
 const WorkplansPage = () => {
   const { user } = useAuth();
+  const { deleteDepartmentWorkplan, departmentWorkplans, saveDepartmentWorkplan } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [dialog, setDialog] = useState({ item: null, open: false });
   const [scope, setScope] = useState('all');
-  const [workplans, setWorkplans] = useState(departmentWorkplans);
 
   useEffect(() => {
     if (searchParams.get('new') !== '1') return;
@@ -310,10 +311,10 @@ const WorkplansPage = () => {
   }, [searchParams, setSearchParams]);
 
   const visibleWorkplans = useMemo(() => (
-    workplans
+    departmentWorkplans
       .filter((workplan) => scope === 'all' || workplan.lead.id === user.id || workplan.ownerIds?.includes(user.id))
       .sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`))
-  ), [scope, user.id, workplans]);
+  ), [departmentWorkplans, scope, user.id]);
 
   const summary = useMemo(() => {
     const average = visibleWorkplans.length
@@ -330,23 +331,18 @@ const WorkplansPage = () => {
 
   const saveWorkplan = (workplan) => {
     if (workplan.id) {
-      const existing = workplans.find((item) => item.id === workplan.id);
+      const existing = departmentWorkplans.find((item) => item.id === workplan.id);
       if (existing && !canManageWorkplan(existing, user)) return;
     }
 
-    setWorkplans((current) => {
-      const next = workplan.id ? workplan : { ...workplan, id: `dw-${Date.now()}` };
-      return workplan.id
-        ? current.map((item) => (item.id === workplan.id ? next : item))
-        : [next, ...current];
-    });
+    saveDepartmentWorkplan(workplan);
     setDialog({ item: null, open: false });
   };
 
   const deleteWorkplan = (id) => {
-    const existing = workplans.find((workplan) => workplan.id === id);
+    const existing = departmentWorkplans.find((workplan) => workplan.id === id);
     if (existing && !canManageWorkplan(existing, user)) return;
-    setWorkplans((current) => current.filter((workplan) => workplan.id !== id));
+    deleteDepartmentWorkplan(id);
   };
 
   return (

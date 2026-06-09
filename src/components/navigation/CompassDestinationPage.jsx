@@ -8,16 +8,13 @@ import { Box, Button, Chip, LinearProgress, Stack, Typography } from '@mui/mater
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  departmentWorkplans,
-  huddles,
   metrics,
   priorities,
-  queuedTasks,
-  stucks,
   users,
   weeklyActionReports,
 } from '../../data/mockData';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import FeatureRolloutPage from '../admin/FeatureRolloutPage';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -167,6 +164,7 @@ const buildTeamSummaries = () => {
 };
 
 const TeamHealthPage = () => {
+  const { departmentWorkplans, huddles, queuedTasks, stucks } = useOperatingData();
   const teamSummaries = useMemo(buildTeamSummaries, []);
   const openTaskItems = queuedTasks.filter((item) => item.status !== 'Complete').length;
   const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status));
@@ -291,6 +289,7 @@ const ExecutiveSummaryPage = () => {
 };
 
 const ExportsPage = () => {
+  const { queuedTasks } = useOperatingData();
   const exportCatalog = [
     {
       description: 'Metric title, owner, current value, target, and source.',

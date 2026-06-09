@@ -6,7 +6,8 @@ import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { departmentWorkplans, initiatives, priorities, q2Roadmap, queuedTasks, strategicPlan2030, users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { initiatives, priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -256,6 +257,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
 
 const StrategicPlanSection = () => {
   const { user } = useAuth();
+  const { departmentWorkplans, queuedTasks } = useOperatingData();
   const [roadmapPriorities, setRoadmapPriorities] = useState(clonePriorities);
   const [selectedPillarId, setSelectedPillarId] = useState(null);
   const [editor, setEditor] = useState({ open: false, type: null, mode: 'create', form: {} });

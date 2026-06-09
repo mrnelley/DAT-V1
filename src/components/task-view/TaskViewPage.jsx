@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { departmentWorkplans, users } from '../../data/mockData';
+import { users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -47,8 +47,8 @@ const buildInitialForm = (user) => ({
   due: '2026-05-19',
   status: 'Open',
   visibility: 'private',
-  priority: 'Operational Efficiency',
-  strategicPillar: 'Agility & Capacity',
+  priority: '',
+  strategicPillar: '',
   workplanId: '',
 });
 
@@ -80,7 +80,7 @@ const canViewTask = (item, user) => (
 const TaskViewPage = () => {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
-  const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, updateQueuedTask } = useOperatingData();
+  const { addQueuedTask: persistQueuedTask, addStuck, departmentWorkplans, getTasksForUser, queuedTasks, updateQueuedTask } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('Assigned to Me');
   const [statusFilter, setStatusFilter] = useState('Active');
@@ -287,8 +287,8 @@ const TaskViewPage = () => {
                   <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
                   <Chip icon={<VisibilityOutlinedIcon />} label={visibilityLabels[item.visibility] || 'Assigned and created by'} variant="outlined" size="small" />
                   <Chip label={sourceLabels[item.source] || 'Task'} variant="outlined" size="small" />
-                  <Chip label={item.priority} color="primary" variant="outlined" size="small" />
-                  <Chip label={item.strategicPillar} variant="outlined" size="small" />
+                  {item.priority && <Chip label={item.priority} color="primary" variant="outlined" size="small" />}
+                  {item.strategicPillar && <Chip label={item.strategicPillar} variant="outlined" size="small" />}
                   {item.workplanTitle && <Chip label={item.workplanTitle} color="secondary" variant="outlined" size="small" />}
                 </Stack>
               </Box>

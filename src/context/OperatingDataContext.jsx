@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
+  departmentWorkplans,
   queuedTasks,
   huddles as seededHuddles,
   stucks as seededStucks,
@@ -16,6 +17,7 @@ const groupTasksByOwner = (tasks) => tasks.reduce((groups, task) => ({
 }), {});
 
 const buildInitialState = () => ({
+  departmentWorkplans,
   huddles: seededHuddles.map((huddle, index) => ({
     agenda: ['Review current signals', 'Discuss stucks and owner follow-up', 'Confirm next commitments'],
     date: index === 0 ? '2026-06-09' : '2026-06-12',
@@ -49,7 +51,8 @@ const readState = () => {
   if (typeof window === 'undefined') return buildInitialState();
 
   try {
-    return JSON.parse(window.localStorage.getItem(storageKey)) || buildInitialState();
+    const parsed = JSON.parse(window.localStorage.getItem(storageKey));
+    return parsed ? { ...buildInitialState(), ...parsed } : buildInitialState();
   } catch {
     return buildInitialState();
   }
@@ -71,6 +74,26 @@ export const OperatingDataProvider = ({ children }) => {
         ...current.queuedTasksByOwner,
         [task.owner.id]: [task, ...(current.queuedTasksByOwner[task.owner.id] || [])],
       },
+    }));
+  }, []);
+
+  const saveDepartmentWorkplan = useCallback((workplan) => {
+    setState((current) => {
+      const next = workplan.id ? workplan : { ...workplan, id: `dw-${Date.now()}` };
+
+      return {
+        ...current,
+        departmentWorkplans: workplan.id
+          ? current.departmentWorkplans.map((item) => (item.id === workplan.id ? next : item))
+          : [next, ...current.departmentWorkplans],
+      };
+    });
+  }, []);
+
+  const deleteDepartmentWorkplan = useCallback((workplanId) => {
+    setState((current) => ({
+      ...current,
+      departmentWorkplans: current.departmentWorkplans.filter((workplan) => workplan.id !== workplanId),
     }));
   }, []);
 
@@ -166,12 +189,15 @@ export const OperatingDataProvider = ({ children }) => {
     addHuddleItem,
     addQueuedTask,
     addStuck,
+    deleteDepartmentWorkplan,
+    departmentWorkplans: state.departmentWorkplans,
     getHuddle: (huddleId) => state.huddles.find((huddle) => huddle.id === huddleId),
     getTasksForUser,
     huddles: state.huddles,
     queuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
+    saveDepartmentWorkplan,
     stucks: state.stucks,
     updateHuddle,
     updateQueuedTask,
@@ -183,10 +209,13 @@ export const OperatingDataProvider = ({ children }) => {
     addHuddleItem,
     addQueuedTask,
     addStuck,
+    deleteDepartmentWorkplan,
     getTasksForUser,
     queuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
+    saveDepartmentWorkplan,
+    state.departmentWorkplans,
     state.huddles,
     state.stucks,
     state.weeklyActionItems,

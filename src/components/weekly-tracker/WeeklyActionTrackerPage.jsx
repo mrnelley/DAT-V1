@@ -11,7 +11,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { departmentWorkplans, priorities, weeklyActionEntries, weeklyActionReports, users } from '../../data/mockData';
+import { priorities, weeklyActionEntries, weeklyActionReports, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -179,6 +179,7 @@ const WeeklyActionTrackerPage = () => {
   const { addNotification } = useNotifications();
   const {
     addStuck,
+    departmentWorkplans,
     getTasksForUser,
     registerWeeklyActionItem,
     removeWeeklyActionItem,

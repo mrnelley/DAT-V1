@@ -2,12 +2,10 @@ import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlin
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
-import CloudQueueOutlinedIcon from '@mui/icons-material/CloudQueueOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
-import { departmentWorkplans, weeklyPriorities } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
@@ -17,131 +15,44 @@ const profiles = {
     icon: AccountBalanceOutlinedIcon,
     title: 'Finance Dashboard',
     subtitle: 'Budget health, liquidity, receivables, and organization-wide financial readiness.',
-    stats: [
-      ['Cash Position', '$8.4M', '94 days operating cash'],
-      ['Budget Variance', '2.8%', 'Favorable to plan'],
-      ['Grant Receivables', '$1.2M', 'Awaiting reimbursement'],
-      ['Debt Service', '1.42x', 'Coverage remains steady'],
-    ],
-    primaryTitle: 'Financial Priorities',
-    primaryRows: [
-      { name: 'Close Q2 reforecast package', status: 'Steady', progress: 82, detail: 'Department assumptions due Friday.' },
-      { name: 'Reduce grant reimbursement aging', status: 'Watch', progress: 54, detail: 'Two funder packets need backup documentation.' },
-      { name: 'Board finance dashboard refresh', status: 'Steady', progress: 70, detail: 'New cash and compliance views drafted.' },
-    ],
-    secondaryTitle: 'Financial Watchlist',
-    secondaryRows: ['Insurance renewal impact', 'Development draw timing', 'Property-level variance exceptions'],
   },
   operations: {
     icon: ChecklistOutlinedIcon,
     title: 'Operations Dashboard',
     subtitle: 'Cross-functional operating priorities, blocked work, and organizational execution support.',
-    stats: [
-      ['Active Workplans', '9', 'Across Finance, PM, RS, RED, HR, and Advancement'],
-      ['Open Stucks', '6', 'Need cross-department support'],
-      ['Q2 Objectives', '6', 'Company objectives in motion'],
-      ['Watch Items', '3', 'Need ELT/OLT attention'],
-    ],
-    primaryTitle: 'Operations Priorities',
-    primaryRows: [
-      { name: 'Operational Efficiency rollup review', status: 'Steady', progress: 62, detail: 'Departmental workplans are being connected to Q2 org priorities.' },
-      { name: 'Third-party PM exit closeout', status: 'Completed', progress: 100, detail: 'Newtowne, Hartley, and Providence exits completed as of 5/1/26.' },
-      { name: 'Quarterly accountability rhythm', status: 'Watch', progress: 48, detail: 'Pending final alignment from Finance and Resident Services workplans.' },
-    ],
-    secondaryTitle: 'Operational Watchlist',
-    secondaryRows: ['PM fee dependency support', 'Assigned stucks', 'Quarterly carry-forward decisions'],
   },
   development: {
     icon: ApartmentOutlinedIcon,
     title: 'Real Estate Development Dashboard',
     subtitle: 'Timelines to build, maintain, close, and stabilize properties in the development pipeline.',
-    stats: [
-      ['Active Projects', '7', 'Across predevelopment and construction'],
-      ['Upcoming Closings', '3', 'Next 90 days'],
-      ['Construction Risk', '2', 'Sites on watch'],
-      ['Units in Motion', '318', 'Pipeline homes tracked'],
-    ],
-    primaryTitle: 'Pipeline Timeline',
-    primaryRows: [
-      { name: 'Walnut Street financial closing', status: 'Steady', progress: 76, detail: 'Counsel reviewing final conditions.' },
-      { name: 'Northside rehab construction start', status: 'Watch', progress: 48, detail: 'Permit response due from municipality.' },
-      { name: 'Scattered sites capital needs scope', status: 'Steady', progress: 64, detail: 'Architectural assessment in progress.' },
-    ],
-    secondaryTitle: 'Closing Conditions',
-    secondaryRows: ['Investor approval', 'Environmental sign-off', 'Final sources and uses'],
   },
   hr: {
     icon: AssignmentIndOutlinedIcon,
     title: 'People Dashboard',
     subtitle: 'Employee satisfaction, retention, hiring health, and open position momentum.',
-    stats: [
-      ['Engagement Signal', '81%', 'Last survey response health'],
-      ['Retention Risk', '4', 'Roles flagged for follow-up'],
-      ['Open Positions', '11', 'Across five departments'],
-      ['Time to Fill', '34d', 'Median active posting age'],
-    ],
-    primaryTitle: 'Hiring and Retention Priorities',
-    primaryRows: [
-      { name: 'Publish Resident Services Coordinator posting', status: 'Steady', progress: 90, detail: 'Final compensation review complete.' },
-      { name: 'Complete retention stay interviews', status: 'Watch', progress: 42, detail: 'Five interviews still need scheduling.' },
-      { name: 'Manager onboarding toolkit', status: 'Steady', progress: 68, detail: 'Policy and first-30-day guide drafted.' },
-    ],
-    secondaryTitle: 'Open Position Focus',
-    secondaryRows: ['Property Manager', 'Maintenance Technician', 'Resident Services Coordinator'],
   },
   advancement: {
     icon: VolunteerActivismOutlinedIcon,
     title: 'Impact and Advancement Dashboard',
     subtitle: 'Grant writing, fundraising, community relationships, and advancement pipeline visibility.',
-    stats: [
-      ['Active Grants', '14', 'Submitted or in development', 'Salesforce CRM'],
-      ['Pipeline Value', '$3.7M', 'Across public and private funders', 'Salesforce CRM'],
-      ['Community Touchpoints', '26', 'This quarter', 'Salesforce CRM'],
-      ['Reports Due', '5', 'Next 30 days'],
-    ],
-    primaryTitle: 'Fundraising Hub Priorities',
-    primaryRows: [
-      { name: 'Submit housing stability foundation proposal', status: 'Steady', progress: 84, detail: 'Narrative complete; budget attachments pending.', source: 'Salesforce CRM' },
-      { name: 'Refresh donor impact story packet', status: 'Watch', progress: 45, detail: 'Needs resident voice review before release.', source: 'Salesforce CRM' },
-      { name: 'Prepare community partner cultivation list', status: 'Steady', progress: 72, detail: 'Top 20 contacts identified.', source: 'Salesforce CRM' },
-    ],
-    secondaryTitle: 'Grant and Funder Watchlist',
-    secondaryRows: [
-      { label: 'County housing fund', source: 'Salesforce CRM' },
-      { label: 'Foundation renewal', source: 'Salesforce CRM' },
-      { label: 'Corporate volunteer partner' },
-    ],
   },
   resident_services: {
     icon: FavoriteBorderOutlinedIcon,
     title: 'Resident Services Dashboard',
     subtitle: 'Trauma-informed resident journey support, referrals, needs assessments, and coordinator follow-up.',
-    stats: [
-      ['Needs Assessments', '43', 'Completed this month', 'Salesforce CRM'],
-      ['Open Referrals', '128', 'Across service categories', 'Salesforce CRM'],
-      ['Urgent Follow-Ups', '9', 'Need coordinator action', 'Salesforce CRM'],
-      ['Resolved Supports', '71%', 'Closed within target window', 'Salesforce CRM'],
-    ],
-    primaryTitle: 'Resident Journey Priorities',
-    primaryRows: [
-      { name: 'Standardize referral follow-up rhythm', status: 'Steady', progress: 74, detail: 'Coordinator review template piloting now.', source: 'Salesforce CRM' },
-      { name: 'Escalate food security referral backlog', status: 'Watch', progress: 38, detail: 'Nine households need provider confirmation.', source: 'Salesforce CRM' },
-      { name: 'Resident services intake dashboard', status: 'Steady', progress: 62, detail: 'Needs categories and urgency levels mapped.', source: 'Salesforce CRM' },
-    ],
-    secondaryTitle: 'Referral Categories',
-    secondaryRows: [
-      { label: 'Food security', source: 'Salesforce CRM' },
-      { label: 'Behavioral health', source: 'Salesforce CRM' },
-      { label: 'Employment and benefits navigation' },
-    ],
   },
 };
 
 const statusColor = {
+  alert: 'error',
   Steady: 'success',
+  steady: 'success',
   Watch: 'warning',
+  watch: 'warning',
   Alert: 'error',
   Completed: 'success',
+  complete: 'success',
+  no_data: 'default',
   Open: 'info',
 };
 
@@ -161,46 +72,101 @@ const weeklyPriorityLeadershipLanes = {
   u8: { label: 'Operations', departments: ['Operations', 'Resident Services'] },
 };
 
-const SalesforceFlag = ({ source }) => (
-  source ? (
-    <Chip
-      icon={<CloudQueueOutlinedIcon />}
-      label={source}
-      size="small"
-      variant="outlined"
-      sx={{
-        borderColor: '#0176d3',
-        color: '#0176d3',
-        fontWeight: 700,
-        '& .MuiChip-icon': { color: '#0176d3' },
-      }}
-    />
-  ) : null
+const weeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
+
+const readWeeklyTrackerEntries = () => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    return Object.values(JSON.parse(window.localStorage.getItem(weeklyTrackerStorageKey)) || {})
+      .flat()
+      .filter((entry) => entry.title);
+  } catch {
+    return [];
+  }
+};
+
+const priorityStatusOrder = {
+  alert: 0,
+  Alert: 0,
+  watch: 1,
+  Watch: 1,
+  steady: 2,
+  Steady: 2,
+  complete: 3,
+  Completed: 3,
+  no_data: 4,
+};
+
+const getLaneDepartments = (user) => new Set([
+  user.department,
+  ...(user.teams || []),
+  ...(weeklyPriorityLeadershipLanes[user.id]?.departments || []),
+]);
+
+const isOpenStatus = (status) => !['complete', 'completed', 'cancelled', 'resolved'].includes(String(status || '').toLowerCase());
+
+const isWorkplanRelevantToUser = (workplan, user, departments = getLaneDepartments(user)) => (
+  workplan.lead?.id === user.id
+  || workplan.ownerIds?.includes(user.id)
+  || departments.has(workplan.department)
+  || departments.has(workplan.scope)
 );
 
-const StatCard = ({ helper, label, source, value }) => (
+const isWeeklyEntryRelevantToUser = (entry, user, departments = getLaneDepartments(user)) => {
+  const priorityDepartment = entry.department || entry.owner?.department;
+  return (
+    entry.owner?.id === user.id
+    || entry.tasks?.some((task) => task.owner?.id === user.id)
+    || departments.has(priorityDepartment)
+  );
+};
+
+const isQueuedTaskRelevantToUser = (task, user, departments = getLaneDepartments(user)) => (
+  task.owner?.id === user.id
+  || task.createdBy?.id === user.id
+  || departments.has(task.department)
+);
+
+const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user, weeklyEntries }) => {
+  const departments = getLaneDepartments(user);
+  const relevantWeekly = weeklyEntries.filter((entry) => isWeeklyEntryRelevantToUser(entry, user, departments));
+  const relevantWorkplans = departmentWorkplans.filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments));
+  const relevantTasks = queuedTasks.filter((task) => isQueuedTaskRelevantToUser(task, user, departments));
+  const relevantStucks = stucks.filter((stuck) => (
+    stuck.personStuck?.id === user.id
+    || stuck.helpFrom?.id === user.id
+  ));
+
+  return [
+    ['Weekly Priorities', relevantWeekly.length, 'Created in Weekly Tracker'],
+    ['Department Workplans', relevantWorkplans.length, 'Created in Workplans'],
+    ['Queued Tasks', relevantTasks.filter((task) => isOpenStatus(task.status)).length, 'Open one-off Task View items'],
+    ['Open Stucks', relevantStucks.filter((stuck) => isOpenStatus(stuck.status)).length, 'Linked to this user'],
+  ];
+};
+
+const StatCard = ({ helper, label, value }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 104 }}>
     <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
       <Typography variant="caption">{label}</Typography>
-      <SalesforceFlag source={source} />
     </Stack>
     <Typography variant="h2" sx={{ my: 0.5 }}>{value}</Typography>
     <Typography variant="body2">{helper}</Typography>
   </Box>
 );
 
-const WeeklyPrioritiesSection = ({ user }) => {
+const WeeklyPrioritiesSection = ({ user, weeklyEntries }) => {
   const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
   const isLeadershipView = Boolean(leadershipLane);
-  const visiblePriorities = weeklyPriorities.filter((priority) => {
-    const priorityDepartment = priority.department || priority.owner.department;
-    return (
-      priority.owner.id === user.id
-      || priority.supportUsers.some((supportUser) => supportUser.id === user.id)
-      || priority.tasks.some((task) => task.owner.id === user.id)
-      || leadershipLane?.departments.includes(priorityDepartment)
-    );
-  });
+  const departments = getLaneDepartments(user);
+  const visiblePriorities = weeklyEntries.filter((priority) => {
+    return isWeeklyEntryRelevantToUser(priority, user, departments);
+  }).sort((a, b) => (
+    (priorityStatusOrder[a.status] ?? 5) - (priorityStatusOrder[b.status] ?? 5)
+    || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
+    || a.rank - b.rank
+  ));
 
   if (!visiblePriorities.length) return null;
 
@@ -209,7 +175,7 @@ const WeeklyPrioritiesSection = ({ user }) => {
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
         <Box>
           <Typography variant="h3">{isLeadershipView ? `${leadershipLane.label} Weekly Priorities` : `${user.name.split(' ')[0]}'s Priority Task List`}</Typography>
-          <Typography variant="body2">Week of Monday, May 11, 2026</Typography>
+          <Typography variant="body2">Current weekly priorities created in Weekly Tracker.</Typography>
         </Box>
         <Chip label={isLeadershipView ? 'Department owner view' : 'Related to me'} color="primary" variant="outlined" />
       </Stack>
@@ -228,22 +194,22 @@ const WeeklyPrioritiesSection = ({ user }) => {
                     <Chip label={priority.status} color={statusColor[priority.status] || 'default'} size="small" />
                     <Chip label={`Due ${priority.due}`} variant="outlined" size="small" />
                   </Stack>
-                  <Typography variant="body1" fontWeight={800} sx={{ mt: 1 }}>{priority.outcome}</Typography>
-                  <Typography variant="body2" color="text.primary">Aligned to: {priority.alignedTo}</Typography>
+                  <Typography variant="body1" fontWeight={800} sx={{ mt: 1 }}>{priority.title}</Typography>
+                  <Typography variant="body2" color="text.primary">Aligned to: {priority.alignedPriorityLabel || 'No alignment selected'}</Typography>
                 </Box>
                 <Stack direction="row" gap={1} alignItems="center" sx={{ flexShrink: 0 }}>
                   <UserAvatar user={priority.owner} size="sm" />
                   <Box>
                     <Typography variant="body2" color="text.primary" fontWeight={700}>{priority.owner.name}</Typography>
-                    <Typography variant="caption">Support: {priority.supportLabel}</Typography>
+                    <Typography variant="caption">{priority.department}</Typography>
                   </Box>
                 </Stack>
               </Stack>
 
               <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                <Chip label={priority.organizationalPriority} color="primary" variant="outlined" size="small" />
-                <Chip label={priority.strategicPillar} variant="outlined" size="small" />
-                {priority.keyObjective && <Chip label={priority.keyObjective} variant="outlined" size="small" />}
+                <Chip label={priority.alignmentType === 'both' ? 'Enterprise + workplan' : priority.alignmentType === 'enterprise' ? 'Enterprise priority' : 'Workplan'} color="primary" variant="outlined" size="small" />
+                {priority.priorityId && <Chip label={priority.priorityId} variant="outlined" size="small" />}
+                {priority.workplanId && <Chip label={priority.workplanId} variant="outlined" size="small" />}
               </Stack>
 
               {relatedTasks.length > 0 && (
@@ -268,16 +234,10 @@ const WeeklyPrioritiesSection = ({ user }) => {
   );
 };
 
-const DepartmentWorkplanAlignmentSection = ({ user }) => {
-  const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
-  const departments = new Set([user.department, ...(user.teams || []), ...(leadershipLane?.departments || [])]);
-  const visibleWorkplans = departmentWorkplans
-    .filter((workplan) => (
-      workplan.lead?.id === user.id
-      || workplan.ownerIds?.includes(user.id)
-      || departments.has(workplan.department)
-      || departments.has(workplan.scope)
-    ))
+const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
+  const departments = getLaneDepartments(user);
+  const visibleWorkplans = workplans
+    .filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments))
     .sort((a, b) => (
       (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4)
       || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
@@ -342,11 +302,21 @@ const DepartmentWorkplanAlignmentSection = ({ user }) => {
 };
 
 const FocusedDashboard = ({ user }) => {
+  const { departmentWorkplans, queuedTasks, stucks } = useOperatingData();
+  const weeklyTrackerEntries = readWeeklyTrackerEntries();
+  const liveStats = buildLiveStats({
+    departmentWorkplans,
+    queuedTasks,
+    stucks,
+    user,
+    weeklyEntries: weeklyTrackerEntries,
+  });
+
   if (user.dashboardFocus === 'property_management') {
     return (
       <Box sx={{ mb: 3 }}>
-        <WeeklyPrioritiesSection user={user} />
-        <DepartmentWorkplanAlignmentSection user={user} />
+        <WeeklyPrioritiesSection user={user} weeklyEntries={weeklyTrackerEntries} />
+        <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
         <PropertyManagementDashboard user={user} />
       </Box>
     );
@@ -376,54 +346,15 @@ const FocusedDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        {profile.stats.map(([label, value, helper, source]) => (
-          <StatCard key={label} label={label} value={value} helper={helper} source={source} />
+        {liveStats.map(([label, value, helper]) => (
+          <StatCard key={label} label={label} value={value} helper={helper} />
         ))}
       </Box>
 
-      <WeeklyPrioritiesSection user={user} />
-      <DepartmentWorkplanAlignmentSection user={user} />
+      <WeeklyPrioritiesSection user={user} weeklyEntries={weeklyTrackerEntries} />
+      <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.4fr 0.8fr' }, gap: 2 }}>
-        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-          <Typography variant="h3" sx={{ mb: 1 }}>{profile.primaryTitle}</Typography>
-          <Stack gap={1}>
-            {profile.primaryRows.map((row) => (
-              <Box key={row.name} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
-                  <Typography variant="body1" fontWeight={700}>{row.name}</Typography>
-                  <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="flex-end">
-                    <SalesforceFlag source={row.source} />
-                    <Chip label={row.status} color={statusColor[row.status]} size="small" />
-                  </Stack>
-                </Stack>
-                <LinearProgress value={row.progress} variant="determinate" sx={{ mb: 0.75 }} />
-                <Typography variant="body2" color="text.primary">{row.detail}</Typography>
-              </Box>
-            ))}
-          </Stack>
-        </Box>
-
-        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-          <Typography variant="h3" sx={{ mb: 1 }}>{profile.secondaryTitle}</Typography>
-          <Stack gap={1}>
-            {profile.secondaryRows.map((row) => {
-              const label = typeof row === 'string' ? row : row.label;
-              const source = typeof row === 'string' ? null : row.source;
-
-              return (
-              <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
-                <HandshakeOutlinedIcon color="secondary" fontSize="small" />
-                <Typography variant="body1" sx={{ flex: 1 }}>{label}</Typography>
-                <SalesforceFlag source={source} />
-              </Box>
-              );
-            })}
-          </Stack>
-        </Box>
-      </Box>
     </Box>
   );
 };
