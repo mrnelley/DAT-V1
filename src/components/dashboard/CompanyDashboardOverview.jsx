@@ -3,14 +3,18 @@ import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUncheckedOutlined';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { priorities, q2Roadmap, strategicPlan2030 } from '../../data/mockData';
+import { useNotifications } from '../../context/NotificationsContext';
+import { priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
 import CalendarPanel from '../calendar/CalendarPanel';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -101,6 +105,19 @@ const averageProgress = (items, getProgress) => {
   if (!items.length) return 0;
   return clampProgress(items.reduce((total, item) => total + getProgress(item), 0) / items.length);
 };
+
+const uniqueUsers = (items) => Array.from(new Map(
+  items.filter(Boolean).map((user) => [user.id, user]),
+).values());
+
+const getPriorityTeammates = (priority) => uniqueUsers([
+  priority.owner,
+  ...(priority.ownerIds || []).map((id) => users.find((user) => user.id === id)),
+  ...(priority.keyObjectives || []).flatMap((objective) => [
+    objective.owner,
+    ...(objective.ownerIds || []).map((id) => users.find((user) => user.id === id)),
+  ]),
+]);
 
 const StatusDot = ({ status }) => {
   const meta = getStatusMeta(status);
@@ -272,7 +289,7 @@ const ObjectiveCard = ({ onOpen, priority }) => {
   );
 };
 
-const ObjectiveTracker = ({ objectiveRows }) => (
+const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
@@ -288,7 +305,49 @@ const ObjectiveTracker = ({ objectiveRows }) => (
         const Icon = meta.icon;
 
         return (
-          <Box key={`${priority.id}-${objective.id}`} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.3fr) minmax(180px, 0.6fr) minmax(220px, 0.9fr) 120px' }, gap: 1.25, alignItems: 'center', border: '1px solid', borderColor: 'divider', borderLeft: '5px solid', borderLeftColor: meta.border, borderRadius: 1, p: 1.15 }}>
+          <Box
+            aria-label={`Engage teammates about objective ${objective.title}`}
+            key={`${priority.id}-${objective.id}`}
+            onClick={() => onEngage({
+              actionPath: `/dashboard/company/priorities/${priority.id}`,
+              goal,
+              id: objective.id,
+              progress,
+              status: objective.status,
+              subtitle: priority.name,
+              teammates: uniqueUsers([
+                objective.owner,
+                priority.owner,
+                ...(objective.ownerIds || []).map((id) => users.find((user) => user.id === id)),
+                ...(priority.ownerIds || []).map((id) => users.find((user) => user.id === id)),
+              ]),
+              title: objective.title,
+              type: 'objective',
+            })}
+            onKeyDown={(event) => {
+              if (!['Enter', ' '].includes(event.key)) return;
+              event.preventDefault();
+              event.currentTarget.click();
+            }}
+            role="button"
+            tabIndex={0}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.3fr) minmax(180px, 0.6fr) minmax(220px, 0.9fr) 120px' },
+              gap: 1.25,
+              alignItems: 'center',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderLeft: '5px solid',
+              borderLeftColor: meta.border,
+              borderRadius: 1,
+              cursor: 'pointer',
+              p: 1.15,
+              transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+              '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
+              '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)', transform: 'translateY(-1px)' },
+            }}
+          >
             <Box sx={{ minWidth: 0 }}>
               <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{ mb: 0.35 }}>
                 <Icon sx={{ color: meta.tone, fontSize: 18 }} />
@@ -326,7 +385,7 @@ const ObjectiveTracker = ({ objectiveRows }) => (
   </Box>
 );
 
-const PillarCoverage = ({ companyPriorities }) => (
+const PillarCoverage = ({ companyPriorities, onEngage }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
@@ -346,7 +405,40 @@ const PillarCoverage = ({ companyPriorities }) => (
         const objectiveCount = pillarPriorities.reduce((total, priority) => total + (priority.keyObjectives?.length || 0), 0);
 
         return (
-          <Box key={pillar.id} sx={{ bgcolor: worstMeta.soft, border: '1px solid', borderColor: worstMeta.border, borderRadius: 1, p: 1.15, minHeight: 152 }}>
+          <Box
+            aria-label={`Engage teammates about pillar ${pillar.name}`}
+            key={pillar.id}
+            onClick={() => onEngage({
+              actionPath: '/dashboard/company',
+              goal: `${pillarPriorities.length} Q2 objectives with ${objectiveCount} workplan objectives connected to this pillar.`,
+              id: pillar.id,
+              progress,
+              status: worstMeta.label,
+              subtitle: `Pillar ${pillar.order}`,
+              teammates: uniqueUsers(pillarPriorities.flatMap(getPriorityTeammates)),
+              title: pillar.name,
+              type: 'pillar',
+            })}
+            onKeyDown={(event) => {
+              if (!['Enter', ' '].includes(event.key)) return;
+              event.preventDefault();
+              event.currentTarget.click();
+            }}
+            role="button"
+            tabIndex={0}
+            sx={{
+              bgcolor: worstMeta.soft,
+              border: '1px solid',
+              borderColor: worstMeta.border,
+              borderRadius: 1,
+              cursor: 'pointer',
+              p: 1.15,
+              minHeight: 152,
+              transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+              '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
+              '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)', transform: 'translateY(-1px)' },
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">
               <Chip label={`Pillar ${pillar.order}`} size="small" color="primary" />
               <StatusDot status={pillarPriorities[0] ? getPriorityStatus(pillarPriorities[0]) : 'No Data'} />
@@ -361,8 +453,94 @@ const PillarCoverage = ({ companyPriorities }) => (
   </Box>
 );
 
+const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
+  const [message, setMessage] = useState('');
+  const [recipientId, setRecipientId] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setMessage('');
+    setRecipientId(engagement?.teammates?.[0]?.id || '');
+  }, [engagement, open]);
+
+  const recipient = engagement?.teammates?.find((teammate) => teammate.id === recipientId);
+  const meta = getStatusMeta(engagement?.status);
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{ sx: { borderRadius: 1, overflow: 'hidden' } }}
+    >
+      <Box sx={{ bgcolor: meta.soft, borderTop: '6px solid', borderColor: meta.border }}>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" gap={1} alignItems="center">
+            <GroupsOutlinedIcon color="primary" />
+            Connect with a teammate
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          {engagement && (
+            <Stack gap={2}>
+              <Box>
+                <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{ mb: 0.75 }}>
+                  <Chip label={engagement.subtitle} size="small" variant="outlined" />
+                  <Chip label={meta.label} size="small" color={meta.color} />
+                  <Chip label={`${engagement.progress}% progress`} size="small" variant="outlined" />
+                </Stack>
+                <Typography variant="h3">{engagement.title}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>{engagement.goal}</Typography>
+              </Box>
+
+              <TextField select label="Connect with" value={recipientId} onChange={(event) => setRecipientId(event.target.value)} fullWidth>
+                {engagement.teammates.map((teammate) => (
+                  <MenuItem key={teammate.id} value={teammate.id}>
+                    <Stack direction="row" gap={1} alignItems="center">
+                      <UserAvatar user={teammate} size="sm" />
+                      <Box>
+                        <Typography variant="body2" fontWeight={700}>{teammate.name}</Typography>
+                        <Typography variant="caption">{teammate.department}</Typography>
+                      </Box>
+                    </Stack>
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                autoFocus
+                label="Note"
+                multiline
+                minRows={3}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="What do you want to coordinate, clarify, or offer?"
+                value={message}
+              />
+            </Stack>
+          )}
+        </DialogContent>
+      </Box>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          disabled={!recipient || !message.trim()}
+          endIcon={<SendOutlinedIcon />}
+          onClick={() => onSend(recipient, message.trim())}
+          variant="contained"
+        >
+          Send Note
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addNotification } = useNotifications();
+  const [engagement, setEngagement] = useState(null);
   const [team, setTeam] = useState('All Teams');
   const companyPriorities = useMemo(() => priorities.filter((priority) => priority.company), []);
   const teamOptions = useMemo(() => getTeamOptions(companyPriorities), [companyPriorities]);
@@ -395,6 +573,20 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
     count: sortedPriorities.filter((priority) => group.statuses.includes(getPriorityStatus(priority))).length,
   }));
   const averageObjectiveProgress = averageProgress(sortedPriorities, getPriorityProgress);
+  const sendEngagementNote = (recipient, message) => {
+    addNotification({
+      actionPath: engagement.actionPath,
+      actor: user,
+      body: message,
+      channel: 'in_app',
+      notificationType: 'teammate_note',
+      recipient,
+      sourceId: engagement.id,
+      sourceType: engagement.type,
+      title: `${user.name} connected with you about ${engagement.title}`,
+    });
+    setEngagement(null);
+  };
 
   return (
     <Stack gap={2}>
@@ -419,8 +611,8 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
         ))}
       </Box>
 
-      <ObjectiveTracker objectiveRows={objectiveRows} />
-      <PillarCoverage companyPriorities={companyPriorities} />
+      <ObjectiveTracker objectiveRows={objectiveRows} onEngage={setEngagement} />
+      <PillarCoverage companyPriorities={companyPriorities} onEngage={setEngagement} />
 
       <Box sx={{ minWidth: 0 }}>
         <CalendarPanel
@@ -430,6 +622,13 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
           scope="organization"
         />
       </Box>
+
+      <TeammateEngagementDialog
+        engagement={engagement}
+        onClose={() => setEngagement(null)}
+        onSend={sendEngagementNote}
+        open={Boolean(engagement)}
+      />
     </Stack>
   );
 };
