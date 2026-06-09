@@ -217,9 +217,9 @@ const DashboardPage = ({ company = false }) => {
             </Button>
           )}
           <Stack direction="row" alignItems="center">
-            <IconButton aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
+            <IconButton title="Previous dashboard period" aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
             <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
-            <IconButton aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
+            <IconButton title="Next dashboard period" aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
           </Stack>
           {!company && (
             <FormControl size="small" sx={{ minWidth: 230 }}>

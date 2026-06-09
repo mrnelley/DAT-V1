@@ -142,8 +142,8 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>{item ? 'Edit Workplan' : 'Add Workplan'}</DialogTitle>
+    <Dialog aria-labelledby="workplan-dialog-title" open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle id="workplan-dialog-title">{item ? 'Edit Workplan' : 'Add Workplan'}</DialogTitle>
       <DialogContent>
         <Stack gap={2} sx={{ pt: 1 }}>
           <TextField label="Title" value={form.title} onChange={update('title')} fullWidth required />
@@ -204,6 +204,7 @@ const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
     }}
     role={canManage ? 'button' : undefined}
     tabIndex={canManage ? 0 : undefined}
+    title={canManage ? `Edit workplan ${workplan.title}` : workplan.title}
     variant="outlined"
     sx={{
       borderRadius: 1,

@@ -150,6 +150,7 @@ const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
       role="button"
       tabIndex={0}
       aria-label={`Open details for ${metric.title}. Current value ${formatCompact(metric.current)} of target ${formatCompact(metric.target)}.`}
+      title={`Open details for ${metric.title}`}
       sx={{ minWidth: dense ? 180 : 220, cursor: 'pointer' }}
     >
       <CardContent sx={{ p: dense ? 2 : 2.25 }}>
@@ -159,7 +160,7 @@ const KpiGaugeCard = ({ metric, onClick, dense = false }) => {
             <Typography variant="caption" title={metric.subtitle} noWrap display="block">{metric.subtitle}</Typography>
           </Box>
           <Chip label={statusLabels[status]} color={statusChipColor[status]} size="small" />
-          <IconButton size="small" aria-label={`More options for ${metric.title}`} onClick={(event) => { event.stopPropagation(); unavailable('metric options are not connected to persistence yet.'); }}>
+          <IconButton size="small" title={`More options for ${metric.title}`} aria-label={`More options for ${metric.title}`} onClick={(event) => { event.stopPropagation(); unavailable('metric options are not connected to persistence yet.'); }}>
             <MoreHorizOutlinedIcon fontSize="small" />
           </IconButton>
         </Box>

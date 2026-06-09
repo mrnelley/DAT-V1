@@ -109,7 +109,10 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
         {visibleDashboardItems.length > 0 && (
           <Box>
             <ListItemButton
+              aria-expanded={dashOpen && (open || mobile)}
+              aria-label="Toggle dashboard navigation"
               onClick={() => setDashOpen((value) => !value)}
+              title="Toggle dashboard navigation"
               sx={{
                 minHeight: 48,
                 borderRadius: 1,
@@ -130,11 +133,13 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
                   return (
                     <ListItemButton
                       key={path}
+                      aria-label={`Open ${label}`}
                       onClick={() => {
                         navigate(path);
                         if (mobile) onMobileClose();
                       }}
                       selected={selected}
+                      title={`Open ${label}`}
                       sx={{
                         borderRadius: 1,
                         color: selected ? '#ffffff' : 'rgba(255,255,255,0.86)',
@@ -176,11 +181,13 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
               return (
                 <ListItemButton
                   key={item.label}
+                  aria-label={item.popout ? `Open ${item.label} panel` : `Open ${item.label}`}
                   onClick={() => {
                     if (item.popout) onHuddlesClick();
                     if (item.path) navigate(item.path);
                     if (mobile) onMobileClose();
                   }}
+                  title={item.popout ? `Open ${item.label} panel` : `Open ${item.label}`}
                   sx={{
                     minHeight: 48,
                     borderRadius: 1,
@@ -209,6 +216,7 @@ const SideNav = ({ open, mobileOpen, onMobileClose, onHuddlesClick }) => {
           {(open || mobile) && (
             <IconButton
               aria-label="Open profile settings"
+              title="Open profile settings"
               onClick={() => navigate('/profile')}
               sx={{ color: 'common.white' }}
             >

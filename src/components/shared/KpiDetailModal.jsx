@@ -14,7 +14,7 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
   const data = metric.history.map((value, index) => ({ date: `W${index + 1}`, value, target: metric.target }));
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog aria-labelledby="kpi-detail-title" open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogContent
         component={motion.div}
         initial={{ scale: 0.92, opacity: 0 }}
@@ -23,13 +23,13 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h2">{metric.title}</Typography>
+            <Typography id="kpi-detail-title" variant="h2">{metric.title}</Typography>
             <Stack direction="row" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
               <UserAvatar user={metric.owner} size="sm" />
               <Typography variant="body2">{metric.owner.name}</Typography>
             </Stack>
           </Box>
-          <IconButton aria-label="Close KPI details" onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton title="Close KPI details" aria-label="Close KPI details" onClick={onClose}><CloseIcon /></IconButton>
         </Box>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 3 }}>
           <Box>
@@ -56,7 +56,7 @@ const KpiDetailModal = ({ metric, open, onClose }) => {
             </Stack>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="body2">Show Target on Graph</Typography>
-              <Switch defaultChecked color="secondary" />
+              <Switch defaultChecked color="secondary" inputProps={{ 'aria-label': `Show target on graph for ${metric.title}`, title: `Show target on graph for ${metric.title}` }} />
             </Stack>
             <Button variant="outlined" color="secondary" sx={{ mt: 2 }} onClick={() => unavailable('manual KPI history entry is not connected yet.')}>Add Past Update</Button>
           </Box>

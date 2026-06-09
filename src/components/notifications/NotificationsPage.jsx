@@ -57,7 +57,7 @@ const NotificationsPage = () => {
             A durable Compass inbox for tasks, stucks, reviews, reminders, and failed delivery fallbacks.
           </Typography>
         </Box>
-        <Button startIcon={<CheckCircleOutlineIcon />} onClick={markAllAsRead} disabled={!unreadCount}>
+        <Button startIcon={<CheckCircleOutlineIcon />} title="Mark all notifications read" onClick={markAllAsRead} disabled={!unreadCount}>
           Mark all read
         </Button>
       </Stack>
@@ -90,7 +90,7 @@ const NotificationsPage = () => {
                 }}
               >
                 <Box sx={{ width: 10, pt: 1.25 }}>
-                  {unread && <Box aria-label="Unread notification" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />}
+                  {unread && <Box aria-label="Unread notification" title="Unread notification" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />}
                 </Box>
                 <UserAvatar user={notification.actor || notification.recipient} size="sm" />
                 <Box sx={{ flex: 1, minWidth: 0 }}>

@@ -15,6 +15,7 @@ const InitiativeCard = ({ initiative, onClick, onUnavailable }) => (
     role="button"
     tabIndex={0}
     aria-label={`Open initiative ${initiative.title}`}
+    title={`Open initiative ${initiative.title}`}
     sx={{ cursor: 'pointer' }}
   >
     <CardContent>
@@ -30,7 +31,7 @@ const InitiativeCard = ({ initiative, onClick, onUnavailable }) => (
       <Stack direction="row" alignItems="center" sx={{ mt: 1 }}>
         <Chip label={`${initiative.connected} connected priorities`} size="small" variant="outlined" />
         <Stack direction="row" sx={{ ml: 'auto' }}>
-          <IconButton aria-label={`Edit initiative ${initiative.title}`} onClick={(event) => { event.stopPropagation(); onUnavailable?.('initiative editing is not connected to persistence yet.'); }}><EditIcon fontSize="small" /></IconButton>
+          <IconButton title={`Edit initiative ${initiative.title}`} aria-label={`Edit initiative ${initiative.title}`} onClick={(event) => { event.stopPropagation(); onUnavailable?.('initiative editing is not connected to persistence yet.'); }}><EditIcon fontSize="small" /></IconButton>
           <PermissionGate roles={['ELT']}>
             <Tooltip title="Cannot delete until all connected priorities are completed or removed.">
               <span><IconButton aria-label={`Delete initiative ${initiative.title}`} disabled={initiative.connected > 0} onClick={(event) => { event.stopPropagation(); onUnavailable?.('initiative deletion is protected until connected priorities are removed.'); }}><DeleteIcon fontSize="small" /></IconButton></span>

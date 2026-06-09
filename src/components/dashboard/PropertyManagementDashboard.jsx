@@ -63,6 +63,7 @@ const EditableStatCard = ({ field, helper, icon: Icon, label }) => {
     }}
     role="button"
     tabIndex={0}
+    title={`Edit ${label}`}
     sx={{
       bgcolor: 'background.paper',
       border: '1px solid',
@@ -96,7 +97,7 @@ const EditableStatCard = ({ field, helper, icon: Icon, label }) => {
         placeholder="Add value"
         value={value}
         variant="standard"
-        inputProps={{ 'aria-label': label }}
+        inputProps={{ 'aria-label': label, title: label }}
         sx={{
           mt: 0.75,
           '& input': {
@@ -325,6 +326,7 @@ const PropertyManagementDashboard = ({ user }) => {
                   role="button"
                   tabIndex={0}
                   aria-label={`Select ${property.propertyName}. ${risk}.`}
+                  title={`Select ${property.propertyName}`}
                   sx={{
                     display: 'block',
                     width: '100%',
@@ -348,7 +350,7 @@ const PropertyManagementDashboard = ({ user }) => {
                       <Switch
                         checked={property.isActivePortfolio}
                         onChange={() => togglePortfolioStatus(property.id)}
-                        inputProps={{ 'aria-label': `Toggle active portfolio status for ${property.propertyName}` }}
+                        inputProps={{ 'aria-label': `Toggle active portfolio status for ${property.propertyName}`, title: `Toggle active portfolio status for ${property.propertyName}` }}
                         size="small"
                       />
                     </Stack>
@@ -377,7 +379,7 @@ const PropertyManagementDashboard = ({ user }) => {
               return (
                 <Box key={task.id} sx={{ border: '1px solid', borderColor: done ? 'success.main' : 'divider', borderRadius: 1, p: 1.25, bgcolor: done ? 'rgba(0, 110, 92, 0.08)' : 'transparent' }}>
                   <Stack direction="row" alignItems="flex-start" gap={1}>
-                    <Checkbox checked={done} onChange={() => toggleTask(task.id)} inputProps={{ 'aria-label': `Mark task complete: ${task.title}` }} />
+                    <Checkbox checked={done} onChange={() => toggleTask(task.id)} inputProps={{ 'aria-label': `Mark task complete: ${task.title}`, title: `Mark task complete: ${task.title}` }} />
                     <Box sx={{ flex: 1 }}>
                       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
                         <Typography variant="body1" fontWeight={700}>{task.title}</Typography>

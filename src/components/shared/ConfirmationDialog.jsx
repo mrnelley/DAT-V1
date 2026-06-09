@@ -3,14 +3,14 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typogra
 import { motion } from 'framer-motion';
 
 const ConfirmationDialog = ({ open, title, body, onCancel, onConfirm }) => (
-  <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
+  <Dialog aria-describedby="confirmation-dialog-body" aria-labelledby="confirmation-dialog-title" open={open} onClose={onCancel} maxWidth="xs" fullWidth>
     <Box component={motion.div} initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <DialogTitle id="confirmation-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <WarningAmberOutlinedIcon color="error" />
         {title}
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body2">{body}</Typography>
+        <Typography id="confirmation-dialog-body" variant="body2">{body}</Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>

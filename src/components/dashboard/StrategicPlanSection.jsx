@@ -69,8 +69,8 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
   const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
 
   return (
-    <Dialog open={editor.open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog aria-labelledby="roadmap-editor-dialog-title" open={editor.open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="roadmap-editor-dialog-title">
         {editor.mode === 'edit' ? 'Edit' : 'Add'} {editor.type === 'priority' ? 'Organizational Priority' : editor.type === 'objective' ? 'Key Objective' : 'KPI'}
       </DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
@@ -139,15 +139,15 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
 };
 
 const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjective, onDeletePriority, onOpenEditor, open, pillar }) => (
-  <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-    <DialogTitle>
+  <Dialog aria-labelledby="roadmap-detail-dialog-title" open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <DialogTitle id="roadmap-detail-dialog-title">
       <Stack direction={{ xs: 'column', md: 'row' }} gap={1} justifyContent="space-between">
         <Box>
           <Typography variant="caption" color="primary">{q2Roadmap.quarter} Roadmap - {q2Roadmap.theme}</Typography>
           <Typography variant="h2">{pillar?.name}</Typography>
         </Box>
         {canManage && (
-          <Button startIcon={<AddIcon />} variant="contained" onClick={() => onOpenEditor('priority', 'create', { pillar })}>
+          <Button startIcon={<AddIcon />} variant="contained" title={`Add organizational priority for ${pillar?.name}`} onClick={() => onOpenEditor('priority', 'create', { pillar })}>
             Add Org Priority
           </Button>
         )}
@@ -173,7 +173,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
                 <Stack direction="row" gap={0.5}>
                   <Tooltip title="Edit priority"><IconButton aria-label={`Edit ${priority.name}`} onClick={() => onOpenEditor('priority', 'edit', { pillar, priority })}><EditOutlinedIcon /></IconButton></Tooltip>
                   <Tooltip title="Delete priority"><IconButton aria-label={`Delete ${priority.name}`} onClick={() => onDeletePriority(priority.id)}><DeleteOutlineIcon /></IconButton></Tooltip>
-                  <Button startIcon={<AddIcon />} onClick={() => onOpenEditor('objective', 'create', { pillar, priority })}>Objective</Button>
+                  <Button startIcon={<AddIcon />} title={`Add objective for ${priority.name}`} onClick={() => onOpenEditor('objective', 'create', { pillar, priority })}>Objective</Button>
                 </Stack>
               )}
             </Stack>
@@ -198,7 +198,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
                       <Stack direction="row" gap={0.5}>
                         <Tooltip title="Edit objective"><IconButton aria-label={`Edit ${objective.title}`} onClick={() => onOpenEditor('objective', 'edit', { objective, pillar, priority })}><EditOutlinedIcon /></IconButton></Tooltip>
                         <Tooltip title="Delete objective"><IconButton aria-label={`Delete ${objective.title}`} onClick={() => onDeleteObjective(priority.id, objective.id)}><DeleteOutlineIcon /></IconButton></Tooltip>
-                        <Button startIcon={<AddIcon />} onClick={() => onOpenEditor('kpi', 'create', { objective, pillar, priority })}>KPI</Button>
+                        <Button startIcon={<AddIcon />} title={`Add KPI for ${objective.title}`} onClick={() => onOpenEditor('kpi', 'create', { objective, pillar, priority })}>KPI</Button>
                       </Stack>
                     )}
                   </Stack>
@@ -425,6 +425,7 @@ const StrategicPlanSection = () => {
             role="button"
             tabIndex={0}
             aria-label={`Open ${pillar.name} ${q2Roadmap.quarter} roadmap`}
+            title={`Open ${pillar.name} ${q2Roadmap.quarter} roadmap`}
             sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: pillar.attentionCount ? 'warning.light' : 'divider', borderRadius: 1, p: 1.5, cursor: 'pointer', '&:hover': { borderColor: 'primary.main', boxShadow: 2 } }}
           >
             <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">

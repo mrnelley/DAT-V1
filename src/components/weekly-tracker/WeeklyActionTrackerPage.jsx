@@ -530,6 +530,7 @@ const WeeklyActionTrackerPage = () => {
                     }}
                     role={cardCanOpen ? 'button' : undefined}
                     tabIndex={cardCanOpen ? 0 : undefined}
+                    title={entry.title ? `Open weekly priority detail for ${entry.title}` : `Set weekly priority ${entry.rank} for ${participant.name}`}
                     sx={{
                       p: 1.5,
                       border: '1px solid',
@@ -659,8 +660,8 @@ const WeeklyActionTrackerPage = () => {
         ))}
       </Stack>
 
-      <Dialog open={Boolean(priorityDialogEntry)} onClose={closePriorityDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Set Weekly Priority</DialogTitle>
+      <Dialog aria-labelledby="weekly-priority-dialog-title" open={Boolean(priorityDialogEntry)} onClose={closePriorityDialog} fullWidth maxWidth="sm">
+        <DialogTitle id="weekly-priority-dialog-title">Set Weekly Priority</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Box>
@@ -724,8 +725,8 @@ const WeeklyActionTrackerPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={Boolean(selectedEntry)} onClose={closeEntryDetail} fullWidth maxWidth="md">
-        <DialogTitle>Weekly Priority Detail</DialogTitle>
+      <Dialog aria-labelledby="weekly-priority-detail-title" open={Boolean(selectedEntry)} onClose={closeEntryDetail} fullWidth maxWidth="md">
+        <DialogTitle id="weekly-priority-detail-title">Weekly Priority Detail</DialogTitle>
         <DialogContent>
           {selectedEntry && (
             <Stack gap={2} sx={{ pt: 1 }}>
@@ -802,8 +803,8 @@ const WeeklyActionTrackerPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={Boolean(taskDialogEntry)} onClose={closeTaskDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add Action Item</DialogTitle>
+      <Dialog aria-labelledby="weekly-action-item-dialog-title" open={Boolean(taskDialogEntry)} onClose={closeTaskDialog} fullWidth maxWidth="sm">
+        <DialogTitle id="weekly-action-item-dialog-title">Add Action Item</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">{taskDialogEntry?.title}</Typography>

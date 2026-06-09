@@ -214,7 +214,7 @@ const TaskViewPage = () => {
             Work standalone queued tasks, assignments, and optional department workplan links.
           </Typography>
         </Box>
-        <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
+        <Button startIcon={<AddOutlinedIcon />} variant="contained" title="Add task to queue" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
         Weekly commitments and their Action Items live in the Weekly Tracker. Use Task View to queue and manage standalone tasks that do not belong under a weekly priority.
@@ -279,7 +279,13 @@ const TaskViewPage = () => {
               divider
               sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(94, 184, 168, 0.12)' : 'transparent' }}
             >
-              <Checkbox disabled={!canManage} checked={done} onChange={() => updateQueuedTask(item.id, { status: done ? 'Open' : 'Complete' })} sx={{ mt: 0.25 }} />
+              <Checkbox
+                disabled={!canManage}
+                checked={done}
+                onChange={() => updateQueuedTask(item.id, { status: done ? 'Open' : 'Complete' })}
+                inputProps={{ 'aria-label': `Mark task complete: ${item.description}`, title: `Mark task complete: ${item.description}` }}
+                sx={{ mt: 0.25 }}
+              />
               <Box sx={{ flex: 1, minWidth: 240 }}>
                 <Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
@@ -299,13 +305,17 @@ const TaskViewPage = () => {
                   </IconButton>
                 </span>
               </Tooltip>
-              <IconButton disabled={!canManage} aria-label={`Open assignment workflow for task ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
+              <Tooltip title="Open assignment workflow">
+                <span>
+                  <IconButton disabled={!canManage} aria-label={`Open assignment workflow for task ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
+                </span>
+              </Tooltip>
             </ListItem>
           );
         })}
       </List>
-      <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add Task to Queue</DialogTitle>
+      <Dialog aria-labelledby="task-queue-dialog-title" open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
+        <DialogTitle id="task-queue-dialog-title">Add Task to Queue</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Alert severity="warning">
@@ -348,8 +358,8 @@ const TaskViewPage = () => {
           <Button variant="contained" onClick={addQueuedTask} disabled={!form.description.trim()}>Add Task to Queue</Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Task Assignment Workflow</DialogTitle>
+      <Dialog aria-labelledby="task-assignment-dialog-title" open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
+        <DialogTitle id="task-assignment-dialog-title">Task Assignment Workflow</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Box>

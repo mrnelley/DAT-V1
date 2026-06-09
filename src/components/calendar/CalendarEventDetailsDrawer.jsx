@@ -40,14 +40,14 @@ const CalendarEventDetailsDrawer = ({
   const pending = event.reviewState === 'pending';
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 430 }, bgcolor: 'background.paper' } }}>
+    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ 'aria-label': `Calendar event details for ${event.title}`, sx: { width: { xs: '100%', sm: 430 }, bgcolor: 'background.paper' } }}>
       <Box sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" gap={1} sx={{ mb: 2 }}>
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h2">{event.title}</Typography>
             <Typography variant="body2">{formatDateLabel(getEventDate(event))}</Typography>
           </Box>
-          <IconButton aria-label="Close calendar event details" onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton title="Close calendar event details" aria-label="Close calendar event details" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
 
         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
@@ -135,17 +135,17 @@ const CalendarEventDetailsDrawer = ({
           ))}
 
           {scope === 'personal' && event.orgSubmissionState !== 'pending' && event.orgSubmissionState !== 'approved' && (
-            <Button variant="contained" startIcon={<SendOutlinedIcon />} onClick={() => onSendToOrg(event.id)}>
+            <Button variant="contained" startIcon={<SendOutlinedIcon />} title="Send to organization calendar" onClick={() => onSendToOrg(event.id)}>
               Send to Organization Calendar
             </Button>
           )}
 
           {scope === 'organization' && isAdmin && pending && (
             <Stack direction="row" gap={1}>
-              <Button variant="contained" color="success" startIcon={<TaskAltIcon />} onClick={() => onApprove(event.id)}>
+              <Button variant="contained" color="success" startIcon={<TaskAltIcon />} title={`Approve ${event.title}`} onClick={() => onApprove(event.id)}>
                 Approve
               </Button>
-              <Button variant="outlined" color="error" onClick={() => onDecline(event.id)}>
+              <Button variant="outlined" color="error" title={`Decline ${event.title}`} onClick={() => onDecline(event.id)}>
                 Decline
               </Button>
             </Stack>

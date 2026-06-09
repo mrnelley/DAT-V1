@@ -14,11 +14,11 @@ const EditPriorityPanel = ({ open, onClose }) => {
   const [pillarId, setPillarId] = useState(strategicPlan2030.pillars[0].id);
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 420 }, bgcolor: 'background.paper' } }}>
+    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ 'aria-label': 'Edit priority panel', sx: { width: { xs: '100%', sm: 420 }, bgcolor: 'background.paper' } }}>
       <Box component={motion.div} initial={{ x: 420 }} animate={{ x: 0 }} transition={{ type: 'spring', stiffness: 280, damping: 26 }} sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h3">Edit Priority</Typography>
-          <IconButton aria-label="Close priority panel" onClick={onClose}><CloseIcon /></IconButton>
+          <IconButton title="Close priority panel" aria-label="Close priority panel" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
         <Stack gap={2}>
           <TextField label="Priority Name" required fullWidth />

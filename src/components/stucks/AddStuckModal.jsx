@@ -38,8 +38,8 @@ const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user 
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Issue a Stuck</DialogTitle>
+    <Dialog aria-labelledby="issue-stuck-dialog-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="issue-stuck-dialog-title">Issue a Stuck</DialogTitle>
       <DialogContent>
         <Stack gap={2} sx={{ pt: 1 }}>
           <TextField select label="Task I am stuck on" value={form.sourceId} onChange={update('sourceId')} fullWidth required>

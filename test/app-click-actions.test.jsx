@@ -183,8 +183,16 @@ const LocationProbe = () => {
   return <div data-testid="location">{location.pathname}</div>;
 };
 
+const resetDocumentState = () => {
+  document.body.removeAttribute('aria-hidden');
+  document.body.removeAttribute('style');
+  document.body.querySelectorAll('.MuiModal-root, .MuiPopover-root, .MuiPopper-root').forEach((node) => node.remove());
+  Array.from(document.body.children).forEach((node) => node.removeAttribute('aria-hidden'));
+};
+
 const renderWithProviders = (ui, path = '/', userId = 'u1', operatingData = null) => {
   cleanup();
+  resetDocumentState();
   window.localStorage.clear();
   window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
   window.localStorage.setItem('hdc_compass_demo_user_id', userId);
@@ -217,6 +225,7 @@ const renderWithProviders = (ui, path = '/', userId = 'u1', operatingData = null
 
 const renderLoginFlow = () => {
   cleanup();
+  resetDocumentState();
   window.localStorage.clear();
   return {
     user: userEvent.setup({ document: window.document }),
@@ -237,6 +246,7 @@ const renderLoginFlow = () => {
 describe('clickable user actions', () => {
   afterEach(() => {
     cleanup();
+    resetDocumentState();
     window.localStorage.clear();
   });
 
@@ -356,6 +366,8 @@ describe('clickable user actions', () => {
 
     await user.click(gigiPriorityCards[0]);
     expect(await screen.findByRole('heading', { name: /set weekly priority/i })).to.exist;
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).to.equal(null));
   });
 
   it('opens weekly priority detail by clicking the priority card', async () => {

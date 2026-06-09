@@ -200,6 +200,7 @@ const EditableStatCard = ({ field, label, storageKey }) => {
       }}
       role="button"
       tabIndex={0}
+      title={`Edit ${label}`}
       sx={{
         bgcolor: 'background.paper',
         border: '1px solid',
@@ -230,7 +231,7 @@ const EditableStatCard = ({ field, label, storageKey }) => {
           placeholder="Add value"
           value={value}
           variant="standard"
-          inputProps={{ 'aria-label': label }}
+          inputProps={{ 'aria-label': label, title: label }}
           sx={{
             mt: 0.75,
             '& input': {
@@ -280,7 +281,12 @@ const WeeklyPrioritiesSection = ({ user, weeklyEntries }) => {
           const showAllTasks = isLeadershipView || priority.owner.id === user.id;
           const relatedTasks = priority.tasks.filter((task) => showAllTasks || task.owner.id === user.id);
           return (
-            <Box key={priority.id} sx={{ border: '1px solid', borderColor: priority.isMostImportant ? 'primary.light' : 'divider', borderRadius: 1, p: 1.25 }}>
+          <Box
+            key={priority.id}
+            aria-label={`Weekly priority ${priority.title}`}
+            title={`Weekly priority ${priority.title}`}
+            sx={{ border: '1px solid', borderColor: priority.isMostImportant ? 'primary.light' : 'divider', borderRadius: 1, p: 1.25 }}
+          >
               <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
                 <Box>
                   <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
@@ -352,7 +358,12 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
 
       <Stack gap={1}>
         {visibleWorkplans.map((workplan) => (
-          <Box key={workplan.id} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.2fr) minmax(180px, 0.55fr) minmax(210px, 0.7fr) 120px' }, gap: 1.25, alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+          <Box
+            key={workplan.id}
+            aria-label={`Department workplan ${workplan.title}`}
+            title={`Department workplan ${workplan.title}`}
+            sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.2fr) minmax(180px, 0.55fr) minmax(210px, 0.7fr) 120px' }, gap: 1.25, alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}
+          >
             <Box sx={{ minWidth: 0 }}>
               <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{ mb: 0.5 }}>
                 <Chip label={workplan.status} color={statusColor[workplan.status] || 'default'} size="small" />

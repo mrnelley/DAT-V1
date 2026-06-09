@@ -46,6 +46,7 @@ const CalendarEventPill = ({ compact = false, event, onClick }) => {
     <ButtonBase
       onClick={onClick}
       aria-label={`${event.type}: ${event.title}${sourceStatus ? `. Source status ${sourceStatus.label}` : ''}${pending ? '. Pending approval' : ''}.`}
+      title={`${event.type}: ${event.title}`}
       sx={{
         width: '100%',
         display: 'block',
@@ -138,14 +139,14 @@ const CalendarPanel = ({
           )}
         </Stack>
         <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
-          <IconButton onClick={() => shiftMonth(-1)} aria-label="Previous month"><ChevronLeftIcon /></IconButton>
+          <IconButton onClick={() => shiftMonth(-1)} title="Previous month" aria-label="Previous month"><ChevronLeftIcon /></IconButton>
           <Chip label={formatMonthLabel(monthCursor)} color="primary" />
-          <IconButton onClick={() => shiftMonth(1)} aria-label="Next month"><ChevronRightIcon /></IconButton>
+          <IconButton onClick={() => shiftMonth(1)} title="Next month" aria-label="Next month"><ChevronRightIcon /></IconButton>
           <ToggleButtonGroup exclusive value={view} size="small" aria-label="Calendar view mode" onChange={(_, value) => value && setView(value)}>
             <ToggleButton value="calendar" aria-label="Calendar view"><CalendarMonthIcon fontSize="small" /></ToggleButton>
             <ToggleButton value="upcoming" aria-label="Upcoming view"><ViewAgendaOutlinedIcon fontSize="small" /></ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>Add Event</Button>
+          <Button variant="contained" startIcon={<AddIcon />} title="Add calendar event" onClick={() => setFormOpen(true)}>Add Event</Button>
         </Stack>
       </Stack>
 
@@ -188,6 +189,7 @@ const CalendarPanel = ({
                   <Box
                     key={dateValue}
                     aria-label={`${dateValue}${muted ? ', outside current month' : ''}`}
+                    title={`${dateValue}${muted ? ', outside current month' : ''}`}
                     sx={{
                       minHeight: 132,
                       p: 0.75,

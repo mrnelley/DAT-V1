@@ -211,6 +211,7 @@ const ObjectiveCard = ({ onOpen, priority }) => {
       role="button"
       tabIndex={0}
       aria-label={`Open operational priority detail for ${priority.name}`}
+      title={`Open operational priority detail for ${priority.name}`}
       sx={{
         bgcolor: 'background.paper',
         border: '1px solid',
@@ -327,6 +328,7 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
             }}
             role="button"
             tabIndex={0}
+            title={`Engage teammates about objective ${objective.title}`}
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.3fr) minmax(180px, 0.6fr) minmax(220px, 0.9fr) 120px' },
@@ -416,6 +418,7 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
             }}
             role="button"
             tabIndex={0}
+            title={`Open pillar detail for ${pillar.name}`}
             sx={{
               bgcolor: worstMeta.soft,
               border: '1px solid',
@@ -460,8 +463,16 @@ const PillarDetailDialog = ({ detail, onClose }) => {
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: 1 } }}>
-      <DialogTitle>
+    <Dialog
+      aria-describedby="pillar-detail-description"
+      aria-labelledby="pillar-detail-title"
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{ sx: { borderRadius: 1 } }}
+    >
+      <DialogTitle id="pillar-detail-title">
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
           <Box>
             <Typography variant="caption" color="primary">Strategic Pillar {pillar?.order}</Typography>
@@ -473,7 +484,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
       <DialogContent>
         {pillar && (
           <Stack gap={2} sx={{ py: 1 }}>
-            <Typography variant="body1" color="text.primary">{pillar.description}</Typography>
+            <Typography id="pillar-detail-description" variant="body1" color="text.primary">{pillar.description}</Typography>
 
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
               <Typography variant="h3" sx={{ mb: 1 }}>Success metrics</Typography>
@@ -552,6 +563,8 @@ const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
 
   return (
     <Dialog
+      aria-describedby="teammate-engagement-description"
+      aria-labelledby="teammate-engagement-title"
       open={open}
       onClose={onClose}
       fullWidth
@@ -559,7 +572,7 @@ const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
       PaperProps={{ sx: { borderRadius: 1, overflow: 'hidden' } }}
     >
       <Box sx={{ bgcolor: meta.soft, borderTop: '6px solid', borderColor: meta.border }}>
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle id="teammate-engagement-title" sx={{ pb: 1 }}>
           <Stack direction="row" gap={1} alignItems="center">
             <GroupsOutlinedIcon color="primary" />
             Connect with a teammate
@@ -575,7 +588,7 @@ const TeammateEngagementDialog = ({ engagement, onClose, onSend, open }) => {
                   <Chip label={`${engagement.progress}% progress`} size="small" variant="outlined" />
                 </Stack>
                 <Typography variant="h3">{engagement.title}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>{engagement.goal}</Typography>
+                <Typography id="teammate-engagement-description" variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>{engagement.goal}</Typography>
               </Box>
 
               {engagement.teammates.length ? (

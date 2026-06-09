@@ -92,8 +92,8 @@ const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
 };
 
 const EditPriorityDialog = ({ form, open, onClose, onSave, onUpdate }) => (
-  <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle>Edit Operational Priority</DialogTitle>
+  <Dialog aria-labelledby="edit-operational-priority-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <DialogTitle id="edit-operational-priority-title">Edit Operational Priority</DialogTitle>
     <DialogContent sx={{ pt: 1 }}>
       <Stack gap={2} sx={{ mt: 1 }}>
         <TextField label="Priority Name" value={form.name} onChange={onUpdate('name')} fullWidth required />
@@ -201,7 +201,7 @@ const OperationalPriorityPage = () => {
               <Typography variant="caption">Operational priority owner</Typography>
             </Box>
             {canEdit && (
-              <Button variant="contained" startIcon={<EditOutlinedIcon />} onClick={() => setEditOpen(true)} sx={{ ml: 1 }}>
+            <Button variant="contained" startIcon={<EditOutlinedIcon />} title={`Edit ${priority.name}`} onClick={() => setEditOpen(true)} sx={{ ml: 1 }}>
                 Edit
               </Button>
             )}

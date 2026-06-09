@@ -35,7 +35,7 @@ const PrioritiesPage = () => {
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" gap={1}>
           <Typography variant="h1">Manage Priorities</Typography>
-          <IconButton aria-label="Open priorities help" onClick={() => unavailable('priority help content has not been authored yet.')}><HelpOutlineIcon /></IconButton>
+          <IconButton title="Open priorities help" aria-label="Open priorities help" onClick={() => unavailable('priority help content has not been authored yet.')}><HelpOutlineIcon /></IconButton>
         </Stack>
         <Stack direction="row" gap={1} flexWrap="wrap">
           <Button variant="contained" onClick={() => setPanelOpen(true)}>Add Priority</Button>

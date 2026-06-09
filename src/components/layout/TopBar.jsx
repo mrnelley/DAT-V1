@@ -72,7 +72,7 @@ const TopBar = ({ onMenuClick }) => {
       }}
     >
       <Toolbar sx={{ minHeight: 64, gap: 1.5 }}>
-        <IconButton aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
+        <IconButton title="Toggle navigation menu" aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
         <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 2, minWidth: 0 }}>
           <Box
             component="img"
@@ -93,6 +93,8 @@ const TopBar = ({ onMenuClick }) => {
                 color="primary"
                 endIcon={<ArrowDropDownIcon />}
                 onClick={(event) => openMenu(event, navMenu.label)}
+                title={`Open ${navMenu.label} menu`}
+                aria-label={`Open ${navMenu.label} menu`}
                 variant={active ? 'outlined' : 'text'}
               >
                 {navMenu.label}
@@ -101,7 +103,7 @@ const TopBar = ({ onMenuClick }) => {
           })}
         </Box>
         {visibleQuickAddItems.length > 0 && (
-          <IconButton aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
+          <IconButton title="Open quick add menu" aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
         )}
         <Tooltip title="Notifications">
           <IconButton aria-label="Open notifications inbox" color="primary" onClick={() => navigate('/notifications')}>
@@ -122,7 +124,7 @@ const TopBar = ({ onMenuClick }) => {
           <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>
         <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>{user.organization}</Typography>
-        <IconButton aria-label="Sign out" color="primary" onClick={signOut}>
+        <IconButton title="Sign out" aria-label="Sign out" color="primary" onClick={signOut}>
           <LogoutOutlinedIcon />
         </IconButton>
         <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={closeMenus}>

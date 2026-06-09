@@ -31,6 +31,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           tabIndex={0}
           aria-expanded={expanded}
           aria-label={`${expanded ? 'Collapse' : 'Expand'} priority ${priority.name}`}
+          title={`${expanded ? 'Collapse' : 'Expand'} priority ${priority.name}`}
           sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '32px 40px minmax(220px, 1fr) 110px minmax(180px, 260px) 64px 44px' }, gap: 1, alignItems: 'center', p: 1.5, cursor: 'pointer' }}
         >
           <DragIndicatorIcon color="disabled" />
@@ -55,7 +56,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           <Typography variant="h4" color={statusColorMap[priority.status]}>{priority.percent}%</Typography>
           <Tooltip title={canManage ? 'Priority options' : 'Only tied owners can update this priority'}>
             <span>
-              <IconButton disabled={!canManage} aria-label={`More options for priority ${priority.name}`} onClick={(event) => { event.stopPropagation(); unavailable('priority options need the priority detail drawer.'); }}><MoreHorizOutlinedIcon /></IconButton>
+              <IconButton disabled={!canManage} title={`More options for priority ${priority.name}`} aria-label={`More options for priority ${priority.name}`} onClick={(event) => { event.stopPropagation(); unavailable('priority options need the priority detail drawer.'); }}><MoreHorizOutlinedIcon /></IconButton>
             </span>
           </Tooltip>
         </Box>

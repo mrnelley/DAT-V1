@@ -40,8 +40,8 @@ const CalendarEventFormDialog = ({ defaultDate, onClose, onCreate, open }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add Calendar Event</DialogTitle>
+    <Dialog aria-labelledby="calendar-event-form-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="calendar-event-form-title">Add Calendar Event</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField label="Title" value={form.title} onChange={update('title')} required fullWidth />

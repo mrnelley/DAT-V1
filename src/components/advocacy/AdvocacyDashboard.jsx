@@ -174,8 +174,8 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{mode === 'edit' ? 'Edit' : 'Add'} {entityLabels[type]}</DialogTitle>
+    <Dialog aria-labelledby="advocacy-entity-dialog-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="advocacy-entity-dialog-title">{mode === 'edit' ? 'Edit' : 'Add'} {entityLabels[type]}</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField label="Title" value={form.title || ''} onChange={update('title')} required fullWidth />
@@ -430,8 +430,8 @@ const TouchpointLogDialog = ({ contacts, onClose, onSave, open, period }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Log Touchpoint</DialogTitle>
+    <Dialog aria-labelledby="touchpoint-log-dialog-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="touchpoint-log-dialog-title">Log Touchpoint</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
           <FormControl fullWidth>
