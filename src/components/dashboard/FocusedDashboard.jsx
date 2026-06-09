@@ -4,8 +4,10 @@ import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
+import { Box, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { activeRoadmap } from '../../data/quarterlyRoadmap';
 import UserAvatar from '../shared/UserAvatar';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
@@ -42,6 +44,13 @@ const profiles = {
     subtitle: 'Trauma-informed resident journey support, referrals, needs assessments, and coordinator follow-up.',
   },
 };
+
+const financeStatDefaults = [
+  ['cashPosition', 'Cash Position'],
+  ['budgetVariance', 'Budget Variance'],
+  ['grantReceivables', 'Grant Receivables'],
+  ['debtService', 'Debt Service'],
+];
 
 const statusColor = {
   alert: 'error',
@@ -156,6 +165,92 @@ const StatCard = ({ helper, label, value }) => (
   </Box>
 );
 
+const EditableStatCard = ({ field, label, storageKey }) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(() => {
+    if (typeof window === 'undefined') return '';
+
+    try {
+      return JSON.parse(window.localStorage.getItem(storageKey))?.[field] || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const save = (nextValue = value) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const current = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+        window.localStorage.setItem(storageKey, JSON.stringify({ ...current, [field]: nextValue }));
+      } catch {
+        window.localStorage.setItem(storageKey, JSON.stringify({ [field]: nextValue }));
+      }
+    }
+    setEditing(false);
+  };
+
+  return (
+    <Box
+      aria-label={`Edit ${label}`}
+      onClick={() => setEditing(true)}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        setEditing(true);
+      }}
+      role="button"
+      tabIndex={0}
+      sx={{
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: editing ? 'primary.main' : 'divider',
+        borderRadius: 1,
+        cursor: 'text',
+        minHeight: 104,
+        p: 1.5,
+        transition: 'border-color 160ms ease, box-shadow 160ms ease',
+        '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
+        '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)' },
+      }}
+    >
+      <Typography variant="caption">{label}</Typography>
+      {editing ? (
+        <TextField
+          autoFocus
+          fullWidth
+          onBlur={() => save()}
+          onChange={(event) => setValue(event.target.value)}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              save(event.currentTarget.value);
+            }
+          }}
+          placeholder="Add value"
+          value={value}
+          variant="standard"
+          inputProps={{ 'aria-label': label }}
+          sx={{
+            mt: 0.75,
+            '& input': {
+              color: value ? 'primary.main' : 'text.secondary',
+              fontSize: '1.55rem',
+              fontWeight: 800,
+              p: 0,
+            },
+          }}
+        />
+      ) : (
+        <Typography color={value ? 'primary' : 'text.secondary'} variant="h2" sx={{ my: 0.5 }}>
+          {value || 'Click to add'}
+        </Typography>
+      )}
+      <Typography variant="body2">Raw editable value</Typography>
+    </Box>
+  );
+};
+
 const WeeklyPrioritiesSection = ({ user, weeklyEntries }) => {
   const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
   const isLeadershipView = Boolean(leadershipLane);
@@ -250,9 +345,9 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
         <Box>
           <Typography variant="h3">Department Workplan Alignment</Typography>
-          <Typography variant="body2">Q2 operating work tied to company objectives, strategic pillars, and due dates.</Typography>
+          <Typography variant="body2">{activeRoadmap.quarter} operating work tied to company objectives, strategic pillars, and due dates.</Typography>
         </Box>
-        <Chip label={`${visibleWorkplans.length} Q2 workplans`} color="primary" variant="outlined" />
+        <Chip label={`${visibleWorkplans.length} ${activeRoadmap.quarter} workplans`} color="primary" variant="outlined" />
       </Stack>
 
       <Stack gap={1}>
@@ -325,6 +420,7 @@ const FocusedDashboard = ({ user }) => {
   const profile = profiles[user.dashboardFocus];
   if (!profile) return null;
   const Icon = profile.icon;
+  const financeStats = user.dashboardFocus === 'financials';
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -346,7 +442,9 @@ const FocusedDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        {liveStats.map(([label, value, helper]) => (
+        {financeStats ? financeStatDefaults.map(([field, label]) => (
+          <EditableStatCard key={field} field={field} label={label} storageKey="hdc_compass_finance_dashboard_stats" />
+        )) : liveStats.map(([label, value, helper]) => (
           <StatCard key={label} label={label} value={value} helper={helper} />
         ))}
       </Box>

@@ -26,6 +26,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
+import { activeRoadmap } from '../../data/quarterlyRoadmap';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -58,13 +59,13 @@ const defaultForm = (user) => ({
   department: user.department,
   leadId: user.id,
   scope: user.department,
-  quarter: 'Q2 2026',
+  quarter: activeRoadmap.quarter,
   quarterlyInitiative: '',
   strategicPlan: strategicPlan2030.name,
   strategicPillarId: strategicPlan2030.pillars[0].id,
   strategicPillar: strategicPlan2030.pillars[0].name,
   status: 'Steady',
-  due: '2026-06-30',
+  due: activeRoadmap.end,
   progress: 25,
   outcome: '',
   ownerIds: [user.id],

@@ -542,7 +542,7 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/pinned priority signal/i)).to.exist;
     expect(await screen.findByRole('heading', { name: /operational priority health/i })).to.exist;
     expect(screen.getByLabelText(/team filter/i)).to.exist;
-    expect(screen.getByText(/0\/0 q2 objectives/i)).to.exist;
+    expect(screen.getByText(/0\/0 q2 2026 objectives/i)).to.exist;
     expect(screen.getByText(/no enterprise priorities yet/i)).to.exist;
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
   });
@@ -567,7 +567,7 @@ describe('clickable user actions', () => {
     );
 
     expect(await screen.findByText(/no enterprise priorities yet/i)).to.exist;
-    expect((await screen.findAllByRole('button', { name: /engage teammates about pillar/i })).length).to.equal(5);
+    expect((await screen.findAllByRole('button', { name: /open pillar detail/i })).length).to.equal(5);
   });
 
   it('shows an empty objective tracker when no workplan objectives exist yet', async () => {
@@ -590,7 +590,7 @@ describe('clickable user actions', () => {
     expect(screen.queryByRole('button', { name: /engage teammates about objective/i })).to.equal(null);
   });
 
-  it('opens teammate engagement from a pillar coverage card', async () => {
+  it('opens strategic pillar detail from a pillar coverage card', async () => {
     const { user } = renderWithProviders(
       <CompanyDashboardOverview
         calendarEvents={[]}
@@ -606,11 +606,14 @@ describe('clickable user actions', () => {
       '/dashboard/company',
     );
 
-    const pillarCards = await screen.findAllByRole('button', { name: /engage teammates about pillar/i });
+    const pillarCards = await screen.findAllByRole('button', { name: /open pillar detail/i });
     await user.click(pillarCards[0]);
 
-    expect(await screen.findByRole('heading', { name: /connect with a teammate/i })).to.exist;
-    expect(screen.getByText(/no teammates connected yet/i)).to.exist;
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getAllByRole('heading', { name: /care and connection/i })).to.have.length.greaterThan(0);
+    expect(within(dialog).getByRole('heading', { name: /success metrics/i })).to.exist;
+    expect(within(dialog).getByText(/resident satisfaction/i)).to.exist;
+    expect(within(dialog).getByText(/no objectives have been connected to this pillar yet/i)).to.exist;
   });
 
   it('shows a not-found state for an unavailable operational priority page', async () => {

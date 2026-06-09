@@ -102,7 +102,7 @@ const EditPriorityDialog = ({ form, open, onClose, onSave, onUpdate }) => (
             <MenuItem key={status} value={status}>{getStatusMeta(status).label}</MenuItem>
           ))}
         </TextField>
-        <TextField label="Q2 Goal" value={form.goal} onChange={onUpdate('goal')} fullWidth multiline minRows={2} />
+        <TextField label={`${q2Roadmap.quarter} Goal`} value={form.goal} onChange={onUpdate('goal')} fullWidth multiline minRows={2} />
         <TextField label="Executive Note" value={form.note} onChange={onUpdate('note')} fullWidth multiline minRows={3} />
       </Stack>
     </DialogContent>

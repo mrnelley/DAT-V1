@@ -1,3 +1,5 @@
+import { activeRoadmap } from './quarterlyRoadmap';
+
 const userSeed = [
   {
     id: 'u1',
@@ -281,10 +283,7 @@ export const strategicPlan2030 = {
 export const strategicPillarById = Object.fromEntries(strategicPlan2030.pillars.map((pillar) => [pillar.id, pillar]));
 
 export const q2Roadmap = {
-  id: 'q2-2026',
-  quarter: 'Q2 2026',
-  theme: 'Choose Your Hard',
-  statusOptions: ['Steady', 'Watch', 'Alert', 'Complete', 'Rolled Into Next Quarter', 'Adopted Into Next Quarter', 'Paused'],
+  ...activeRoadmap,
 };
 
 // Operating collections intentionally start empty. Users create the live records.

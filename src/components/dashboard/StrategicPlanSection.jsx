@@ -143,7 +143,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
     <DialogTitle>
       <Stack direction={{ xs: 'column', md: 'row' }} gap={1} justifyContent="space-between">
         <Box>
-          <Typography variant="caption" color="primary">Q2 Roadmap - {q2Roadmap.theme}</Typography>
+          <Typography variant="caption" color="primary">{q2Roadmap.quarter} Roadmap - {q2Roadmap.theme}</Typography>
           <Typography variant="h2">{pillar?.name}</Typography>
         </Box>
         {canManage && (
@@ -324,7 +324,7 @@ const StrategicPlanSection = () => {
           strategicPlan: strategicPlan2030.name,
           strategicPillarId: form.strategicPillarId,
           strategicPillar: strategicPlan2030.pillars.find((pillar) => pillar.id === form.strategicPillarId)?.name,
-          description: `Q2 organizational priority aligned to ${form.strategicPillarId}.`,
+          description: `${q2Roadmap.quarter} organizational priority aligned to ${form.strategicPillarId}.`,
           heatmap: ['no_data', 'no_data', 'no_data'],
           keyObjectives: form.keyObjectives || [],
           children: [],
@@ -397,7 +397,7 @@ const StrategicPlanSection = () => {
               Strategic Plan {strategicPlan2030.timeframe}
             </Typography>
             <Typography variant="h1" sx={{ mt: 0.5 }}>{strategicPlan2030.name}</Typography>
-            <Typography variant="h2" sx={{ mt: 1 }}>Q2 Roadmap: {q2Roadmap.theme}</Typography>
+            <Typography variant="h2" sx={{ mt: 1 }}>{q2Roadmap.quarter} Roadmap: {q2Roadmap.theme}</Typography>
             <Typography variant="body2" sx={{ mt: 0.75 }}>
               ELT sets organizational priorities and key objectives; OLT defines KPIs, updates departmental workplans, and contributes progress through assigned work.
             </Typography>
@@ -424,7 +424,7 @@ const StrategicPlanSection = () => {
             }}
             role="button"
             tabIndex={0}
-            aria-label={`Open ${pillar.name} Q2 roadmap`}
+            aria-label={`Open ${pillar.name} ${q2Roadmap.quarter} roadmap`}
             sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: pillar.attentionCount ? 'warning.light' : 'divider', borderRadius: 1, p: 1.5, cursor: 'pointer', '&:hover': { borderColor: 'primary.main', boxShadow: 2 } }}
           >
             <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">
@@ -435,7 +435,7 @@ const StrategicPlanSection = () => {
             <Typography variant="body2" sx={{ mt: 0.75 }}>{pillar.description}</Typography>
 
             <Box sx={{ mt: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Q2 Priorities</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>{q2Roadmap.quarter} Priorities</Typography>
               <Stack gap={0.75} sx={{ mt: 0.75 }}>
                 {pillar.priorityItems.length ? (
                   pillar.priorityItems.map((priority) => (
@@ -451,7 +451,7 @@ const StrategicPlanSection = () => {
                     </Box>
                   ))
                 ) : (
-                  <Chip label="No Q2 organizational priority set" size="small" variant="outlined" />
+                  <Chip label={`No ${q2Roadmap.quarter} organizational priority set`} size="small" variant="outlined" />
                 )}
               </Stack>
             </Box>

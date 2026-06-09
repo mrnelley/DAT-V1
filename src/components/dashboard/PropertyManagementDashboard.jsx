@@ -3,12 +3,12 @@ import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Checkbox, Chip, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Checkbox, Chip, FormControl, InputLabel, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import CurbAppealWorkflowPanel from '../curb-appeal/CurbAppealWorkflowPanel';
-import { getPropertyRisk, getPropertyTasks, portfolioOrganization, portfolioProperties, portfolioRegions } from '../../data/propertyPortfolio';
+import { getPropertyRisk, getPropertyTasks, portfolioProperties, portfolioRegions } from '../../data/propertyPortfolio';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
@@ -26,16 +26,96 @@ const markerColor = {
   Inactive: '#6b7280',
 };
 
-const StatCard = ({ helper, icon: Icon, label, value }) => (
-  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, minHeight: 112 }}>
+const editableStatStorageKey = 'hdc_compass_property_management_dashboard_stats';
+
+const EditableStatCard = ({ field, helper, icon: Icon, label }) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(() => {
+    if (typeof window === 'undefined') return '';
+
+    try {
+      return JSON.parse(window.localStorage.getItem(editableStatStorageKey))?.[field] || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const save = (nextValue = value) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const current = JSON.parse(window.localStorage.getItem(editableStatStorageKey)) || {};
+        window.localStorage.setItem(editableStatStorageKey, JSON.stringify({ ...current, [field]: nextValue }));
+      } catch {
+        window.localStorage.setItem(editableStatStorageKey, JSON.stringify({ [field]: nextValue }));
+      }
+    }
+    setEditing(false);
+  };
+
+  return (
+  <Box
+    aria-label={`Edit ${label}`}
+    onClick={() => setEditing(true)}
+    onKeyDown={(event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      setEditing(true);
+    }}
+    role="button"
+    tabIndex={0}
+    sx={{
+      bgcolor: 'background.paper',
+      border: '1px solid',
+      borderColor: editing ? 'primary.main' : 'divider',
+      borderRadius: 1,
+      cursor: 'text',
+      minHeight: 112,
+      p: 1.5,
+      transition: 'border-color 160ms ease, box-shadow 160ms ease',
+      '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
+      '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)' },
+    }}
+  >
     <Stack direction="row" alignItems="center" gap={1}>
       <Icon color="primary" />
       <Typography variant="caption">{label}</Typography>
     </Stack>
-    <Typography variant="h2" sx={{ my: 0.5 }}>{value}</Typography>
+    {editing ? (
+      <TextField
+        autoFocus
+        fullWidth
+        onBlur={() => save()}
+        onChange={(event) => setValue(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            save(event.currentTarget.value);
+          }
+        }}
+        placeholder="Add value"
+        value={value}
+        variant="standard"
+        inputProps={{ 'aria-label': label }}
+        sx={{
+          mt: 0.75,
+          '& input': {
+            color: value ? 'primary.main' : 'text.secondary',
+            fontSize: '1.55rem',
+            fontWeight: 800,
+            p: 0,
+          },
+        }}
+      />
+    ) : (
+      <Typography color={value ? 'primary' : 'text.secondary'} variant="h2" sx={{ my: 0.5 }}>
+        {value || 'Click to add'}
+      </Typography>
+    )}
     <Typography variant="body2">{helper}</Typography>
   </Box>
-);
+  );
+};
 
 const MapFocusController = ({ enabled, property }) => {
   const map = useMap();
@@ -74,12 +154,7 @@ const PropertyManagementDashboard = ({ user }) => {
   const selectedProperty = filteredProperties.find((property) => property.id === selectedPropertyId) || filteredProperties[0] || portfolioProperties[0];
   const selectedTasks = getPropertyTasks(selectedProperty);
   const activeProperties = filteredProperties.filter((property) => property.isActivePortfolio);
-  const inactiveProperties = filteredProperties.filter((property) => !property.isActivePortfolio);
   const allTasks = activeProperties.flatMap((property) => getPropertyTasks(property).map((task) => ({ ...task, property })));
-  const needsAttention = activeProperties.filter((property) => getPropertyRisk(property) === 'Alert');
-  const totalUnits = activeProperties.reduce((sum, property) => sum + (property.estimatedUnits || 0), 0);
-  const openWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.openWorkOrders, 0);
-  const agedWorkOrders = activeProperties.reduce((sum, property) => sum + property.operations.agedWorkOrders, 0);
   const selectedRisk = selectedProperty.isActivePortfolio ? getPropertyRisk(selectedProperty) : 'Inactive';
 
   const toggleTask = (taskId) => {
@@ -115,10 +190,10 @@ const PropertyManagementDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <StatCard icon={MapOutlinedIcon} label="Active Communities" value={activeProperties.length} helper={`${inactiveProperties.length} inactive records still retained.`} />
-        <StatCard icon={HomeWorkOutlinedIcon} label="Active Units" value={totalUnits.toLocaleString()} helper="Units counted in active portfolio status." />
-        <StatCard icon={WarningAmberOutlinedIcon} label="Alert" value={needsAttention.length} helper="Properties with risk, leasing, or aging work order signals." />
-        <StatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={openWorkOrders} helper={`${agedWorkOrders} aged exceptions in this view.`} />
+        <EditableStatCard field="activeCommunities" icon={MapOutlinedIcon} label="Active Communities" helper="Raw editable portfolio value." />
+        <EditableStatCard field="activeUnits" icon={HomeWorkOutlinedIcon} label="Active Units" helper="Raw editable portfolio value." />
+        <EditableStatCard field="alerts" icon={WarningAmberOutlinedIcon} label="Alerts" helper="Raw editable portfolio value." />
+        <EditableStatCard field="openWorkOrders" icon={ConstructionOutlinedIcon} label="Open Work Orders" helper="Raw editable portfolio value." />
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.25fr 0.9fr' }, gap: 2, mb: 2 }}>
