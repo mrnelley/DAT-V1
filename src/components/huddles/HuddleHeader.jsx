@@ -5,33 +5,36 @@ import PrintIcon from '@mui/icons-material/Print';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VideoCallOutlinedIcon from '@mui/icons-material/VideoCallOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Button, Chip, IconButton, Stack, TextField } from '@mui/material';
+import { Button, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 
-const huddleActions = [
-  [PrintIcon, 'Print huddle'],
-  [NotificationsNoneIcon, 'Manage huddle notifications'],
-  [CalendarMonthIcon, 'Open huddle calendar'],
-  [SettingsIcon, 'Open huddle settings'],
-  [AddIcon, 'Add huddle item'],
-];
-
-const HuddleHeader = ({ name }) => {
+const HuddleHeader = ({ huddle }) => {
   const navigate = useNavigate();
   const { unavailable } = useActionFeedback();
 
   return (
-  <Stack gap={1.5} sx={{ mb: 2 }}>
-    <Button sx={{ alignSelf: 'flex-start' }} onClick={() => navigate('/priorities')}>Back to Manage Priorities</Button>
-    <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-      <Chip label={name} color="primary" sx={{ height: 40, fontSize: '0.9rem' }} />
-      <TextField type="date" size="small" defaultValue="2026-05-05" inputProps={{ 'aria-label': 'Huddle date' }} />
-      {huddleActions.map(([Icon, label]) => <IconButton aria-label={label} key={label} onClick={() => unavailable(`${label.toLowerCase()} needs the huddle workflow service.`)}><Icon /></IconButton>)}
-      <Button variant="contained" color="error" startIcon={<WarningAmberOutlinedIcon />} onClick={() => navigate('/stucks')}>STUCKS 2</Button>
-      <Button variant="contained" color="secondary" startIcon={<VideoCallOutlinedIcon />} onClick={() => unavailable('the Teams meeting link is not available in seed data.')}>Join Meeting</Button>
+    <Stack gap={1.5} sx={{ mb: 2 }}>
+      <Button sx={{ alignSelf: 'flex-start' }} onClick={() => navigate('/huddles')}>Back to Huddles</Button>
+      <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
+        <Chip label={huddle.name} color="primary" sx={{ height: 40, fontSize: '0.9rem' }} />
+        <Chip label={huddle.date} variant="outlined" />
+        <Tooltip title="Print huddle"><IconButton aria-label="Print huddle" onClick={() => window.print()}><PrintIcon /></IconButton></Tooltip>
+        <Tooltip title="Manage notifications"><IconButton aria-label="Manage huddle notifications" onClick={() => navigate('/notifications')}><NotificationsNoneIcon /></IconButton></Tooltip>
+        <Tooltip title="Huddle schedule"><IconButton aria-label="Open huddle calendar" onClick={() => navigate(`/huddles/${huddle.id}/settings`)}><CalendarMonthIcon /></IconButton></Tooltip>
+        <Tooltip title="Huddle settings"><IconButton aria-label="Open huddle settings" onClick={() => navigate(`/huddles/${huddle.id}/settings`)}><SettingsIcon /></IconButton></Tooltip>
+        <Tooltip title="Add huddle item"><IconButton aria-label="Add huddle item" onClick={() => navigate(`/huddles/${huddle.id}/items/new`)}><AddIcon /></IconButton></Tooltip>
+        <Button variant="contained" color="error" startIcon={<WarningAmberOutlinedIcon />} onClick={() => navigate('/stucks')}>Stucks</Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<VideoCallOutlinedIcon />}
+          onClick={() => huddle.teamsLink ? window.location.assign(huddle.teamsLink) : unavailable('the Teams meeting link has not been added in huddle settings.')}
+        >
+          Join Meeting
+        </Button>
+      </Stack>
     </Stack>
-  </Stack>
   );
 };
 

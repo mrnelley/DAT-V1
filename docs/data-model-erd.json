@@ -20,7 +20,7 @@
     "actionItemStatus": ["open", "in_progress", "complete", "blocked", "cancelled"],
     "weeklyActionReportStatus": ["draft", "submitted", "reviewed", "locked"],
     "weeklyActionTaskStatus": ["open", "in_progress", "complete", "blocked", "cancelled", "carried_over"],
-    "weeklyAlignmentType": ["enterprise", "department"],
+    "weeklyAlignmentType": ["enterprise", "department", "both"],
     "stuckStatus": ["active", "resolved"],
     "workflowFrequency": ["once", "daily", "weekly", "monthly", "quarterly", "annual"]
   },
@@ -364,7 +364,7 @@
       },
       "relationships": {
         "keyObjectives": "KeyObjective[]",
-        "actionItems": "ActionItem[]",
+        "queuedTasks": "ActionItem[]",
         "calendarEvents": "CalendarEvent[]",
         "metrics": "Metric[]",
         "assignments": "WorkObjectAssignment[]"
@@ -485,7 +485,7 @@
       },
       "relationships": {
         "members": "HuddleMember[]",
-        "actionItems": "ActionItem[]",
+        "queuedTasks": "ActionItem[]",
         "calendarEvents": "CalendarEvent[]"
       }
     },
@@ -502,7 +502,8 @@
     },
     "ActionItem": {
       "table": "action_items",
-      "source": ["supabase", "src/data/mockData.js actionItems", "generated from weeklyPriorities.tasks"],
+      "source": ["supabase legacy action_items table", "src/data/mockData.js queuedTasks"],
+      "meaning": "Queued Task records shown in Task Views; not Weekly Tracker Action Items.",
       "primaryKey": "id",
       "fields": {
         "id": "uuid|string",
@@ -564,8 +565,8 @@
         "reportId": "WeeklyActionReport.id",
         "ownerId": "Profile.id",
         "departmentId": "Department.id|null",
-        "rank": "1|2|3",
-        "previousRank": "1|2|3|null",
+        "rank": "positive integer",
+        "previousRank": "positive integer|null",
         "carriedFromEntryId": "WeeklyActionEntry.id|null",
         "priorityId": "Priority.id|null",
         "workplanId": "Workplan.id|null",
@@ -592,7 +593,6 @@
         "id": "uuid|string",
         "organizationId": "Organization.id",
         "entryId": "WeeklyActionEntry.id",
-        "actionItemId": "ActionItem.id|null",
         "carryoverFromTaskId": "WeeklyActionTask.id|null",
         "ownerId": "Profile.id|null",
         "createdBy": "Profile.id|null",
@@ -657,7 +657,7 @@
         "organizationId": "Organization.id",
         "personStuckId": "Profile.id|null",
         "helpFromId": "Profile.id|null",
-        "sourceType": "string|null",
+        "sourceType": "queued_task|weekly_action_item|null",
         "sourceId": "uuid|string|null",
         "description": "string",
         "status": "stuckStatus",
@@ -667,7 +667,8 @@
         "updatedAt": "datetime"
       },
       "relationships": {
-        "calendarEvents": "CalendarEvent[]"
+        "calendarEvents": "CalendarEvent[]",
+        "source": "ActionItem|WeeklyActionTask|null"
       }
     },
     "CalendarEvent": {
@@ -1148,7 +1149,6 @@
     { "from": "WeeklyActionEntry.stuckId", "to": "Stuck.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.entryId", "to": "WeeklyActionEntry.id", "cardinality": "many-to-one" },
-    { "from": "WeeklyActionTask.actionItemId", "to": "ActionItem.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.carryoverFromTaskId", "to": "WeeklyActionTask.id", "cardinality": "self-reference" },
     { "from": "WeeklyActionTask.ownerId", "to": "Profile.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.createdBy", "to": "Profile.id", "cardinality": "many-to-one" },
@@ -1268,7 +1268,7 @@
     },
     {
       "area": "Action item hierarchy",
-      "gap": "Weekly tracker tasks now have persistence rows and can link to ActionItem records. Remaining production work is seeding canonical weekly report, entry, task, and action item IDs from real OLT submissions."
+      "gap": "Weekly Tracker Action Items persist only as WeeklyActionTask rows and remain separate from queued Task View records. Remaining production work is seeding canonical weekly report, entry, and Action Item IDs from real OLT submissions."
     },
     {
       "area": "Review requests",

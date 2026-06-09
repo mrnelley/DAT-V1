@@ -460,14 +460,14 @@ create table if not exists public.weekly_action_entries (
   report_id uuid not null references public.weekly_action_reports(id) on delete cascade,
   owner_id uuid not null references public.profiles(id) on delete cascade,
   department_id uuid references public.departments(id) on delete set null,
-  rank integer not null check (rank between 1 and 3),
-  previous_rank integer check (previous_rank between 1 and 3),
+  rank integer not null check (rank > 0),
+  previous_rank integer check (previous_rank > 0),
   carried_from_entry_id uuid references public.weekly_action_entries(id) on delete set null,
   priority_id uuid references public.priorities(id) on delete set null,
   workplan_id uuid references public.workplans(id) on delete set null,
   stuck_id uuid references public.stucks(id) on delete set null,
   title text not null,
-  alignment_type text not null default 'enterprise' check (alignment_type in ('enterprise', 'department')),
+  alignment_type text not null default 'enterprise' check (alignment_type in ('enterprise', 'department', 'both')),
   aligned_priority_label text,
   risk_support_note text,
   status public.work_signal_status not null default 'steady',
@@ -482,7 +482,6 @@ create table if not exists public.weekly_action_tasks (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
   entry_id uuid not null references public.weekly_action_entries(id) on delete cascade,
-  action_item_id uuid references public.action_items(id) on delete set null,
   carryover_from_task_id uuid references public.weekly_action_tasks(id) on delete set null,
   owner_id uuid references public.profiles(id) on delete set null,
   created_by uuid references public.profiles(id) on delete set null,
@@ -515,8 +514,12 @@ create table if not exists public.stucks (
   organization_id uuid not null references public.organizations(id) on delete cascade,
   person_stuck_id uuid references public.profiles(id) on delete set null,
   help_from_id uuid references public.profiles(id) on delete set null,
-  source_type text,
+  source_type text check (source_type is null or source_type in ('queued_task', 'weekly_action_item')),
   source_id uuid,
+  constraint stucks_source_pair_check check (
+    (source_type is null and source_id is null)
+    or (source_type is not null and source_id is not null)
+  ),
   description text not null,
   status text not null default 'active',
   stuck_since timestamptz not null default now(),
@@ -524,6 +527,70 @@ create table if not exists public.stucks (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create or replace function public.validate_stuck_source()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.source_type is null and new.source_id is null then
+    return new;
+  end if;
+
+  if new.source_type is null or new.source_id is null then
+    raise exception 'A stuck source requires both source_type and source_id';
+  end if;
+
+  if new.source_type = 'queued_task' and not exists (
+    select 1 from public.action_items where id = new.source_id
+  ) then
+    raise exception 'Stuck source queued_task % does not exist', new.source_id;
+  end if;
+
+  if new.source_type = 'weekly_action_item' and not exists (
+    select 1 from public.weekly_action_tasks where id = new.source_id
+  ) then
+    raise exception 'Stuck source weekly_action_item % does not exist', new.source_id;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_stuck_source_reference on public.stucks;
+create trigger validate_stuck_source_reference
+before insert or update of source_type, source_id on public.stucks
+for each row execute function public.validate_stuck_source();
+
+create or replace function public.prevent_deleting_referenced_stuck_source()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if exists (
+    select 1
+    from public.stucks
+    where source_type = tg_argv[0]
+      and source_id = old.id
+  ) then
+    raise exception 'Cannot delete % % while a stuck references it', tg_argv[0], old.id;
+  end if;
+
+  return old;
+end;
+$$;
+
+drop trigger if exists prevent_deleting_referenced_action_item on public.action_items;
+create trigger prevent_deleting_referenced_action_item
+before delete on public.action_items
+for each row execute function public.prevent_deleting_referenced_stuck_source('queued_task');
+
+drop trigger if exists prevent_deleting_referenced_weekly_action_task on public.weekly_action_tasks;
+create trigger prevent_deleting_referenced_weekly_action_task
+before delete on public.weekly_action_tasks
+for each row execute function public.prevent_deleting_referenced_stuck_source('weekly_action_item');
 
 create table if not exists public.calendar_events (
   id uuid primary key default gen_random_uuid(),
@@ -952,6 +1019,7 @@ create index if not exists idx_weekly_action_reports_week on public.weekly_actio
 create index if not exists idx_weekly_action_entries_report on public.weekly_action_entries(report_id, owner_id, rank);
 create index if not exists idx_weekly_action_entries_links on public.weekly_action_entries(priority_id, workplan_id, stuck_id);
 create index if not exists idx_weekly_action_tasks_entry on public.weekly_action_tasks(entry_id, status, due_on);
+create index if not exists idx_stucks_source on public.stucks(source_type, source_id);
 create index if not exists idx_work_object_assignments_source on public.work_object_assignments(source_type, source_id);
 create index if not exists idx_work_object_assignments_profile on public.work_object_assignments(profile_id, assignment_role);
 create index if not exists idx_workplan_huddle_reviews_workplan on public.workplan_huddle_reviews(workplan_id, decision);

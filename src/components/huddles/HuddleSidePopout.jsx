@@ -1,12 +1,15 @@
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Box, List, ListItemButton, ListItemText, Typography } from '@mui/material';
+import { Box, Button, List, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { huddles } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 
 const HuddleSidePopout = ({ onClose, onInteract, open, navOpen }) => {
   const navigate = useNavigate();
+  const { huddles } = useOperatingData();
   if (!open) return null;
+
   const renderGroup = (title, items) => (
     <Box sx={{ mb: 2 }}>
       <Typography variant="h4" sx={{ px: 2, py: 1 }}>{title}</Typography>
@@ -52,8 +55,11 @@ const HuddleSidePopout = ({ onClose, onInteract, open, navOpen }) => {
         display: { xs: 'none', md: 'block' },
       }}
     >
+      <Button fullWidth startIcon={<AddOutlinedIcon />} onClick={() => { navigate('/huddles/new'); onClose(); }} sx={{ mb: 1 }}>
+        Schedule Huddle
+      </Button>
       {renderGroup('Today', huddles.filter((huddle) => huddle.when === 'today'))}
-      {renderGroup('Future', huddles.filter((huddle) => huddle.when === 'future'))}
+      {renderGroup('Future', huddles.filter((huddle) => huddle.when !== 'today'))}
     </Box>
   );
 };

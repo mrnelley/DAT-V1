@@ -19,6 +19,26 @@
     {
       "source": "/initiatives/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/huddles",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/huddles/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/weekly-tracker",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/task-views",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/stucks",
+      "destination": "/index.html"
     }
   ]
 }

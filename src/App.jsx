@@ -6,6 +6,8 @@ import LoginPage from './components/auth/LoginPage';
 import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
 import DashboardPage from './components/dashboard/DashboardPage';
 import HuddlesPage from './components/huddles/HuddlesPage';
+import HuddleFormPage from './components/huddles/HuddleFormPage';
+import HuddleItemPage from './components/huddles/HuddleItemPage';
 import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
 import LearnDictionaryPage from './components/learn/LearnDictionaryPage';
@@ -26,6 +28,7 @@ import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
 import { FeatureAccessProvider } from './context/FeatureAccessContext';
 import { NotificationsProvider } from './context/NotificationsContext';
 import { CalendarEventProvider } from './context/CalendarEventContext';
+import { OperatingDataProvider } from './context/OperatingDataContext';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
 import theme from './theme';
@@ -47,6 +50,9 @@ const AnimatedRoutes = () => {
         <Route path="/initiatives" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
         <Route path="/initiatives/:id" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
         <Route path="/huddles" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
+        <Route path="/huddles/new" element={<FeatureGate featureKey="huddles"><HuddleFormPage /></FeatureGate>} />
+        <Route path="/huddles/:id/settings" element={<FeatureGate featureKey="huddles"><HuddleFormPage /></FeatureGate>} />
+        <Route path="/huddles/:id/items/new" element={<FeatureGate featureKey="huddles"><HuddleItemPage /></FeatureGate>} />
         <Route path="/huddles/:id" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
         <Route path="/stucks" element={<FeatureGate featureKey="stucks"><StucksPage /></FeatureGate>} />
         <Route path="/culture/team-health" element={<FeatureGate featureKey="teamHealth"><CompassDestinationPage page="teamHealth" /></FeatureGate>} />
@@ -80,11 +86,13 @@ const ProtectedApp = () => {
     <CurbAppealProvider>
       <FeatureAccessProvider>
         <NotificationsProvider>
-          <CalendarEventProvider>
-            <AppShell>
-              <AnimatedRoutes />
-            </AppShell>
-          </CalendarEventProvider>
+          <OperatingDataProvider>
+            <CalendarEventProvider>
+              <AppShell>
+                <AnimatedRoutes />
+              </AppShell>
+            </CalendarEventProvider>
+          </OperatingDataProvider>
         </NotificationsProvider>
       </FeatureAccessProvider>
     </CurbAppealProvider>

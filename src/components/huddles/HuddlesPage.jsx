@@ -1,54 +1,83 @@
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import { Box, IconButton, List, ListItem, ListItemIcon, ListItemText, Tab, Tabs, TextField, Typography } from '@mui/material';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { Box, Button, Chip, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useActionFeedback } from '../../context/ActionFeedbackContext';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import HuddleHeader from './HuddleHeader';
 import MembersPanel from './MembersPanel';
 import MonthlyTargets from './MonthlyTargets';
 
+const HuddleDirectory = ({ huddles }) => {
+  const navigate = useNavigate();
+
+  return (
+    <PageWrapper>
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 2 }}>
+        <Box>
+          <Typography variant="h1">Huddles</Typography>
+          <Typography variant="body2">Schedule operating conversations, choose members, and prepare the items the group needs to work.</Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddOutlinedIcon />} onClick={() => navigate('/huddles/new')}>Schedule Huddle</Button>
+      </Stack>
+      <List sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        {huddles.map((huddle) => (
+          <ListItemButton key={huddle.id} divider onClick={() => navigate(`/huddles/${huddle.id}`)}>
+            <ListItemText primary={huddle.name} secondary={`${huddle.date} - ${huddle.recurrence} - ${huddle.memberIds.length} members`} />
+            <Chip label={huddle.when === 'today' ? 'Today' : 'Upcoming'} color={huddle.when === 'today' ? 'primary' : 'default'} size="small" />
+          </ListItemButton>
+        ))}
+      </List>
+    </PageWrapper>
+  );
+};
+
 const HuddlesPage = () => {
-  const { id = 'daily-ops' } = useParams();
-  const { unavailable } = useActionFeedback();
+  const { id } = useParams();
+  const { getHuddle, huddles, updateHuddle } = useOperatingData();
   const [tab, setTab] = useState(0);
   const [metric, setMetric] = useState(null);
+
+  if (!id) return <HuddleDirectory huddles={huddles} />;
+
+  const huddle = getHuddle(id);
+  if (!huddle) return <HuddleDirectory huddles={huddles} />;
+  const agendaItems = [...(huddle.agenda || []), ...(huddle.items || []).map((item) => item.title)];
 
   return (
     <PageWrapper>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 1fr' }, gap: 3 }}>
         <Box>
-          <HuddleHeader name={id.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join(' ')} />
+          <HuddleHeader huddle={huddle} />
           <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>
             <Tab label="Agenda" />
             <Tab label="Description" />
           </Tabs>
           {tab === 0 ? (
             <List>
-              {['Review monthly targets', 'Discuss stucks and owner follow-up', 'Confirm top actions'].map((item) => (
+              {agendaItems.map((item) => (
                 <ListItem key={item}>
                   <ListItemIcon><FiberManualRecordIcon color="secondary" fontSize="small" /></ListItemIcon>
                   <ListItemText primary={item} />
                 </ListItem>
               ))}
             </List>
-          ) : <Typography variant="body2">Weekly operating rhythm for surfacing progress, blockers, and commitments.</Typography>}
+          ) : <Typography variant="body2">{huddle.description}</Typography>}
           <MonthlyTargets onMetricClick={setMetric} />
           <Typography variant="h4" sx={{ mb: 1 }}>Private Notes</Typography>
-          <TextField multiline minRows={5} fullWidth placeholder="Click or Tap to enter something..." sx={{ mb: 3 }} />
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Typography variant="h4" sx={{ flex: 1 }}>Documents</Typography>
-            <IconButton aria-label="Add huddle document" onClick={() => unavailable('document uploads need file storage configuration.')}><AddOutlinedIcon /></IconButton>
-          </Box>
-          <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary', bgcolor: 'background.paper', borderRadius: 2 }}>
-            <DescriptionOutlinedIcon />
-            <Typography variant="body2">No documents yet</Typography>
-          </Box>
+          <TextField
+            multiline
+            minRows={5}
+            fullWidth
+            defaultValue={huddle.privateNotes || ''}
+            placeholder="Click or tap to enter something..."
+            onBlur={(event) => updateHuddle(huddle.id, { privateNotes: event.target.value })}
+            sx={{ mb: 3 }}
+          />
         </Box>
-        <MembersPanel />
+        <MembersPanel memberIds={huddle.memberIds} />
       </Box>
       <KpiDetailModal metric={metric} open={Boolean(metric)} onClose={() => setMetric(null)} />
     </PageWrapper>

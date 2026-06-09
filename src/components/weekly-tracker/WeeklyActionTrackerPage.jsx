@@ -3,16 +3,19 @@ import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
-import { weeklyActionEntries, weeklyActionReports, weeklyTrackerParticipants, users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { departmentWorkplans, priorities, weeklyActionEntries, weeklyActionReports, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
+import AddStuckModal from '../stucks/AddStuckModal';
 
 const statusLabels = {
   alert: 'Off Track',
@@ -30,12 +33,8 @@ const statusColors = {
 
 const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over'];
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
-const alignmentTypes = [
-  { label: 'Company objective', value: 'enterprise' },
-  { label: 'Department priority', value: 'department' },
-];
-
 const baseReport = weeklyActionReports[0];
+const weeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
 
 const weekOptions = [
   {
@@ -92,15 +91,15 @@ const buildTaskForm = (entry, user) => ({
 });
 
 const buildPriorityForm = (entry, user) => ({
-  alignedPriorityLabel: entry?.alignedPriorityLabel || '',
-  alignmentType: entry?.alignmentType || 'department',
   due: entry?.due || '2026-05-22',
   firstTaskDue: entry?.due || '2026-05-22',
   firstTaskOwnerId: user.id,
   firstTaskTitle: '',
+  priorityId: entry?.priorityId || '',
   riskSupportNote: entry?.riskSupportNote || '',
   status: entry?.status === 'no_data' ? 'steady' : entry?.status || 'steady',
   title: entry?.title || '',
+  workplanId: entry?.workplanId || '',
 });
 
 const buildEmptyEntry = (participant, rank, report) => ({
@@ -145,6 +144,17 @@ const buildEntriesForWeek = (report) => {
   return weeklyActionEntries.map((entry) => cloneEntryForReport(entry, report, mode));
 };
 
+const readEntriesByWeek = () => {
+  const fallback = Object.fromEntries(weekOptions.map((week) => [week.id, buildEntriesForWeek(week)]));
+  if (typeof window === 'undefined') return fallback;
+
+  try {
+    return JSON.parse(window.localStorage.getItem(weeklyTrackerStorageKey)) || fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const normalizeTaskStatus = (status) => {
   const normalized = String(status || 'open').toLowerCase().replaceAll(' ', '_');
   return taskStatuses.includes(normalized) ? normalized : 'open';
@@ -159,17 +169,24 @@ const canManageWeeklyEntry = (entry, user) => (
 const WeeklyActionTrackerPage = () => {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
+  const {
+    addStuck,
+    getTasksForUser,
+    registerWeeklyActionItem,
+    removeWeeklyActionItem,
+    stucks,
+    updateWeeklyActionItem,
+  } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('all');
   const [selectedWeekId, setSelectedWeekId] = useState(baseReport.id);
-  const [entriesByWeek, setEntriesByWeek] = useState(() => Object.fromEntries(
-    weekOptions.map((week) => [week.id, buildEntriesForWeek(week)]),
-  ));
+  const [entriesByWeek, setEntriesByWeek] = useState(readEntriesByWeek);
   const [priorityForm, setPriorityForm] = useState(buildPriorityForm(null, user));
   const [priorityDialogEntry, setPriorityDialogEntry] = useState(null);
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [taskForm, setTaskForm] = useState(buildTaskForm(null, user));
   const [taskDialogEntry, setTaskDialogEntry] = useState(null);
+  const [stuckTask, setStuckTask] = useState(null);
   const report = weekOptions.find((week) => week.id === selectedWeekId) || weekOptions[1];
   const entries = entriesByWeek[selectedWeekId] || [];
   const setCurrentEntries = (updater) => setEntriesByWeek((current) => ({
@@ -178,7 +195,7 @@ const WeeklyActionTrackerPage = () => {
       ? updater(current[selectedWeekId] || [])
       : updater,
   }));
-  const rows = useMemo(() => weeklyTrackerParticipants.map((participant) => {
+  const rows = useMemo(() => users.map((participant) => {
     const participantEntries = entries
       .filter((entry) => entry.owner.id === participant.id)
       .sort((a, b) => a.rank - b.rank);
@@ -210,6 +227,10 @@ const WeeklyActionTrackerPage = () => {
   const visibleRows = scope === 'mine'
     ? rows.filter((row) => row.participant.id === user.id || row.entries.some((entry) => entry?.tasks?.some((task) => task.owner.id === user.id)))
     : rows;
+
+  useEffect(() => {
+    window.localStorage.setItem(weeklyTrackerStorageKey, JSON.stringify(entriesByWeek));
+  }, [entriesByWeek]);
 
   useEffect(() => {
     const entryParam = searchParams.get('entry');
@@ -251,6 +272,8 @@ const WeeklyActionTrackerPage = () => {
     if (!priorityDialogEntry || !priorityForm.title.trim()) return;
 
     const owner = priorityDialogEntry.owner;
+    const linkedPriority = priorities.find((candidate) => candidate.id === priorityForm.priorityId);
+    const linkedWorkplan = departmentWorkplans.find((candidate) => candidate.id === priorityForm.workplanId);
     const taskOwner = users.find((candidate) => candidate.id === priorityForm.firstTaskOwnerId) || user;
     const firstTask = priorityForm.firstTaskTitle.trim()
       ? [{
@@ -269,16 +292,27 @@ const WeeklyActionTrackerPage = () => {
       entry.id === priorityDialogEntry.id
         ? {
           ...entry,
-          alignedPriorityLabel: priorityForm.alignedPriorityLabel,
-          alignmentType: priorityForm.alignmentType,
+          alignedPriorityLabel: [linkedPriority?.name, linkedWorkplan?.title].filter(Boolean).join(' + '),
+          alignmentType: linkedPriority && linkedWorkplan ? 'both' : linkedPriority ? 'enterprise' : 'department',
           due: priorityForm.due,
+          priorityId: linkedPriority?.id || null,
           riskSupportNote: priorityForm.riskSupportNote,
           status: priorityForm.status,
           tasks: [...firstTask, ...(entry.tasks || [])],
           title: priorityForm.title.trim(),
+          workplanId: linkedWorkplan?.id || null,
         }
         : entry
     )));
+    firstTask.forEach((task) => registerWeeklyActionItem({
+      ...task,
+      description: task.title,
+      entryId: priorityDialogEntry.id,
+      sourceId: task.id,
+      sourceLabel: priorityForm.title.trim(),
+      sourceType: 'weekly_action_item',
+      weeklyPriorityTitle: priorityForm.title.trim(),
+    }));
     addNotification({
       actionPath: `/weekly-tracker?entry=${priorityDialogEntry.id}`,
       actor: user,
@@ -323,6 +357,15 @@ const WeeklyActionTrackerPage = () => {
         ? { ...entry, tasks: [task, ...(entry.tasks || [])] }
         : entry
     )));
+    registerWeeklyActionItem({
+      ...task,
+      description: task.title,
+      entryId: taskForm.entryId,
+      sourceId: task.id,
+      sourceLabel: taskDialogEntry.title,
+      sourceType: 'weekly_action_item',
+      weeklyPriorityTitle: taskDialogEntry.title,
+    });
     addNotification({
       actionPath: `/weekly-tracker?entry=${taskForm.entryId}`,
       actor: user,
@@ -343,6 +386,7 @@ const WeeklyActionTrackerPage = () => {
         ? { ...entry, tasks: entry.tasks.map((task) => task.id === taskId ? { ...task, status, carriedOver: status === 'carried_over' } : task) }
         : entry
     )));
+    updateWeeklyActionItem(taskId, { status });
   };
 
   const deleteTask = (entryId, taskId) => {
@@ -351,6 +395,7 @@ const WeeklyActionTrackerPage = () => {
         ? { ...entry, tasks: entry.tasks.filter((task) => task.id !== taskId) }
         : entry
     )));
+    removeWeeklyActionItem(taskId);
   };
 
   const carryEntryForward = (entryId) => {
@@ -388,7 +433,7 @@ const WeeklyActionTrackerPage = () => {
         <Box>
           <Typography variant="h1">Weekly Tracker</Typography>
           <Typography variant="body2" color="text.secondary">
-            OLT members define weekly priorities here, then assign supporting tasks pursuant to the week's priorities.
+            Users define weekly priorities here, then assign Action Items pursuant to the week's priorities.
           </Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">
@@ -470,7 +515,7 @@ const WeeklyActionTrackerPage = () => {
                           </Button>
                         </Stack>
                         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                          <Chip label={entry.alignmentType === 'enterprise' ? 'Enterprise aligned' : 'Department aligned'} size="small" variant="outlined" />
+                          <Chip label={entry.alignmentType === 'both' ? 'Enterprise + workplan aligned' : entry.alignmentType === 'enterprise' ? 'Enterprise aligned' : 'Workplan aligned'} size="small" variant="outlined" />
                           {movement && <Chip icon={<ArrowForwardOutlinedIcon />} label={movement} size="small" color={movement === 'Same rank' ? 'default' : 'secondary'} variant="outlined" />}
                           {entry.carriedFromEntryId && <Chip label="Carried forward" size="small" color="warning" />}
                         </Stack>
@@ -484,15 +529,15 @@ const WeeklyActionTrackerPage = () => {
                         )}
                         <Divider sx={{ my: 1 }} />
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="caption" fontWeight={800}>Tasks</Typography>
+                          <Typography variant="caption" fontWeight={800}>Action Items</Typography>
                           <Stack direction="row" gap={0.5}>
                             <Tooltip title="Carry priority into next week">
                               <IconButton size="small" aria-label={`Carry forward ${entry.title}`} onClick={() => carryEntryForward(entry.id)}>
                                 <ArrowForwardOutlinedIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Add task">
-                              <IconButton size="small" aria-label={`Add task for ${entry.title}`} onClick={() => openTaskDialog(entry)}>
+                            <Tooltip title="Add Action Item">
+                              <IconButton size="small" aria-label={`Add action item for ${entry.title}`} onClick={() => openTaskDialog(entry)}>
                                 <AddOutlinedIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -513,10 +558,29 @@ const WeeklyActionTrackerPage = () => {
                               <TextField select size="small" value={normalizeTaskStatus(task.status)} onChange={(event) => updateTaskStatus(entry.id, task.id, event.target.value)} sx={{ width: 128 }}>
                                 {taskStatuses.map((status) => <MenuItem key={status} value={status}>{status.replace('_', ' ')}</MenuItem>)}
                               </TextField>
-                              <Tooltip title="Delete task">
-                                <IconButton size="small" aria-label={`Delete task ${task.title}`} onClick={() => deleteTask(entry.id, task.id)}>
-                                  <DeleteOutlineOutlinedIcon fontSize="small" />
-                                </IconButton>
+                              <Tooltip title={stucks.some((stuck) => stuck.sourceId === task.id) ? 'Resolve the linked stuck before deleting this Action Item' : 'Delete Action Item'}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    disabled={stucks.some((stuck) => stuck.sourceId === task.id)}
+                                    aria-label={`Delete action item ${task.title}`}
+                                    onClick={() => deleteTask(entry.id, task.id)}
+                                  >
+                                    <DeleteOutlineOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title={task.owner.id === user.id ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    disabled={task.owner.id !== user.id}
+                                    aria-label={`Issue a stuck for action item ${task.title}`}
+                                    onClick={() => setStuckTask({ ...task, sourceType: 'weekly_action_item' })}
+                                  >
+                                    <WarningAmberOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
                               </Tooltip>
                             </ListItem>
                           ))}
@@ -565,20 +629,15 @@ const WeeklyActionTrackerPage = () => {
               onChange={updatePriorityForm('title')}
               fullWidth
             />
-            <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-              <TextField select label="Alignment" value={priorityForm.alignmentType} onChange={updatePriorityForm('alignmentType')} fullWidth>
-                {alignmentTypes.map((alignmentType) => (
-                  <MenuItem key={alignmentType.value} value={alignmentType.value}>{alignmentType.label}</MenuItem>
-                ))}
-              </TextField>
-              <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
-            </Stack>
-            <TextField
-              label="Aligned priority or workplan"
-              value={priorityForm.alignedPriorityLabel}
-              onChange={updatePriorityForm('alignedPriorityLabel')}
-              fullWidth
-            />
+            <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
+            <TextField select label="Enterprise Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
+              <MenuItem value="">No enterprise priority link</MenuItem>
+              {priorities.map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
+            </TextField>
+            <TextField select label="Department Workplan (optional)" value={priorityForm.workplanId} onChange={updatePriorityForm('workplanId')} fullWidth>
+              <MenuItem value="">No workplan link</MenuItem>
+              {departmentWorkplans.map((workplan) => <MenuItem key={workplan.id} value={workplan.id}>{workplan.department} - {workplan.title}</MenuItem>)}
+            </TextField>
             <TextField select label="Priority health" value={priorityForm.status} onChange={updatePriorityForm('status')} fullWidth>
               {weeklyPriorityStatuses.map((status) => (
                 <MenuItem key={status} value={status}>{statusLabels[status]}</MenuItem>
@@ -594,22 +653,22 @@ const WeeklyActionTrackerPage = () => {
             />
             <Divider />
             <Box>
-              <Typography variant="subtitle2">First supporting task</Typography>
+              <Typography variant="subtitle2">First Action Item</Typography>
               <Typography variant="body2" color="text.secondary">
                 Optional, but useful when the priority already has a first move.
               </Typography>
             </Box>
             <TextField
-              label="Supporting task"
+              label="Action Item"
               value={priorityForm.firstTaskTitle}
               onChange={updatePriorityForm('firstTaskTitle')}
               fullWidth
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-              <TextField select label="Task owner" value={priorityForm.firstTaskOwnerId} onChange={updatePriorityForm('firstTaskOwnerId')} fullWidth>
+              <TextField select label="Action Item owner" value={priorityForm.firstTaskOwnerId} onChange={updatePriorityForm('firstTaskOwnerId')} fullWidth>
                 {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
               </TextField>
-              <TextField label="Task due date" type="date" value={priorityForm.firstTaskDue} onChange={updatePriorityForm('firstTaskDue')} fullWidth InputLabelProps={{ shrink: true }} />
+              <TextField label="Action Item due date" type="date" value={priorityForm.firstTaskDue} onChange={updatePriorityForm('firstTaskDue')} fullWidth InputLabelProps={{ shrink: true }} />
             </Stack>
           </Stack>
         </DialogContent>
@@ -642,7 +701,11 @@ const WeeklyActionTrackerPage = () => {
                   <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Alignment</Typography>
                   <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>{selectedEntry.alignedPriorityLabel || 'No alignment set'}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {selectedEntry.alignmentType === 'enterprise' ? 'Company objective' : 'Department priority'}
+                    {selectedEntry.alignmentType === 'both'
+                      ? 'Enterprise priority and department workplan'
+                      : selectedEntry.alignmentType === 'enterprise'
+                        ? 'Enterprise priority'
+                        : 'Department workplan'}
                   </Typography>
                 </Box>
                 <Box sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
@@ -655,11 +718,11 @@ const WeeklyActionTrackerPage = () => {
 
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
                 <Box>
-                  <Typography variant="h3">Supporting Tasks</Typography>
-                  <Typography variant="body2">Tasks are the concrete work attached to this weekly priority.</Typography>
+                  <Typography variant="h3">Action Items</Typography>
+                  <Typography variant="body2">Action Items are the concrete tasks attached to this weekly priority.</Typography>
                 </Box>
                 <Button startIcon={<AddOutlinedIcon />} onClick={() => openTaskDialog(selectedEntry)}>
-                  Add Task
+                  Add Action Item
                 </Button>
               </Stack>
 
@@ -678,7 +741,7 @@ const WeeklyActionTrackerPage = () => {
                   </ListItem>
                 )) : (
                   <ListItem disableGutters sx={{ borderTop: '1px solid', borderColor: 'divider', py: 1 }}>
-                    <Typography variant="body2" color="text.secondary">No tasks have been added yet.</Typography>
+                    <Typography variant="body2" color="text.secondary">No Action Items have been added yet.</Typography>
                   </ListItem>
                 )}
               </List>
@@ -694,11 +757,11 @@ const WeeklyActionTrackerPage = () => {
       </Dialog>
 
       <Dialog open={Boolean(taskDialogEntry)} onClose={closeTaskDialog} fullWidth maxWidth="sm">
-        <DialogTitle>Add Weekly Tracker Task</DialogTitle>
+        <DialogTitle>Add Action Item</DialogTitle>
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">{taskDialogEntry?.title}</Typography>
-            <TextField label="Task" value={taskForm.title} onChange={updateTaskForm('title')} fullWidth />
+            <TextField label="Action Item" value={taskForm.title} onChange={updateTaskForm('title')} fullWidth />
             <TextField select label="Owner" value={taskForm.ownerId} onChange={updateTaskForm('ownerId')} fullWidth>
               {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
             </TextField>
@@ -712,9 +775,20 @@ const WeeklyActionTrackerPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeTaskDialog}>Cancel</Button>
-          <Button variant="contained" onClick={addTask} disabled={!taskForm.title.trim()}>Add Task</Button>
+          <Button variant="contained" onClick={addTask} disabled={!taskForm.title.trim()}>Add Action Item</Button>
         </DialogActions>
       </Dialog>
+      <AddStuckModal
+        initialTask={stuckTask}
+        open={Boolean(stuckTask)}
+        onClose={() => setStuckTask(null)}
+        onSave={(stuck) => {
+          addStuck(stuck);
+          setStuckTask(null);
+        }}
+        tasks={getTasksForUser(user.id)}
+        user={user}
+      />
     </PageWrapper>
   );
 };

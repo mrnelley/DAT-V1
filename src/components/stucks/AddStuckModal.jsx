@@ -1,21 +1,75 @@
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
-import { motion } from 'framer-motion';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { users } from '../../data/mockData';
-import { formatDateTime } from '../../utils/formatters';
 
-const AddStuckModal = ({ open, onClose, onSave }) => (
-  <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle>Add New Stuck</DialogTitle>
-    <DialogContent component={motion.div} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} sx={{ display: 'grid', gap: 2, pt: 1 }}>
-      <TextField label="Stuck Description" multiline minRows={4} required />
-      <Autocomplete options={users} getOptionLabel={(option) => option.name} renderInput={(params) => <TextField {...params} label="Need Help From" required />} />
-      <TextField label="Stuck Since" value={formatDateTime(new Date())} InputProps={{ readOnly: true }} />
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Cancel</Button>
-      <Button variant="contained" onClick={onSave}>Save</Button>
-    </DialogActions>
-  </Dialog>
-);
+const buildForm = (user, initialTask) => ({
+  description: '',
+  helpFromId: '',
+  sourceId: initialTask?.id || '',
+  personStuckId: user.id,
+});
+
+const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user }) => {
+  const [form, setForm] = useState(() => buildForm(user, initialTask));
+
+  useEffect(() => {
+    if (open) setForm(buildForm(user, initialTask));
+  }, [initialTask, open, user]);
+
+  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+
+  const save = () => {
+    const sourceTask = tasks.find((task) => task.id === form.sourceId);
+    const helpFrom = users.find((candidate) => candidate.id === form.helpFromId);
+    if (!sourceTask || !helpFrom || !form.description.trim()) return;
+
+    onSave({
+      description: form.description.trim(),
+      helpFrom,
+      id: `stuck-${Date.now()}`,
+      personStuck: user,
+      personStuckId: user.id,
+      since: new Date().toISOString(),
+      sourceId: sourceTask.id,
+      sourceLabel: sourceTask.description || sourceTask.title,
+      sourceType: sourceTask.sourceType || 'queued_task',
+      status: 'active',
+    });
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Issue a Stuck</DialogTitle>
+      <DialogContent>
+        <Stack gap={2} sx={{ pt: 1 }}>
+          <TextField select label="Task I am stuck on" value={form.sourceId} onChange={update('sourceId')} fullWidth required>
+            {tasks.map((task) => (
+              <MenuItem key={task.id} value={task.id}>
+                {task.description || task.title} - {task.sourceType === 'weekly_action_item' ? 'Weekly Action Item' : 'Task Views'}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField label="Stuck Description" value={form.description} onChange={update('description')} multiline minRows={3} required />
+          <TextField select label="Need Help From" value={form.helpFromId} onChange={update('helpFromId')} fullWidth required>
+            {users.filter((candidate) => candidate.id !== user.id).map((candidate) => (
+              <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>
+            ))}
+          </TextField>
+          <TextField label="Person Stuck" value={`${user.name} - ${user.department}`} InputProps={{ readOnly: true }} />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={save}
+          disabled={!form.description.trim() || !form.helpFromId || !form.sourceId}
+        >
+          Issue Stuck
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 export default AddStuckModal;

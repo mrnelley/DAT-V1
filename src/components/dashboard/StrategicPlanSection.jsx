@@ -6,7 +6,7 @@ import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { actionItems, departmentWorkplans, initiatives, priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
+import { departmentWorkplans, initiatives, priorities, q2Roadmap, queuedTasks, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -266,7 +266,7 @@ const StrategicPlanSection = () => {
     const pillarWorkplans = departmentWorkplans.filter((workplan) => workplan.strategicPillarId === pillar.id);
     const pillarInitiatives = initiatives.filter((initiative) => initiative.strategicPillarId === pillar.id);
     const pillarPriorities = flatPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
-    const pillarActions = actionItems.filter((item) => item.strategicPillarId === pillar.id);
+    const pillarActions = queuedTasks.filter((item) => item.strategicPillarId === pillar.id);
     const attentionCount = pillarWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length;
 
     return {
@@ -404,7 +404,7 @@ const StrategicPlanSection = () => {
             <Chip icon={<AccountTreeOutlinedIcon />} label={`${strategicPlan2030.pillars.length} pillars`} color="primary" />
             <Chip label={`${strategicPlan2030.pillars.reduce((total, pillar) => total + pillar.successMetrics.length, 0)} success metrics`} variant="outlined" />
             <Chip icon={<FlagOutlinedIcon />} label={`${departmentWorkplans.length} workplans`} variant="outlined" />
-            <Chip icon={<TaskAltOutlinedIcon />} label={`${actionItems.length} tracked actions`} variant="outlined" />
+            <Chip icon={<TaskAltOutlinedIcon />} label={`${queuedTasks.length} queued tasks`} variant="outlined" />
           </Stack>
         </Stack>
       </Box>

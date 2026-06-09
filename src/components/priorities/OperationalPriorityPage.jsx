@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { actionItems, departmentWorkplans, priorities, q2Roadmap, stucks, weeklyPriorities } from '../../data/mockData';
+import { departmentWorkplans, priorities, q2Roadmap, queuedTasks, stucks, weeklyPriorities } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EmptyState from '../shared/EmptyState';
@@ -75,14 +75,7 @@ const getRelatedWork = (priority) => {
     item.organizationalPriority === priority.name
     || matchesPriority(item.alignedTo, priority)
   ));
-  const weeklyActionIds = new Set(relatedWeekly.flatMap((item) => [
-    `action-${item.id}`,
-    ...(item.tasks || []).map((task) => `action-${task.id}`),
-  ]));
-  const relatedActions = actionItems.filter((item) => (
-    item.priority === priority.name
-    || weeklyActionIds.has(item.id)
-  ));
+  const relatedActions = queuedTasks.filter((item) => item.priority === priority.name);
   const ownerIds = new Set(priority.ownerIds || []);
   const relatedStucks = stucks.filter((stuck) => (
     ownerIds.has(stuck.personStuck?.id)

@@ -1494,7 +1494,6 @@ export const weeklyActionEntries = weeklyTrackerParticipants.flatMap((participan
       tasks: priority.tasks.map((task) => ({
         id: `wat-${task.id}`,
         entryId: `wae-${priority.id}`,
-        actionItemId: `action-${task.id}`,
         owner: task.owner,
         createdBy: priority.owner,
         title: task.title,
@@ -1517,42 +1516,10 @@ export const stucks = [
   { id: 's2', description: 'Need vendor confirmation for elevator repair timeline', personStuck: users[2], helpFrom: users[3], since: '2026-04-01T11:10:00' },
 ];
 
-const weeklyPriorityActionItems = weeklyPriorities.flatMap((priority) => [
-  {
-    id: `action-${priority.id}`,
-    description: priority.outcome,
-    owner: priority.owner,
-    createdBy: priority.owner,
-    department: priority.department,
-    due: priority.due,
-    status: 'Open',
-    visibility: 'private',
-    source: 'weekly_tracker',
-    priority: priority.organizationalPriority || priority.alignedTo,
-    strategicPillarId: priority.strategicPillarId,
-    strategicPillar: priority.strategicPillar,
-  },
-  ...priority.tasks.map((task) => ({
-    id: `action-${task.id}`,
-    description: task.title,
-    owner: task.owner,
-    createdBy: priority.owner,
-    department: task.owner?.department || priority.department,
-    due: task.due,
-    status: task.status,
-    visibility: 'private',
-    source: 'weekly_tracker',
-    priority: `Support: ${priority.outcome}`,
-    strategicPillarId: priority.strategicPillarId,
-    strategicPillar: priority.strategicPillar,
-  })),
-]);
-
-export const actionItems = [
+export const queuedTasks = [
   { id: 'a1', description: 'Send final Q2 priority draft to ELT', owner: users[0], createdBy: users[0], department: users[0].department, due: '2026-05-05', status: 'Open', visibility: 'olt', source: 'one_off', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
   { id: 'a2', description: 'Upload maintenance backlog export', owner: users[2], createdBy: users[0], department: users[2].department, due: '2026-05-03', status: 'In Progress', visibility: 'department', source: 'one_off', priority: 'Operational Efficiency', strategicPillarId: 'agility-capacity', strategicPillar: strategicPillarById['agility-capacity'].name },
   { id: 'a3', description: 'Confirm agenda for resident services huddle', owner: users[6], createdBy: users[6], department: users[6].department, due: '2026-05-10', status: 'Open', visibility: 'private', source: 'one_off', priority: 'Resident Experience / Customer Service', strategicPillarId: 'care-connection', strategicPillar: strategicPillarById['care-connection'].name },
-  ...weeklyPriorityActionItems,
 ];
 
 export const notificationEvents = [
@@ -2190,7 +2157,7 @@ const normalizeCompassStatuses = (value) => {
 };
 
 [
-  actionItems,
+  queuedTasks,
   advocacyInitiatives,
   advocacyPriorities,
   advocacyWorkplans,

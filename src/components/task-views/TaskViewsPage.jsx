@@ -4,16 +4,17 @@ import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useNotifications } from '../../context/NotificationsContext';
-import { actionItems as taskItems, users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { departmentWorkplans, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
+import AddStuckModal from '../stucks/AddStuckModal';
 
 const chipColor = (due) => {
   const today = '2026-05-13';
@@ -32,10 +33,7 @@ const visibilityLabels = {
   organization: 'All users',
 };
 
-const sourceLabels = {
-  one_off: 'Queued task',
-  weekly_tracker: 'Weekly Tracker',
-};
+const sourceLabels = { one_off: 'Queued task' };
 
 const taskViewOptions = ['Assigned to Me', 'Assigned by Me', 'Due This Week', 'Department', 'All Visible'];
 
@@ -51,6 +49,7 @@ const buildInitialForm = (user) => ({
   visibility: 'private',
   priority: 'Operational Efficiency',
   strategicPillar: 'Agility & Capacity',
+  workplanId: '',
 });
 
 const buildAssignmentForm = (item) => ({
@@ -80,19 +79,18 @@ const canViewTask = (item, user) => (
 
 const TaskViewsPage = () => {
   const { user } = useAuth();
-  const { unavailable } = useActionFeedback();
   const { addNotification } = useNotifications();
+  const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, updateQueuedTask } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('Assigned to Me');
   const [statusFilter, setStatusFilter] = useState('Active');
-  const [items, setItems] = useState(taskItems);
-  const [completed, setCompleted] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(buildInitialForm(user));
   const [assignmentEvents, setAssignmentEvents] = useState([]);
   const [assignmentForm, setAssignmentForm] = useState(buildAssignmentForm());
   const [selectedItem, setSelectedItem] = useState(null);
-  const visibleItems = items.filter((item) => {
+  const [stuckTask, setStuckTask] = useState(null);
+  const visibleItems = queuedTasks.filter((item) => {
     if (!canViewTask(item, user)) return false;
     const matchesStatus = statusFilter === 'All'
       || (statusFilter === 'Active' && isActiveStatus(item.status))
@@ -127,34 +125,32 @@ const TaskViewsPage = () => {
 
   const addQueuedTask = () => {
     const owner = users.find((candidate) => candidate.id === form.ownerId) || user;
-    setItems((current) => [
-      {
-        id: `task-custom-${Date.now()}`,
-        description: form.description,
-        owner,
-        createdBy: user,
-        department: owner.department,
-        due: form.due,
-        status: form.status,
-        visibility: form.visibility,
-        source: 'one_off',
-        assignments: [
-          { profile: owner, role: 'assignee' },
-          { profile: user, role: 'assigned_by' },
-        ],
-        priority: form.priority,
-        strategicPillar: form.strategicPillar,
-      },
-      ...current,
-    ]);
+    const workplan = departmentWorkplans.find((candidate) => candidate.id === form.workplanId);
+    persistQueuedTask({
+      assignments: [
+        { profile: owner, role: 'assignee' },
+        { profile: user, role: 'assigned_by' },
+      ],
+      createdBy: user,
+      department: owner.department,
+      description: form.description,
+      due: form.due,
+      id: `task-custom-${Date.now()}`,
+      owner,
+      priority: form.priority,
+      source: 'one_off',
+      sourceType: 'queued_task',
+      status: form.status,
+      strategicPillar: form.strategicPillar,
+      visibility: form.visibility,
+      workplanId: workplan?.id || null,
+      workplanTitle: workplan?.title || null,
+    });
     closeDialog();
   };
 
   const openAssignmentWorkflow = (item) => {
-    if (!canManageActionItem(item, user)) {
-      unavailable('only assigned users, creators, ELT, or OLT can update task assignments.');
-      return;
-    }
+    if (!canManageTask(item, user)) return;
 
     setSelectedItem(item);
     setAssignmentForm(buildAssignmentForm(item));
@@ -175,22 +171,17 @@ const TaskViewsPage = () => {
       visibility: assignmentForm.visibility,
     };
 
-    setItems((current) => current.map((item) => (
-      item.id === selectedItem.id
-        ? {
-          ...item,
-          owner,
-          department: owner.department,
-          due: assignmentForm.due,
-          status: assignmentForm.status,
-          visibility: assignmentForm.visibility,
-          assignments: [
-            { profile: owner, role: 'assignee' },
-            { profile: user, role: 'assigned_by' },
-          ],
-        }
-        : item
-    )));
+    updateQueuedTask(selectedItem.id, {
+      assignments: [
+        { profile: owner, role: 'assignee' },
+        { profile: user, role: 'assigned_by' },
+      ],
+      department: owner.department,
+      due: assignmentForm.due,
+      owner,
+      status: assignmentForm.status,
+      visibility: assignmentForm.visibility,
+    });
     setAssignmentEvents((current) => [event, ...current]);
     addNotification({
       actionPath: '/task-views',
@@ -212,13 +203,13 @@ const TaskViewsPage = () => {
         <Box>
           <Typography variant="h1">Task Views</Typography>
           <Typography variant="body2" color="text.secondary">
-            Inspect follow-through work created from weekly priorities, assignments, and queued tasks.
+            Work standalone queued tasks, assignments, and optional department workplan links.
           </Typography>
         </Box>
         <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Weekly commitments start in the Weekly Tracker. Use Task Views to work the assignments that come out of those priorities, or to queue a task when it does not belong under a weekly priority yet.
+        Weekly commitments and their Action Items live in the Weekly Tracker. Use Task Views to queue and manage standalone tasks that do not belong under a weekly priority.
       </Alert>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
         <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)} sx={{ flexWrap: 'wrap' }}>
@@ -253,15 +244,16 @@ const TaskViewsPage = () => {
           </ListItem>
         )}
         {visibleItems.map((item) => {
-          const done = completed.includes(item.id);
+          const done = normalizeStatus(item.status) === 'complete';
           const canManage = canManageTask(item, user);
+          const canIssueStuck = item.owner?.id === user.id;
           return (
             <ListItem
               key={item.id}
               divider
               sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(90, 100, 117, 0.08)' : 'transparent' }}
             >
-              <Checkbox disabled={!canManage} checked={done} onChange={() => setCompleted((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id])} sx={{ mt: 0.25 }} />
+              <Checkbox disabled={!canManage} checked={done} onChange={() => updateQueuedTask(item.id, { status: done ? 'Open' : 'Complete' })} sx={{ mt: 0.25 }} />
               <Box sx={{ flex: 1, minWidth: 240 }}>
                 <Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
@@ -271,8 +263,16 @@ const TaskViewsPage = () => {
                   <Chip label={sourceLabels[item.source] || 'Task'} variant="outlined" size="small" />
                   <Chip label={item.priority} color="primary" variant="outlined" size="small" />
                   <Chip label={item.strategicPillar} variant="outlined" size="small" />
+                  {item.workplanTitle && <Chip label={item.workplanTitle} color="secondary" variant="outlined" size="small" />}
                 </Stack>
               </Box>
+              <Tooltip title={canIssueStuck ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
+                <span>
+                  <IconButton disabled={!canIssueStuck} aria-label={`Issue a stuck for task ${item.description}`} onClick={() => setStuckTask(item)}>
+                    <WarningAmberOutlinedIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <IconButton disabled={!canManage} aria-label={`Open assignment workflow for task ${item.description}`} onClick={() => openAssignmentWorkflow(item)}><MoreHorizOutlinedIcon /></IconButton>
             </ListItem>
           );
@@ -297,6 +297,12 @@ const TaskViewsPage = () => {
                 <MenuItem value="Complete">Complete</MenuItem>
               </TextField>
             </Stack>
+            <TextField select label="Department Workplan (optional)" value={form.workplanId} onChange={update('workplanId')} fullWidth>
+              <MenuItem value="">No workplan link</MenuItem>
+              {departmentWorkplans.map((workplan) => (
+                <MenuItem key={workplan.id} value={workplan.id}>{workplan.department} - {workplan.title}</MenuItem>
+              ))}
+            </TextField>
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Advanced visibility</Typography>
               <FormControl fullWidth>
@@ -357,6 +363,17 @@ const TaskViewsPage = () => {
           <Button variant="contained" onClick={saveAssignment}>Save Assignment</Button>
         </DialogActions>
       </Dialog>
+      <AddStuckModal
+        initialTask={stuckTask}
+        open={Boolean(stuckTask)}
+        onClose={() => setStuckTask(null)}
+        onSave={(stuck) => {
+          addStuck(stuck);
+          setStuckTask(null);
+        }}
+        tasks={getTasksForUser(user.id)}
+        user={user}
+      />
     </PageWrapper>
   );
 };

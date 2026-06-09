@@ -8,11 +8,11 @@ import { Box, Button, Chip, LinearProgress, Stack, Typography } from '@mui/mater
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  actionItems,
   departmentWorkplans,
   huddles,
   metrics,
   priorities,
+  queuedTasks,
   stucks,
   users,
   weeklyActionReports,
@@ -168,7 +168,7 @@ const buildTeamSummaries = () => {
 
 const TeamHealthPage = () => {
   const teamSummaries = useMemo(buildTeamSummaries, []);
-  const openTaskItems = actionItems.filter((item) => item.status !== 'Complete').length;
+  const openTaskItems = queuedTasks.filter((item) => item.status !== 'Complete').length;
   const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status));
 
   return (
@@ -315,7 +315,7 @@ const ExportsPage = () => {
       description: 'Task owner, due date, status, visibility, and pillar.',
       filename: 'compass-task-views.csv',
       label: 'Task Views',
-      rows: actionItems.map((item) => ({
+      rows: queuedTasks.map((item) => ({
         due: item.due,
         owner: item.owner.name,
         pillar: item.strategicPillar,
