@@ -199,16 +199,18 @@ const WeeklyActionTrackerPage = () => {
     const participantEntries = entries
       .filter((entry) => entry.owner.id === participant.id)
       .sort((a, b) => a.rank - b.rank);
-    const needsNextSlot = !participantEntries.length || participantEntries.every((entry) => entry.title);
-    const nextRank = participantEntries.length
-      ? Math.max(...participantEntries.map((entry) => entry.rank)) + 1
-      : 1;
+    const existingRanks = new Set(participantEntries.map((entry) => entry.rank));
+    const minimumSlots = [1, 2, 3]
+      .filter((rank) => !existingRanks.has(rank))
+      .map((rank) => buildEmptyEntry(participant, rank, report));
+    const minimumEntries = [...participantEntries, ...minimumSlots].sort((a, b) => a.rank - b.rank);
+    const nextRank = Math.max(...minimumEntries.map((entry) => entry.rank)) + 1;
 
     return {
       participant,
-      entries: needsNextSlot
-        ? [...participantEntries, buildEmptyEntry(participant, nextRank, report)]
-        : participantEntries,
+      entries: minimumEntries.some((entry) => !entry.title)
+        ? minimumEntries
+        : [...minimumEntries, buildEmptyEntry(participant, nextRank, report)],
     };
   }), [entries, report]);
   const selectedEntry = entries.find((entry) => entry.id === selectedEntryId);
@@ -224,9 +226,17 @@ const WeeklyActionTrackerPage = () => {
 
     return buildEmptyEntry(participant, nextRank, report);
   };
-  const visibleRows = scope === 'mine'
-    ? rows.filter((row) => row.participant.id === user.id || row.entries.some((entry) => entry?.tasks?.some((task) => task.owner.id === user.id)))
-    : rows;
+  const visibleRows = useMemo(() => {
+    const scopedRows = scope === 'mine'
+      ? rows.filter((row) => row.participant.id === user.id || row.entries.some((entry) => entry?.tasks?.some((task) => task.owner.id === user.id)))
+      : rows;
+
+    return [...scopedRows].sort((a, b) => {
+      if (a.participant.id === user.id) return -1;
+      if (b.participant.id === user.id) return 1;
+      return 0;
+    });
+  }, [rows, scope, user.id]);
 
   useEffect(() => {
     window.localStorage.setItem(weeklyTrackerStorageKey, JSON.stringify(entriesByWeek));
@@ -475,7 +485,7 @@ const WeeklyActionTrackerPage = () => {
 
       <Stack gap={1.5}>
         {visibleRows.map(({ entries: rowEntries, participant }) => (
-          <Box key={participant.id} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+          <Box data-testid={`weekly-participant-${participant.id}`} key={participant.id} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
             <Stack direction={{ xs: 'column', md: 'row' }} gap={1.5} sx={{ p: 1.5, bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
               <Stack direction="row" gap={1} alignItems="center" sx={{ minWidth: { md: 260 } }}>
                 <UserAvatar user={participant} size="md" />
@@ -493,9 +503,44 @@ const WeeklyActionTrackerPage = () => {
             <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', lg: 'repeat(auto-fit, minmax(280px, 1fr))' }, p: 1 }}>
               {rowEntries.map((entry) => {
                 const movement = rankMovement(entry);
+                const cardCanOpen = Boolean(entry.title) || canManageWeeklyEntry(entry, user);
+                const openCard = () => {
+                  if (entry.title) openEntryDetail(entry);
+                  else if (canManageWeeklyEntry(entry, user)) openPriorityDialog(entry);
+                };
 
                 return (
-                  <Box key={entry.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, minHeight: 260 }}>
+                  <Box
+                    aria-label={entry.title ? `Open weekly priority detail for ${entry.title}` : `Set weekly priority ${entry.rank} for ${participant.name}`}
+                    key={entry.id}
+                    onClick={cardCanOpen ? openCard : undefined}
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget || !cardCanOpen || !['Enter', ' '].includes(event.key)) return;
+                      event.preventDefault();
+                      openCard();
+                    }}
+                    role={cardCanOpen ? 'button' : undefined}
+                    tabIndex={cardCanOpen ? 0 : undefined}
+                    sx={{
+                      p: 1.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      cursor: cardCanOpen ? 'pointer' : 'default',
+                      minHeight: 260,
+                      transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+                      '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: 'secondary.main',
+                        outlineOffset: 2,
+                      },
+                      '&:hover': cardCanOpen ? {
+                        borderColor: 'secondary.main',
+                        boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)',
+                        transform: 'translateY(-1px)',
+                      } : undefined,
+                    }}
+                  >
                     <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
                       <Chip label={`#${entry.rank}${entry.rank === 1 ? ' Most Important' : ''}`} color={entry.rank === 1 ? 'primary' : 'default'} size="small" />
                       <Chip label={statusLabels[entry.status] || entry.status} color={statusColors[entry.status] || 'default'} size="small" variant={entry.status === 'steady' ? 'filled' : 'outlined'} />
@@ -503,17 +548,7 @@ const WeeklyActionTrackerPage = () => {
 
                     {entry.title ? (
                       <>
-                        <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start" sx={{ mt: 1 }}>
-                          <Typography fontWeight={800}>{entry.title}</Typography>
-                          <Button
-                            size="small"
-                            endIcon={<ArrowForwardOutlinedIcon />}
-                            onClick={() => openEntryDetail(entry)}
-                            aria-label={`Open weekly priority detail for ${entry.title}`}
-                          >
-                            Detail
-                          </Button>
-                        </Stack>
+                        <Typography fontWeight={800} sx={{ mt: 1 }}>{entry.title}</Typography>
                         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
                           <Chip label={entry.alignmentType === 'both' ? 'Enterprise + workplan aligned' : entry.alignmentType === 'enterprise' ? 'Enterprise aligned' : 'Workplan aligned'} size="small" variant="outlined" />
                           {movement && <Chip icon={<ArrowForwardOutlinedIcon />} label={movement} size="small" color={movement === 'Same rank' ? 'default' : 'secondary'} variant="outlined" />}
@@ -532,12 +567,18 @@ const WeeklyActionTrackerPage = () => {
                           <Typography variant="caption" fontWeight={800}>Action Items</Typography>
                           <Stack direction="row" gap={0.5}>
                             <Tooltip title="Carry priority into next week">
-                              <IconButton size="small" aria-label={`Carry forward ${entry.title}`} onClick={() => carryEntryForward(entry.id)}>
+                              <IconButton size="small" aria-label={`Carry forward ${entry.title}`} onClick={(event) => {
+                                event.stopPropagation();
+                                carryEntryForward(entry.id);
+                              }}>
                                 <ArrowForwardOutlinedIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Add Action Item">
-                              <IconButton size="small" aria-label={`Add action item for ${entry.title}`} onClick={() => openTaskDialog(entry)}>
+                              <IconButton size="small" aria-label={`Add action item for ${entry.title}`} onClick={(event) => {
+                                event.stopPropagation();
+                                openTaskDialog(entry);
+                              }}>
                                 <AddOutlinedIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -555,7 +596,7 @@ const WeeklyActionTrackerPage = () => {
                                   <Chip label={`Due ${task.due}`} size="small" variant="outlined" />
                                 </Stack>
                               </Box>
-                              <TextField select size="small" value={normalizeTaskStatus(task.status)} onChange={(event) => updateTaskStatus(entry.id, task.id, event.target.value)} sx={{ width: 128 }}>
+                              <TextField select size="small" value={normalizeTaskStatus(task.status)} onClick={(event) => event.stopPropagation()} onChange={(event) => updateTaskStatus(entry.id, task.id, event.target.value)} sx={{ width: 128 }}>
                                 {taskStatuses.map((status) => <MenuItem key={status} value={status}>{status.replace('_', ' ')}</MenuItem>)}
                               </TextField>
                               <Tooltip title={stucks.some((stuck) => stuck.sourceId === task.id) ? 'Resolve the linked stuck before deleting this Action Item' : 'Delete Action Item'}>
@@ -564,7 +605,10 @@ const WeeklyActionTrackerPage = () => {
                                     size="small"
                                     disabled={stucks.some((stuck) => stuck.sourceId === task.id)}
                                     aria-label={`Delete action item ${task.title}`}
-                                    onClick={() => deleteTask(entry.id, task.id)}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      deleteTask(entry.id, task.id);
+                                    }}
                                   >
                                     <DeleteOutlineOutlinedIcon fontSize="small" />
                                   </IconButton>
@@ -576,7 +620,10 @@ const WeeklyActionTrackerPage = () => {
                                     size="small"
                                     disabled={task.owner.id !== user.id}
                                     aria-label={`Issue a stuck for action item ${task.title}`}
-                                    onClick={() => setStuckTask({ ...task, sourceType: 'weekly_action_item' })}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setStuckTask({ ...task, sourceType: 'weekly_action_item' });
+                                    }}
                                   >
                                     <WarningAmberOutlinedIcon fontSize="small" />
                                   </IconButton>
@@ -591,17 +638,7 @@ const WeeklyActionTrackerPage = () => {
                         <Box>
                           <EditOutlinedIcon />
                           <Typography variant="body2">No weekly priority set for this slot.</Typography>
-                          {canManageWeeklyEntry(entry, user) && (
-                            <Button
-                              size="small"
-                              startIcon={<AddOutlinedIcon />}
-                              sx={{ mt: 1 }}
-                              onClick={() => openPriorityDialog(entry)}
-                              aria-label={`Set weekly priority ${entry.rank} for ${participant.name}`}
-                            >
-                              Set Weekly Priority
-                            </Button>
-                          )}
+                          {canManageWeeklyEntry(entry, user) && <Typography variant="caption">Click to set weekly priority</Typography>}
                         </Box>
                       </Box>
                     )}

@@ -220,7 +220,17 @@ const TaskViewPage = () => {
         Weekly commitments and their Action Items live in the Weekly Tracker. Use Task View to queue and manage standalone tasks that do not belong under a weekly priority.
       </Alert>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
-        <ToggleButtonGroup exclusive value={scope} onChange={(_, value) => value && setScope(value)} sx={{ flexWrap: 'wrap' }}>
+        <ToggleButtonGroup
+          exclusive
+          value={scope}
+          onChange={(_, value) => value && setScope(value)}
+          sx={{
+            flexWrap: 'wrap',
+            '& .MuiToggleButton-root': {
+              borderColor: '#ffffff !important',
+            },
+          }}
+        >
           {taskViewOptions.map((option) => (
             <ToggleButton key={option} value={option}>{option}</ToggleButton>
           ))}

@@ -1,7 +1,6 @@
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import {
   Box,
@@ -193,7 +192,33 @@ const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
 };
 
 const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
-  <Card variant="outlined" sx={{ borderRadius: 1 }}>
+  <Card
+    aria-label={canManage ? `Edit workplan ${workplan.title}` : undefined}
+    onClick={canManage ? () => onEdit(workplan) : undefined}
+    onKeyDown={(event) => {
+      if (event.target !== event.currentTarget || !canManage || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      onEdit(workplan);
+    }}
+    role={canManage ? 'button' : undefined}
+    tabIndex={canManage ? 0 : undefined}
+    variant="outlined"
+    sx={{
+      borderRadius: 1,
+      cursor: canManage ? 'pointer' : 'default',
+      transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+      '&:focus-visible': {
+        outline: '3px solid',
+        outlineColor: 'secondary.main',
+        outlineOffset: 2,
+      },
+      '&:hover': canManage ? {
+        borderColor: 'secondary.main',
+        boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)',
+        transform: 'translateY(-1px)',
+      } : undefined,
+    }}
+  >
     <CardContent>
       <Stack direction={{ xs: 'column', md: 'row' }} gap={2} justifyContent="space-between">
         <Box sx={{ minWidth: 0 }}>
@@ -213,18 +238,14 @@ const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
             <Typography variant="caption">{workplan.lead.role}</Typography>
           </Box>
           {canManage && (
-            <>
-              <Tooltip title="Edit workplan">
-                <IconButton aria-label={`Edit workplan ${workplan.title}`} onClick={() => onEdit(workplan)}>
-                  <EditOutlinedIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Delete workplan">
-                <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={() => onDelete(workplan.id)}>
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </>
+            <Tooltip title="Delete workplan">
+              <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={(event) => {
+                event.stopPropagation();
+                onDelete(workplan.id);
+              }}>
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           )}
         </Stack>
       </Stack>

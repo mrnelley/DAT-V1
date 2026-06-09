@@ -110,6 +110,7 @@ const { default: StucksPage } = await import('../src/components/stucks/StucksPag
 const { default: TaskViewPage } = await import('../src/components/task-view/TaskViewPage.jsx');
 const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
+const { default: WorkplansPage } = await import('../src/components/workplans/WorkplansPage.jsx');
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -275,6 +276,27 @@ describe('clickable user actions', () => {
     });
   });
 
+  it('places the logged-in user first and provides at least three weekly priority cards', async () => {
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u18');
+    const participantRows = await screen.findAllByTestId(/weekly-participant-/);
+    const gigiPriorityCards = screen.getAllByRole('button', { name: /set weekly priority \d for gigi lopez/i });
+
+    expect(participantRows[0].getAttribute('data-testid')).to.equal('weekly-participant-u18');
+    expect(gigiPriorityCards.length).to.equal(3);
+
+    await user.click(gigiPriorityCards[0]);
+    expect(await screen.findByRole('heading', { name: /set weekly priority/i })).to.exist;
+  });
+
+  it('opens weekly priority detail by clicking the priority card', async () => {
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2');
+
+    await user.click(await screen.findByRole('button', { name: /open weekly priority detail for a\/p process timeline/i }));
+
+    expect(await screen.findByRole('heading', { name: /weekly priority detail/i })).to.exist;
+    expect(screen.queryByText(/^Detail$/i)).to.equal(null);
+  });
+
   it('allows a weekly priority to align to both an enterprise priority and department workplan', async () => {
     const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11');
 
@@ -294,6 +316,15 @@ describe('clickable user actions', () => {
       expect(savedPriority.priorityId).to.equal('q2-enterprise-revenue');
       expect(savedPriority.workplanId).to.equal('dw-fin-pm-fee');
     });
+  });
+
+  it('opens a manageable department workplan for editing by clicking its card', async () => {
+    const { user } = renderWithProviders(<WorkplansPage />, '/workplans', 'u2');
+
+    await user.click(await screen.findByRole('button', { name: /edit workplan asset management strategy/i }));
+
+    expect(await screen.findByRole('heading', { name: /edit workplan/i })).to.exist;
+    expect(screen.queryByRole('button', { name: /edit workplan asset management strategy/i })).to.equal(null);
   });
 
   it('issues a stuck directly from an owned Weekly Tracker Action Item', async () => {
@@ -504,23 +535,22 @@ describe('clickable user actions', () => {
     expect(await screen.findByRole('heading', { name: /^learn$/i })).to.exist;
     await user.click(screen.getByRole('button', { name: /dictionary/i }));
     expect(screen.getByRole('heading', { name: /compass dictionary/i })).to.exist;
-    expect(screen.getByRole('combobox', { name: /search dictionary/i })).to.exist;
+    expect(screen.getByRole('searchbox', { name: /search the dictionary/i })).to.exist;
     expect(screen.getByText(/^programmatic distinction$/i)).to.exist;
     expect(screen.getByText(/^plain english$/i)).to.exist;
     expect(screen.getByText(/application shell/i)).to.exist;
   });
 
-  it('selects a dictionary term from the autocomplete search', async () => {
+  it('selects a dictionary term from search without opening a dropdown', async () => {
     const { user } = renderWithProviders(<LearnPage />, '/learn');
     await user.click(await screen.findByRole('button', { name: /dictionary/i }));
-    const search = await screen.findByRole('combobox', { name: /search dictionary/i });
+    const search = await screen.findByRole('searchbox', { name: /search the dictionary/i });
 
     await user.click(search);
     await user.type(search, 'signal');
-    const listbox = await screen.findByRole('listbox');
-    await user.click(within(listbox).getByText(/^Signal$/i));
 
     expect(await screen.findByRole('heading', { name: /^signal$/i })).to.exist;
+    expect(screen.queryByRole('listbox')).to.equal(null);
     expect(screen.getByText(/company dashboard signal/i)).to.exist;
     expect(screen.getByText(/same word, different source and use/i)).to.exist;
   });

@@ -11,7 +11,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
-import { Autocomplete, Box, Button, Chip, Divider, InputAdornment, List, ListItemButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, InputAdornment, List, ListItemButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { dictionaryCategories, dictionaryTerms, dictionaryTermsByLetter } from '../../data/learnDictionary';
 import PageWrapper from '../layout/PageWrapper';
@@ -117,6 +117,21 @@ const LearnPage = () => {
     setQuery(term.term);
   };
 
+  const searchDictionary = (event) => {
+    const value = event.target.value;
+    const target = normalize(value);
+    const bestMatch = target
+      ? dictionaryTerms.find((term) => normalize(term.term) === target)
+        || dictionaryTerms.find((term) => normalize(term.term).startsWith(target))
+        || dictionaryTerms.find((term) => matchesQuery(term, value))
+      : null;
+
+    setCategory('All');
+    setLetter('All');
+    setQuery(value);
+    if (bestMatch) setSelectedTerm(bestMatch);
+  };
+
   const resetFilters = () => {
     setCategory('All');
     setLetter('All');
@@ -215,46 +230,28 @@ const LearnPage = () => {
               </Typography>
             </Box>
             <Box sx={{ width: { xs: '100%', lg: 430 } }}>
-              <Autocomplete
-                autoHighlight
-                clearOnBlur={false}
-                getOptionLabel={(option) => option.term}
-                inputValue={query}
-                onChange={(_, value) => value && chooseTerm(value)}
-                onInputChange={(_, value, reason) => {
-                  if (reason !== 'reset') setQuery(value);
+              <TextField
+                fullWidth
+                inputProps={{ 'aria-label': 'Search the dictionary' }}
+                onChange={searchDictionary}
+                placeholder="Search the dictionary"
+                type="search"
+                value={query}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlinedIcon />
+                    </InputAdornment>
+                  ),
                 }}
-                options={dictionaryTerms}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Search dictionary"
-                    InputProps={{
-                      ...params.InputProps,
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchOutlinedIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      bgcolor: '#ffffff',
-                      borderRadius: 1,
-                      '& .MuiOutlinedInput-root': { borderRadius: 1 },
-                    }}
-                  />
-                )}
-                renderOption={(props, option) => {
-                  const { key, ...optionProps } = props;
-
-                  return (
-                    <Box component="li" {...optionProps} key={key}>
-                      <Box>
-                        <Typography variant="body2" fontWeight={800}>{option.term}</Typography>
-                        <Typography variant="caption">{option.category}</Typography>
-                      </Box>
-                    </Box>
-                  );
+                sx={{
+                  bgcolor: '#ffffff',
+                  borderRadius: 1,
+                  '& .MuiOutlinedInput-root': { borderRadius: 1 },
+                  '& input::placeholder': {
+                    color: 'text.secondary',
+                    opacity: 1,
+                  },
                 }}
               />
             </Box>
