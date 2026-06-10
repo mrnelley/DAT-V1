@@ -145,10 +145,10 @@ const ExecutiveSignalHeader = ({ averageObjectiveProgress, objectiveCount, prior
             <Chip label={`${prioritiesShown}/${totalPriorities} ${q2Roadmap.quarter} objectives`} variant="outlined" />
             <Chip label={quarterState.label} color={quarterState.mode === 'closing' ? 'warning' : quarterState.mode === 'setting' ? 'secondary' : 'default'} variant="outlined" />
           </Stack>
-          <Typography variant="overline" color="primary">Pinned Priority Signal</Typography>
-          <Typography variant="h2" sx={{ mt: 0.35 }}>Operational priority health</Typography>
+          <Typography variant="overline" color="primary">Executive Quarter Pulse</Typography>
+          <Typography variant="h2" sx={{ mt: 0.35 }}>Quarterly key objective health</Typography>
           <Typography variant="body1" sx={{ mt: 0.75, color: 'text.primary', maxWidth: 720 }}>
-            {q2Roadmap.quarter} objectives with operational health and progress toward goal for the executive read.
+            A concise ELT view of quarter-end commitments, accountable owners, KPI progress, and milestone evidence.
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary', maxWidth: 720 }}>
             {quarterState.guidance}
@@ -290,10 +290,10 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
-        <Typography variant="overline" color="primary">Objective Tracker</Typography>
-        <Typography variant="h2">Risk-first objective detail</Typography>
+        <Typography variant="overline" color="primary">Quarterly Commitments</Typography>
+        <Typography variant="h2">Key objective register</Typography>
       </Box>
-      <Chip icon={<TrackChangesOutlinedIcon />} label={`${objectiveRows.length} workplan objectives`} color="primary" variant="outlined" />
+      <Chip icon={<TrackChangesOutlinedIcon />} label={`${objectiveRows.length} key objectives`} color="primary" variant="outlined" />
     </Stack>
 
     <Stack gap={0.85}>
@@ -353,7 +353,7 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
                 <Chip label={priority.name} size="small" variant="outlined" />
               </Stack>
               <Typography variant="body1" color="text.primary" fontWeight={800}>{objective.title}</Typography>
-              <Typography variant="body2">{objective.workplanTitle}</Typography>
+              <Typography variant="body2">{objective.workplanTitle || objective.department || 'Enterprise objective'}</Typography>
             </Box>
 
             <Stack direction="row" gap={1} alignItems="center">
@@ -365,8 +365,10 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
             </Stack>
 
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Goal</Typography>
-              <Typography variant="body2" color="text.primary">{goal}</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>KPI - End of {q2Roadmap.quarter}</Typography>
+              {(objective.kpis || []).length ? (objective.kpis || []).slice(0, 2).map((kpi) => (
+                <Typography key={kpi.id || kpi.target} variant="body2" color="text.primary">{kpi.target}</Typography>
+              )) : <Typography variant="body2" color="text.primary">{goal}</Typography>}
             </Box>
 
             <Box>
@@ -380,7 +382,7 @@ const ObjectiveTracker = ({ objectiveRows, onEngage }) => (
         );
       }) : (
         <Typography variant="body2" color="text.secondary">
-          No workplan objectives have been connected to enterprise priorities yet.
+          No quarterly key objectives have been defined yet.
         </Typography>
       )}
     </Stack>
@@ -438,7 +440,7 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
             </Stack>
             <Typography variant="body1" color="text.primary" fontWeight={800} sx={{ mt: 1 }}>{pillar.name}</Typography>
             <Typography variant="h3" color={worstMeta.tone} sx={{ mt: 0.75 }}>{progress}%</Typography>
-            <Typography variant="caption">{pillarPriorities.length} {q2Roadmap.quarter} objective{pillarPriorities.length === 1 ? '' : 's'} / {objectiveCount} workplan objective{objectiveCount === 1 ? '' : 's'}</Typography>
+            <Typography variant="caption">{objectiveCount} {q2Roadmap.quarter} key objective{objectiveCount === 1 ? '' : 's'}</Typography>
           </Box>
         );
       })}
@@ -502,7 +504,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
                 <Box>
                   <Typography variant="h3">Connected objectives</Typography>
-                  <Typography variant="body2">{q2Roadmap.quarter} operational priorities and workplan objectives tied to this pillar.</Typography>
+                  <Typography variant="body2">{q2Roadmap.quarter} key objectives and quarter-end KPIs tied to this pillar.</Typography>
                 </Box>
                 <Chip label={`${objectives.length} objective${objectives.length === 1 ? '' : 's'}`} color="primary" variant="outlined" />
               </Stack>
@@ -679,9 +681,9 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
 
   const statusCounts = statusGroups.map((group) => ({
     ...group,
-    count: sortedPriorities.filter((priority) => group.statuses.includes(getPriorityStatus(priority))).length,
+    count: objectiveRows.filter(({ objective }) => group.statuses.includes(objective.status)).length,
   }));
-  const averageObjectiveProgress = averageProgress(sortedPriorities, getPriorityProgress);
+  const averageObjectiveProgress = averageProgress(objectiveRows, ({ objective }) => getObjectiveProgress(objective));
   const quarterState = useMemo(() => getQuarterTransitionState(), []);
   const sendEngagementNote = (recipient, message) => {
     addNotification({
@@ -702,32 +704,15 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
     <Stack gap={2}>
       <ExecutiveSignalHeader
         averageObjectiveProgress={averageObjectiveProgress}
-        objectiveCount={sortedPriorities.length}
-        prioritiesShown={sortedPriorities.length}
+        objectiveCount={objectiveRows.length}
+        prioritiesShown={objectiveRows.length}
         quarterState={quarterState}
         statusCounts={statusCounts}
         team={team}
         teamOptions={teamOptions}
-        totalPriorities={companyPriorities.length}
+        totalPriorities={companyPriorities.reduce((total, priority) => total + (priority.keyObjectives?.length || 0), 0)}
         onTeamChange={setTeam}
       />
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(3, minmax(0, 1fr))' }, gap: 1.35 }}>
-        {sortedPriorities.length ? sortedPriorities.map((priority) => (
-          <ObjectiveCard
-            key={priority.id}
-            priority={priority}
-            onOpen={() => navigate(`/dashboard/company/priorities/${priority.id}`)}
-          />
-        )) : (
-          <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
-            <Typography variant="h3">No enterprise priorities yet</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              When leadership creates priorities, their status and progress cards will appear here.
-            </Typography>
-          </Box>
-        )}
-      </Box>
 
       <ObjectiveTracker objectiveRows={objectiveRows} onEngage={setEngagement} />
       <PillarCoverage companyPriorities={companyPriorities} onOpenPillar={setPillarDetail} />
