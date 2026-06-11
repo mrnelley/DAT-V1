@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 const require = createRequire(import.meta.url);
@@ -98,6 +99,7 @@ const { OperatingDataProvider } = await import('../src/context/OperatingDataCont
 const { default: theme } = await import('../src/theme/index.js');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
+const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
@@ -270,6 +272,27 @@ describe('clickable user actions', () => {
     const next = renderLoginFlow();
     await next.user.click(await screen.findByText('Michael'));
     expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/me');
+  });
+
+  it('keeps Weekly Tracker priority data out of the shared individual dashboard', () => {
+    const source = readFileSync(
+      new URL('../src/components/dashboard/FocusedDashboard.jsx', import.meta.url),
+      'utf8',
+    );
+
+    expect(source).not.to.include('hdc_compass_weekly_tracker_entries');
+    expect(source).not.to.include('WeeklyPrioritiesSection');
+    expect(source).not.to.include('Priority Task List');
+    expect(source).not.to.include("['Weekly Priorities'");
+  });
+
+  it('does not surface hard-coded weekly priorities on the advocacy dashboard', async () => {
+    renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
+
+    expect(await screen.findByRole('heading', { name: /advocacy command center/i })).to.exist;
+    expect(screen.queryByText(/individual priorities this week/i)).to.equal(null);
+    expect(screen.queryByRole('button', { name: /add priority/i })).to.equal(null);
+    expect(screen.queryByText(/priority progress/i)).to.equal(null);
   });
 
   it('orders the side navigation and keeps Data Table admin-only', async () => {
