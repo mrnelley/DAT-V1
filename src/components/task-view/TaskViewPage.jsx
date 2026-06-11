@@ -83,6 +83,7 @@ const TaskViewPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [stuckTask, setStuckTask] = useState(null);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState(null);
   const queueInputRef = useRef(null);
   const visibleItems = queuedTasks.filter((item) => {
     if (!canViewTask(item, user)) return false;
@@ -178,7 +179,7 @@ const TaskViewPage = () => {
     }));
   };
 
-  const dropTaskBefore = (targetTaskId) => {
+  const moveDraggedTaskBefore = (targetTaskId) => {
     if (!draggedTaskId || draggedTaskId === targetTaskId) return;
     const dragged = visibleItems.find((item) => item.id === draggedTaskId);
     const target = visibleItems.find((item) => item.id === targetTaskId);
@@ -188,7 +189,6 @@ const TaskViewPage = () => {
     nextIds.splice(nextIds.indexOf(draggedTaskId), 1);
     nextIds.splice(nextIds.indexOf(targetTaskId), 0, draggedTaskId);
     reorderQueuedTasks(nextIds);
-    setDraggedTaskId(null);
   };
 
   const openAssignmentWorkflow = (item) => {
@@ -348,15 +348,27 @@ const TaskViewPage = () => {
             <ListItem
               key={item.id}
               divider
+              onDragEnter={() => {
+                setDragOverTaskId(item.id);
+                moveDraggedTaskBefore(item.id);
+              }}
               onDragOver={(event) => event.preventDefault()}
-              onDrop={() => dropTaskBefore(item.id)}
+              onDrop={() => {
+                setDraggedTaskId(null);
+                setDragOverTaskId(null);
+              }}
               sx={{
                 alignItems: 'flex-start',
                 bgcolor: done || completing ? 'rgba(94, 184, 168, 0.12)' : item.pinned ? 'rgba(241, 172, 73, 0.12)' : 'transparent',
+                borderTop: dragOverTaskId === item.id && draggedTaskId !== item.id ? '2px solid' : undefined,
+                borderTopColor: 'primary.main',
+                boxShadow: draggedTaskId === item.id ? '0 14px 28px rgba(103, 82, 20, 0.24)' : 'none',
                 gap: 1,
-                opacity: completing ? 0 : 1,
-                transform: completing ? 'translateX(110%) rotate(1deg)' : 'translateX(0)',
-                transition: 'transform 360ms cubic-bezier(.4,0,.2,1), opacity 280ms ease, background-color 180ms ease',
+                opacity: completing ? 0 : draggedTaskId === item.id ? 0.62 : 1,
+                position: 'relative',
+                transform: completing ? 'translateX(110%) rotate(1deg)' : draggedTaskId === item.id ? 'scale(1.01) rotate(-0.35deg)' : 'translateX(0)',
+                transition: 'transform 180ms cubic-bezier(.4,0,.2,1), opacity 180ms ease, background-color 180ms ease, box-shadow 180ms ease',
+                zIndex: draggedTaskId === item.id ? 2 : 1,
               }}
             >
               <Tooltip title={done ? 'Return task to queue' : 'Mark task complete'}>
@@ -376,8 +388,16 @@ const TaskViewPage = () => {
                 <Box
                   aria-label={`Reorder task: ${item.description}`}
                   draggable={canManage}
-                  onDragEnd={() => setDraggedTaskId(null)}
-                  onDragStart={() => setDraggedTaskId(item.id)}
+                  onDragEnd={() => {
+                    setDraggedTaskId(null);
+                    setDragOverTaskId(null);
+                  }}
+                  onDragStart={(event) => {
+                    setDraggedTaskId(item.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                    const row = event.currentTarget.closest('li');
+                    if (row) event.dataTransfer.setDragImage(row, 24, 24);
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'ArrowUp') {
                       event.preventDefault();
@@ -392,11 +412,11 @@ const TaskViewPage = () => {
                   tabIndex={canManage ? 0 : -1}
                   sx={{
                     color: 'text.secondary',
-                    cursor: canManage ? 'grab' : 'default',
+                    cursor: canManage ? (draggedTaskId === item.id ? 'grabbing' : 'grab') : 'default',
                     display: 'grid',
                     mt: 1,
                     placeItems: 'center',
-                    '&:active': { cursor: canManage ? 'grabbing' : 'default' },
+                    '&:active': { cursor: canManage ? 'grabbing' : 'default', transform: 'scale(1.12)' },
                     '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
                   }}
                 >

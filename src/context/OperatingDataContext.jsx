@@ -70,12 +70,12 @@ export const OperatingDataProvider = ({ children }) => {
   const addQueuedTask = useCallback((task) => {
     setState((current) => {
       const ownerTasks = current.queuedTasksByOwner[task.owner.id] || [];
-      const firstOrder = Math.min(0, ...ownerTasks.map((item) => Number(item.queueOrder) || 0)) - 1;
+      const lastOrder = Math.max(-1, ...ownerTasks.map((item) => Number(item.queueOrder) || 0)) + 1;
       return {
         ...current,
         queuedTasksByOwner: {
           ...current.queuedTasksByOwner,
-          [task.owner.id]: [{ pinned: false, queueOrder: firstOrder, ...task }, ...ownerTasks],
+          [task.owner.id]: [...ownerTasks, { pinned: false, queueOrder: lastOrder, ...task }],
         },
       };
     });

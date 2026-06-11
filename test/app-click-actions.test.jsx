@@ -297,18 +297,24 @@ describe('clickable user actions', () => {
   });
 
   it('creates and persists a visible one-off task from Task View', async () => {
-    const { user } = renderWithProviders(<TaskViewPage />);
+    const existingTask = taskFixture({ description: 'Existing queue task', id: 'task-existing', queueOrder: 0 });
+    const { user } = renderWithProviders(<TaskViewPage />, '/task-view', 'u1', {
+      queuedTasksByOwner: { u1: [existingTask] },
+    });
 
     const queueInput = await screen.findByRole('textbox', { name: /add a task to my queue/i });
     await user.type(queueInput, 'Confirm Teams card copy{Enter}');
 
-    expect(await screen.findByText('Confirm Teams card copy')).to.exist;
+    const newTask = await screen.findByText('Confirm Teams card copy');
+    const existingTaskRow = screen.getByText('Existing queue task');
+    expect(existingTaskRow.compareDocumentPosition(newTask) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(queueInput.value).to.equal('');
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
       const savedTask = saved.queuedTasksByOwner.u1.find((task) => task.description === 'Confirm Teams card copy');
       expect(savedTask.workplanId).to.equal(null);
       expect(savedTask.workplanTitle).to.equal(null);
+      expect(savedTask.queueOrder).to.be.greaterThan(saved.queuedTasksByOwner.u1.find((task) => task.id === existingTask.id).queueOrder);
     });
   });
 
