@@ -81,32 +81,6 @@ const weeklyPriorityLeadershipLanes = {
   u8: { label: 'Operations', departments: ['Operations', 'Resident Services'] },
 };
 
-const weeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
-
-const readWeeklyTrackerEntries = () => {
-  if (typeof window === 'undefined') return [];
-
-  try {
-    return Object.values(JSON.parse(window.localStorage.getItem(weeklyTrackerStorageKey)) || {})
-      .flat()
-      .filter((entry) => entry.title);
-  } catch {
-    return [];
-  }
-};
-
-const priorityStatusOrder = {
-  alert: 0,
-  Alert: 0,
-  watch: 1,
-  Watch: 1,
-  steady: 2,
-  Steady: 2,
-  complete: 3,
-  Completed: 3,
-  no_data: 4,
-};
-
 const getLaneDepartments = (user) => new Set([
   user.department,
   ...(user.teams || []),
@@ -122,24 +96,14 @@ const isWorkplanRelevantToUser = (workplan, user, departments = getLaneDepartmen
   || departments.has(workplan.scope)
 );
 
-const isWeeklyEntryRelevantToUser = (entry, user, departments = getLaneDepartments(user)) => {
-  const priorityDepartment = entry.department || entry.owner?.department;
-  return (
-    entry.owner?.id === user.id
-    || entry.tasks?.some((task) => task.owner?.id === user.id)
-    || departments.has(priorityDepartment)
-  );
-};
-
 const isQueuedTaskRelevantToUser = (task, user, departments = getLaneDepartments(user)) => (
   task.owner?.id === user.id
   || task.createdBy?.id === user.id
   || departments.has(task.department)
 );
 
-const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user, weeklyEntries }) => {
+const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user }) => {
   const departments = getLaneDepartments(user);
-  const relevantWeekly = weeklyEntries.filter((entry) => isWeeklyEntryRelevantToUser(entry, user, departments));
   const relevantWorkplans = departmentWorkplans.filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments));
   const relevantTasks = queuedTasks.filter((task) => isQueuedTaskRelevantToUser(task, user, departments));
   const relevantStucks = stucks.filter((stuck) => (
@@ -148,7 +112,6 @@ const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user, weekly
   ));
 
   return [
-    ['Weekly Priorities', relevantWeekly.length, 'Created in Weekly Tracker'],
     ['Department Workplans', relevantWorkplans.length, 'Created in Workplans'],
     ['Queued Tasks', relevantTasks.filter((task) => isOpenStatus(task.status)).length, 'Open one-off Task View items'],
     ['Open Stucks', relevantStucks.filter((stuck) => isOpenStatus(stuck.status)).length, 'Linked to this user'],
@@ -252,89 +215,6 @@ const EditableStatCard = ({ field, label, storageKey }) => {
   );
 };
 
-const WeeklyPrioritiesSection = ({ user, weeklyEntries }) => {
-  const leadershipLane = weeklyPriorityLeadershipLanes[user.id];
-  const isLeadershipView = Boolean(leadershipLane);
-  const departments = getLaneDepartments(user);
-  const visiblePriorities = weeklyEntries.filter((priority) => {
-    return isWeeklyEntryRelevantToUser(priority, user, departments);
-  }).sort((a, b) => (
-    (priorityStatusOrder[a.status] ?? 5) - (priorityStatusOrder[b.status] ?? 5)
-    || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
-    || a.rank - b.rank
-  ));
-
-  if (!visiblePriorities.length) return null;
-
-  return (
-    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
-        <Box>
-          <Typography variant="h3">{isLeadershipView ? `${leadershipLane.label} Weekly Priorities` : `${user.name.split(' ')[0]}'s Priority Task List`}</Typography>
-          <Typography variant="body2">Current weekly priorities created in Weekly Tracker.</Typography>
-        </Box>
-        <Chip label={isLeadershipView ? 'Department owner view' : 'Related to me'} color="primary" variant="outlined" />
-      </Stack>
-
-      <Stack gap={1}>
-        {visiblePriorities.map((priority) => {
-          const showAllTasks = isLeadershipView || priority.owner.id === user.id;
-          const relatedTasks = priority.tasks.filter((task) => showAllTasks || task.owner.id === user.id);
-          return (
-          <Box
-            key={priority.id}
-            aria-label={`Weekly priority ${priority.title}`}
-            title={`Weekly priority ${priority.title}`}
-            sx={{ border: '1px solid', borderColor: priority.isMostImportant ? 'primary.light' : 'divider', borderRadius: 1, p: 1.25 }}
-          >
-              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
-                <Box>
-                  <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-                    <Chip label={`#${priority.rank}`} color={priority.isMostImportant ? 'primary' : 'default'} size="small" />
-                    {priority.isMostImportant && <Chip label="Most Important Priority" color="secondary" size="small" />}
-                    <Chip label={priority.status} color={statusColor[priority.status] || 'default'} size="small" />
-                    <Chip label={`Due ${priority.due}`} variant="outlined" size="small" />
-                  </Stack>
-                  <Typography variant="body1" fontWeight={800} sx={{ mt: 1 }}>{priority.title}</Typography>
-                  <Typography variant="body2" color="text.primary">Aligned to: {priority.alignedPriorityLabel || 'No alignment selected'}</Typography>
-                </Box>
-                <Stack direction="row" gap={1} alignItems="center" sx={{ flexShrink: 0 }}>
-                  <UserAvatar user={priority.owner} size="sm" />
-                  <Box>
-                    <Typography variant="body2" color="text.primary" fontWeight={700}>{priority.owner.name}</Typography>
-                    <Typography variant="caption">{priority.department}</Typography>
-                  </Box>
-                </Stack>
-              </Stack>
-
-              <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                <Chip label={priority.alignmentType === 'both' ? 'Organizational Priority + workplan' : priority.alignmentType === 'enterprise' ? 'Organizational Priority' : 'Workplan'} color="primary" variant="outlined" size="small" />
-                {priority.priorityId && <Chip label={priority.priorityId} variant="outlined" size="small" />}
-                {priority.workplanId && <Chip label={priority.workplanId} variant="outlined" size="small" />}
-              </Stack>
-
-              {relatedTasks.length > 0 && (
-                <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1, mt: 1 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Task list</Typography>
-                  {relatedTasks.map((task) => (
-                    <Stack key={task.id} direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="space-between" sx={{ mt: 0.5 }}>
-                      <Typography variant="body2" color="text.primary">{task.title}</Typography>
-                      <Stack direction="row" gap={1}>
-                        <Chip label={task.owner.name} size="small" variant="outlined" />
-                        <Chip label={`Due ${task.due}`} size="small" variant="outlined" />
-                      </Stack>
-                    </Stack>
-                  ))}
-                </Box>
-              )}
-            </Box>
-          );
-        })}
-      </Stack>
-    </Box>
-  );
-};
-
 const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
   const departments = getLaneDepartments(user);
   const visibleWorkplans = workplans
@@ -409,19 +289,16 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
 
 const FocusedDashboard = ({ user }) => {
   const { departmentWorkplans, queuedTasks, stucks } = useOperatingData();
-  const weeklyTrackerEntries = readWeeklyTrackerEntries();
   const liveStats = buildLiveStats({
     departmentWorkplans,
     queuedTasks,
     stucks,
     user,
-    weeklyEntries: weeklyTrackerEntries,
   });
 
   if (user.dashboardFocus === 'property_management') {
     return (
       <Box sx={{ mb: 3 }}>
-        <WeeklyPrioritiesSection user={user} weeklyEntries={weeklyTrackerEntries} />
         <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
         <PropertyManagementDashboard user={user} />
       </Box>
@@ -460,7 +337,6 @@ const FocusedDashboard = ({ user }) => {
         ))}
       </Box>
 
-      <WeeklyPrioritiesSection user={user} weeklyEntries={weeklyTrackerEntries} />
       <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}

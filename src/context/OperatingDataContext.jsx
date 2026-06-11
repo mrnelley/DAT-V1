@@ -3,6 +3,7 @@ import {
   departmentWorkplans,
   queuedTasks,
   huddles as seededHuddles,
+  strategicPlan2030,
   stucks as seededStucks,
   users,
   weeklyActionEntries,
@@ -28,6 +29,7 @@ const buildInitialState = () => ({
     ...huddle,
   })),
   queuedTasksByOwner: groupTasksByOwner(queuedTasks),
+  strategicPlan: strategicPlan2030,
   stucks: seededStucks.map((stuck) => ({
     personStuck: stuck.personStuck,
     sourceId: stuck.sourceId || null,
@@ -92,6 +94,37 @@ export const OperatingDataProvider = ({ children }) => {
           : [next, ...current.departmentWorkplans],
       };
     });
+  }, []);
+
+  const saveStrategicPillar = useCallback((pillar) => {
+    setState((current) => {
+      const existing = current.strategicPlan.pillars.find((item) => item.id === pillar.id);
+      const next = existing
+        ? pillar
+        : { ...pillar, id: pillar.id || `pillar-${Date.now()}`, order: current.strategicPlan.pillars.length + 1 };
+
+      return {
+        ...current,
+        strategicPlan: {
+          ...current.strategicPlan,
+          pillars: existing
+            ? current.strategicPlan.pillars.map((item) => (item.id === pillar.id ? next : item))
+            : [...current.strategicPlan.pillars, next],
+        },
+      };
+    });
+  }, []);
+
+  const deleteStrategicPillar = useCallback((pillarId) => {
+    setState((current) => ({
+      ...current,
+      strategicPlan: {
+        ...current.strategicPlan,
+        pillars: current.strategicPlan.pillars
+          .filter((pillar) => pillar.id !== pillarId)
+          .map((pillar, index) => ({ ...pillar, order: index + 1 })),
+      },
+    }));
   }, []);
 
   const deleteDepartmentWorkplan = useCallback((workplanId) => {
@@ -204,6 +237,7 @@ export const OperatingDataProvider = ({ children }) => {
     addQueuedTask,
     addStuck,
     deleteDepartmentWorkplan,
+    deleteStrategicPillar,
     departmentWorkplans: state.departmentWorkplans,
     getHuddle: (huddleId) => state.huddles.find((huddle) => huddle.id === huddleId),
     getTasksForUser,
@@ -213,6 +247,8 @@ export const OperatingDataProvider = ({ children }) => {
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,
+    saveStrategicPillar,
+    strategicPlan: state.strategicPlan,
     stucks: state.stucks,
     updateHuddle,
     updateQueuedTask,
@@ -225,15 +261,18 @@ export const OperatingDataProvider = ({ children }) => {
     addQueuedTask,
     addStuck,
     deleteDepartmentWorkplan,
+    deleteStrategicPillar,
     getTasksForUser,
     queuedTasks,
     reorderQueuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,
+    saveStrategicPillar,
     state.departmentWorkplans,
     state.huddles,
     state.stucks,
+    state.strategicPlan,
     state.weeklyActionItems,
     updateHuddle,
     updateQueuedTask,

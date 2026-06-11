@@ -4,12 +4,11 @@ import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutli
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import { advocacyContacts, advocacyInitiatives, advocacyPriorities, advocacyTouchpoints, advocacyWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
+import { advocacyContacts, advocacyInitiatives, advocacyTouchpoints, advocacyWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
 import UserAvatar from '../shared/UserAvatar';
 
 const periods = [
@@ -463,7 +462,6 @@ const AdvocacyDashboard = () => {
   const [touchpoints, setTouchpoints] = useState(advocacyTouchpoints);
   const [initiatives, setInitiatives] = useState(advocacyInitiatives);
   const [workplans, setWorkplans] = useState(advocacyWorkplans);
-  const [priorities, setPriorities] = useState(advocacyPriorities);
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
   const [touchpointDialogOpen, setTouchpointDialogOpen] = useState(false);
 
@@ -481,17 +479,10 @@ const AdvocacyDashboard = () => {
     Object.fromEntries(initiatives.map((initiative) => [initiative.id, initiative]))
   ), [initiatives]);
 
-  const workplansById = useMemo(() => (
-    Object.fromEntries(workplans.map((workplan) => [workplan.id, workplan]))
-  ), [workplans]);
-
   const touchpointCircleCount = new Set(
     visibleTouchpoints.map((touchpoint) => contactsById[touchpoint.contactId]?.circle).filter(Boolean),
   ).size;
 
-  const totalPriorityTarget = priorities.reduce((sum, priority) => sum + Number(priority.target || 0), 0);
-  const totalPriorityCurrent = priorities.reduce((sum, priority) => sum + Number(priority.current || 0), 0);
-  const priorityProgress = totalPriorityTarget ? Math.round((totalPriorityCurrent / totalPriorityTarget) * 100) : 0;
   const cadenceAssessments = useMemo(() => (
     contacts.map((contact) => ({ contact, assessment: assessCadence(contact) }))
   ), [contacts]);
@@ -554,22 +545,6 @@ const AdvocacyDashboard = () => {
   };
 
   const saveEntity = (type, form) => {
-    if (type === 'priority') {
-      const pillar = strategicPillarById[form.strategicPillarId] || strategicPillarById['advocate-change'];
-      const next = {
-        ...form,
-        id: form.id || `ap-${Date.now()}`,
-        owner: users[0],
-        weekOf: form.weekOf || '2026-05-11',
-        current: Number(form.current || 0),
-        target: Number(form.target || 0),
-        strategicPlan: strategicPlan2030.name,
-        strategicPillarId: pillar.id,
-        strategicPillar: pillar.name,
-      };
-      setPriorities((current) => (form.id ? current.map((item) => item.id === form.id ? next : item) : [...current, next]));
-    }
-
     if (type === 'workplan') {
       const pillar = strategicPillarById[form.strategicPillarId] || strategicPillarById['advocate-change'];
       const next = {
@@ -601,19 +576,13 @@ const AdvocacyDashboard = () => {
   };
 
   const deleteEntity = (type, id) => {
-    if (type === 'priority') {
-      setPriorities((current) => current.filter((item) => item.id !== id));
-    }
-
     if (type === 'workplan') {
       setWorkplans((current) => current.filter((item) => item.id !== id));
-      setPriorities((current) => current.map((priority) => priority.workplanId === id ? { ...priority, workplanId: '' } : priority));
     }
 
     if (type === 'initiative') {
       setInitiatives((current) => current.filter((item) => item.id !== id));
       setWorkplans((current) => current.map((workplan) => workplan.initiativeId === id ? { ...workplan, initiativeId: '' } : workplan));
-      setPriorities((current) => current.map((priority) => priority.initiativeId === id ? { ...priority, initiativeId: '' } : priority));
     }
   };
 
@@ -725,49 +694,15 @@ const AdvocacyDashboard = () => {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
           <Box>
             <Typography variant="h3">Linked Advocacy Work</Typography>
-            <Typography variant="body2">Weekly CEO priorities connect to departmental workplans and quarterly initiatives.</Typography>
+            <Typography variant="body2">Departmental workplans connect advocacy activity to quarterly initiatives.</Typography>
           </Box>
           <Stack direction="row" gap={1} flexWrap="wrap">
-            <Chip label={`Priority progress ${priorityProgress}%`} color={priorityProgress >= 70 ? 'success' : 'warning'} variant="outlined" />
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => openDialog('priority')}>Add Priority</Button>
             <Button variant="outlined" startIcon={<AddIcon />} onClick={() => openDialog('workplan')}>Add Workplan</Button>
             <Button variant="outlined" startIcon={<AddIcon />} onClick={() => openDialog('initiative')}>Add Initiative</Button>
           </Stack>
         </Stack>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.2fr 1fr 1fr' }, gap: 1.5 }}>
-          <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>Individual Priorities This Week</Typography>
-            <Stack gap={1}>
-              {priorities.map((priority) => {
-                const workplan = workplansById[priority.workplanId];
-                const initiative = initiativesById[priority.initiativeId];
-                const progress = priority.target ? Math.min(100, Math.round((priority.current / priority.target) * 100)) : 0;
-                return (
-                  <Box key={priority.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
-                    <Stack direction="row" justifyContent="space-between" gap={1}>
-                      <Typography variant="body1" fontWeight={700}>{priority.title}</Typography>
-                      <Stack direction="row">
-                        <Tooltip title="Edit priority"><IconButton size="small" aria-label={`Edit priority ${priority.title}`} onClick={() => openDialog('priority', 'edit', priority)}><EditOutlinedIcon fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Delete priority"><IconButton size="small" aria-label={`Delete priority ${priority.title}`} onClick={() => deleteEntity('priority', priority.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
-                      </Stack>
-                    </Stack>
-                    <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ my: 1 }}>
-                      <Chip label={priority.status} color={statusColor[priority.status]} size="small" />
-                      <Chip label={priority.circle} size="small" variant="outlined" />
-                      <Chip label={priority.strategicPillar || 'No pillar set'} size="small" variant="outlined" />
-                      <Chip icon={<LinkOutlinedIcon />} label={workplan?.title || 'Unlinked workplan'} size="small" variant="outlined" />
-                      <Chip icon={<LinkOutlinedIcon />} label={initiative?.title || 'Unlinked initiative'} size="small" variant="outlined" />
-                    </Stack>
-                    <LinearProgress value={progress} variant="determinate" sx={{ mb: 0.75, '& .MuiLinearProgress-bar': { bgcolor: statusTone[priority.status] } }} />
-                    <Typography variant="caption">{priority.current} of {priority.target} touchpoints complete</Typography>
-                    <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>{priority.nextAction}</Typography>
-                  </Box>
-                );
-              })}
-            </Stack>
-          </Box>
-
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1fr 1fr' }, gap: 1.5 }}>
           <Box>
             <Typography variant="h4" sx={{ mb: 1 }}>Departmental Workplans</Typography>
             <Stack gap={1}>
@@ -801,7 +736,6 @@ const AdvocacyDashboard = () => {
               {initiatives.map((initiative) => {
                 const progress = initiative.target ? Math.min(100, Math.round((initiative.current / initiative.target) * 100)) : 0;
                 const linkedWorkplans = workplans.filter((workplan) => workplan.initiativeId === initiative.id).length;
-                const linkedPriorities = priorities.filter((priority) => priority.initiativeId === initiative.id).length;
                 return (
                   <Box key={initiative.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                     <Stack direction="row" justifyContent="space-between" gap={1}>
@@ -816,7 +750,6 @@ const AdvocacyDashboard = () => {
                       <Chip label={initiative.status} color={statusColor[initiative.status]} size="small" />
                       <Chip label={initiative.strategicPillar || 'No pillar set'} size="small" variant="outlined" />
                       <Chip label={`${linkedWorkplans} workplans`} size="small" variant="outlined" />
-                      <Chip label={`${linkedPriorities} priorities`} size="small" variant="outlined" />
                     </Stack>
                     <LinearProgress value={progress} variant="determinate" sx={{ mb: 0.75, '& .MuiLinearProgress-bar': { bgcolor: statusTone[initiative.status] } }} />
                     <Typography variant="caption">{initiative.current} of {initiative.target} advocacy datapoints</Typography>

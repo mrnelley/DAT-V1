@@ -1,15 +1,20 @@
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import AddIcon from '@mui/icons-material/Add';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUncheckedOutlined';
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { priorities, q2Roadmap, strategicPlan2030 } from '../../data/mockData';
+import { priorities, q2Roadmap } from '../../data/mockData';
 import { getQuarterTransitionState } from '../../data/quarterlyRoadmap';
+import { useOperatingData } from '../../context/OperatingDataContext';
+import { useAuth } from '../../hooks/useAuth';
 import CalendarPanel from '../calendar/CalendarPanel';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -155,6 +160,35 @@ const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quart
   </Box>
 );
 
+const PriorityWeeklyHeatMap = ({ priority }) => {
+  const history = priority.weeklySignalHistory || priority.statusHistory || [];
+
+  if (!history.length) {
+    return <Typography variant="caption" color="text.secondary">Weekly history begins after the first snapshot</Typography>;
+  }
+
+  return (
+    <Stack
+      aria-label={`Week-over-week signal history for ${priority.name}`}
+      direction="row"
+      gap={0.4}
+      role="img"
+      title={`Week-over-week signal history for ${priority.name}`}
+    >
+      {history.slice(-8).map((entry, index) => {
+        const status = typeof entry === 'string' ? entry : entry.status;
+        const week = typeof entry === 'string' ? `Week ${index + 1}` : entry.week || entry.weekStart || `Week ${index + 1}`;
+        const meta = getStatusMeta(status);
+        return (
+          <Tooltip key={`${week}-${index}`} title={`${week}: ${meta.label}`}>
+            <Box sx={{ bgcolor: meta.border, borderRadius: 0.5, height: 18, width: 18 }} />
+          </Tooltip>
+        );
+      })}
+    </Stack>
+  );
+};
+
 const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
@@ -229,6 +263,8 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
             </Box>
 
             <Box>
+              <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 800, textTransform: 'uppercase' }}>Weekly signal</Typography>
+              <PriorityWeeklyHeatMap priority={priority} />
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
                 <Typography variant="caption">Progress</Typography>
                 <Typography variant="caption" color={meta.tone} fontWeight={800}>{progress}%</Typography>
@@ -302,7 +338,79 @@ const PillarPulseFlow = ({ amplitude, count, pillarName, status }) => {
   );
 };
 
-const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
+const blankSuccessMetric = () => ({ id: `metric-${Date.now()}-${Math.random()}`, label: '', target: '' });
+
+const PillarEditorDialog = ({ editor, onClose, onSave }) => {
+  const [form, setForm] = useState(() => {
+    if (!editor.pillar) return { description: '', name: '', successMetrics: [blankSuccessMetric()] };
+    return {
+      ...editor.pillar,
+      successMetrics: editor.pillar.successMetrics.map((metric, index) => ({
+        ...metric,
+        id: metric.id || `metric-${editor.pillar.id}-${index}`,
+      })),
+    };
+  });
+  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+  const updateMetric = (metricId, field) => (event) => setForm((current) => ({
+    ...current,
+    successMetrics: current.successMetrics.map((metric) => (
+      metric.id === metricId ? { ...metric, [field]: event.target.value } : metric
+    )),
+  }));
+  const removeMetric = (metricId) => setForm((current) => ({
+    ...current,
+    successMetrics: current.successMetrics.filter((metric) => metric.id !== metricId),
+  }));
+  const validMetrics = form.successMetrics.filter((metric) => metric.label.trim() && metric.target.trim());
+
+  return (
+    <Dialog aria-labelledby="pillar-editor-title" open onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle id="pillar-editor-title">{form.id ? 'Edit Strategic Pillar' : 'Add Strategic Pillar'}</DialogTitle>
+      <DialogContent>
+        <Stack gap={1.5} sx={{ pt: 1 }}>
+          <TextField label="Pillar Name" value={form.name} onChange={update('name')} required fullWidth />
+          <TextField label="Reference Description" value={form.description} onChange={update('description')} multiline minRows={2} fullWidth />
+          <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+            <Box>
+              <Typography variant="h3">Success metrics</Typography>
+              <Typography variant="body2">Long-range measurements preserved with this pillar.</Typography>
+            </Box>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => setForm((current) => ({ ...current, successMetrics: [...current.successMetrics, blankSuccessMetric()] }))}
+            >
+              Add Metric
+            </Button>
+          </Stack>
+          {form.successMetrics.map((metric, index) => (
+            <Stack key={metric.id || `${metric.label}-${index}`} direction={{ xs: 'column', sm: 'row' }} gap={1} alignItems={{ sm: 'center' }}>
+              <TextField label="Success Metric" value={metric.label} onChange={updateMetric(metric.id, 'label')} fullWidth />
+              <TextField label="Target" value={metric.target} onChange={updateMetric(metric.id, 'target')} fullWidth />
+              <Tooltip title={`Remove success metric ${index + 1}`}>
+                <IconButton aria-label={`Remove success metric ${index + 1}`} onClick={() => removeMetric(metric.id)}>
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          ))}
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          disabled={!form.name.trim() || !validMetrics.length}
+          onClick={() => onSave({ ...form, successMetrics: validMetrics })}
+          variant="contained"
+        >
+          Save Pillar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const PillarCoverage = ({ canManage, companyPriorities, onDeletePillar, onEditPillar, onOpenPillar, strategicPlan }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
@@ -310,16 +418,19 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
         <Typography variant="h2">Strategic plan alignment</Typography>
         <Typography variant="body2" sx={{ mt: 0.35 }}>How this quarter's organizational priorities support the four-year strategic plan.</Typography>
       </Box>
-      <Chip icon={<AccountTreeOutlinedIcon />} label={strategicPlan2030.name} color="primary" variant="outlined" />
+      <Stack direction="row" gap={1} alignItems="center">
+        <Chip icon={<AccountTreeOutlinedIcon />} label={strategicPlan.name} color="primary" variant="outlined" />
+        {canManage && <Button startIcon={<AddIcon />} onClick={() => onEditPillar(null)} variant="outlined">Add Pillar</Button>}
+      </Stack>
     </Stack>
 
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(5, minmax(0, 1fr))' }, gap: 1 }}>
-      {strategicPlan2030.pillars.map((pillar) => {
+      {strategicPlan.pillars.map((pillar) => {
         const pillarPriorities = companyPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
         const progress = averageProgress(pillarPriorities, getPriorityProgress);
         const maxAlignedPriorities = Math.max(
           1,
-          ...strategicPlan2030.pillars.map((candidate) => companyPriorities.filter((priority) => priority.strategicPillarId === candidate.id).length),
+          ...strategicPlan.pillars.map((candidate) => companyPriorities.filter((priority) => priority.strategicPillarId === candidate.id).length),
         );
         const amplitude = pillarPriorities.length / maxAlignedPriorities;
         const pulseStatus = [...pillarPriorities]
@@ -354,7 +465,34 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
           >
             <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">
               <Chip label={`Pillar ${pillar.order}`} size="small" color="primary" />
-              <AccountTreeOutlinedIcon color="primary" fontSize="small" />
+              {canManage ? (
+                <Stack direction="row" gap={0.25}>
+                  <Tooltip title={`Edit ${pillar.name}`}>
+                    <IconButton
+                      aria-label={`Edit strategic pillar ${pillar.name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onEditPillar(pillar);
+                      }}
+                      size="small"
+                    >
+                      <EditOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={`Delete ${pillar.name}`}>
+                    <IconButton
+                      aria-label={`Delete strategic pillar ${pillar.name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDeletePillar(pillar.id);
+                      }}
+                      size="small"
+                    >
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              ) : <AccountTreeOutlinedIcon color="primary" fontSize="small" />}
             </Stack>
             <Typography variant="body1" color="text.primary" fontWeight={800} sx={{ mt: 1 }}>{pillar.name}</Typography>
             <PillarPulseFlow
@@ -461,7 +599,11 @@ const PillarDetailDialog = ({ detail, onClose }) => {
 
 const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { deleteStrategicPillar, saveStrategicPillar, strategicPlan } = useOperatingData();
+  const canManagePillars = user.workingGroup === 'ELT';
   const [pillarDetail, setPillarDetail] = useState(null);
+  const [pillarEditor, setPillarEditor] = useState(null);
   const [team, setTeam] = useState('All Teams');
   const companyPriorities = useMemo(() => priorities.filter((priority) => priority.company), []);
   const teamOptions = useMemo(() => getTeamOptions(companyPriorities), [companyPriorities]);
@@ -498,7 +640,17 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
         priorities={sortedPriorities}
         onOpen={(priority) => navigate(`/dashboard/company/priorities/${priority.id}`)}
       />
-      <PillarCoverage companyPriorities={companyPriorities} onOpenPillar={setPillarDetail} />
+      <PillarCoverage
+        canManage={canManagePillars}
+        companyPriorities={companyPriorities}
+        onDeletePillar={(pillarId) => {
+          deleteStrategicPillar(pillarId);
+          setPillarDetail(null);
+        }}
+        onEditPillar={(pillar) => setPillarEditor({ pillar })}
+        onOpenPillar={setPillarDetail}
+        strategicPlan={strategicPlan}
+      />
 
       <Box sx={{ minWidth: 0 }}>
         <CalendarPanel
@@ -513,6 +665,16 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
         detail={pillarDetail}
         onClose={() => setPillarDetail(null)}
       />
+      {pillarEditor && (
+        <PillarEditorDialog
+          editor={pillarEditor}
+          onClose={() => setPillarEditor(null)}
+          onSave={(pillar) => {
+            saveStrategicPillar(pillar);
+            setPillarEditor(null);
+          }}
+        />
+      )}
     </Stack>
   );
 };

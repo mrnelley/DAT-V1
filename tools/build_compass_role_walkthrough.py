@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -18,7 +19,7 @@ from reportlab.platypus import (
 )
 
 
-OUTPUT_PATH = Path("deliverables/Compass_Role_Walkthrough.pdf")
+DEFAULT_OUTPUT_PATH = Path("deliverables/Compass_Role_Walkthrough.pdf")
 
 NAVY = colors.HexColor("#17324D")
 TEAL = colors.HexColor("#168B91")
@@ -519,10 +520,10 @@ def build_story():
     return story
 
 
-def build():
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+def build(output_path):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     doc = BaseDocTemplate(
-        str(OUTPUT_PATH),
+        str(output_path),
         pagesize=letter,
         leftMargin=LEFT,
         rightMargin=RIGHT,
@@ -547,4 +548,7 @@ def build():
 
 
 if __name__ == "__main__":
-    build()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
+    args = parser.parse_args()
+    build(args.output)

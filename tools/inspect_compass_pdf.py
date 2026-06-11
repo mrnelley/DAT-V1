@@ -1,9 +1,14 @@
+import argparse
 from pathlib import Path
 
 from pypdf import PdfReader
 
 
-pdf_path = Path("deliverables/Compass_Role_Walkthrough.pdf")
+parser = argparse.ArgumentParser()
+parser.add_argument("pdf_path", type=Path)
+args = parser.parse_args()
+
+pdf_path = args.pdf_path
 reader = PdfReader(pdf_path)
 
 for page_number, page in enumerate(reader.pages, start=1):
