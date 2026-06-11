@@ -241,6 +241,62 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
   </Box>
 );
 
+const getPulsePath = (amplitude) => {
+  const center = 36;
+  if (!amplitude) return `M 0 ${center} L 300 ${center}`;
+  const height = 25 * amplitude;
+  return [
+    `M 0 ${center}`,
+    `C 24 ${center}, 30 ${center - height * 0.35}, 50 ${center - height * 0.35}`,
+    `S 78 ${center + height * 0.45}, 102 ${center + height * 0.45}`,
+    `S 126 ${center - height}, 150 ${center - height}`,
+    `S 174 ${center + height}, 198 ${center + height}`,
+    `S 228 ${center - height * 0.45}, 250 ${center - height * 0.45}`,
+    `S 276 ${center}, 300 ${center}`,
+  ].join(' ');
+};
+
+const PillarPulseFlow = ({ amplitude, count, pillarName, status }) => {
+  const meta = getStatusMeta(status);
+  const path = getPulsePath(amplitude);
+
+  return (
+    <Box
+      aria-label={`${pillarName}: ${count} aligned organizational ${count === 1 ? 'priority' : 'priorities'}, ${meta.label}`}
+      role="img"
+      sx={{ mt: 1, overflow: 'hidden' }}
+    >
+      <Box component="svg" viewBox="0 0 300 72" preserveAspectRatio="none" sx={{ display: 'block', height: 72, width: '100%' }}>
+        <path d={`M 0 36 L 300 36`} fill="none" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" />
+        <path d={path} fill="none" stroke={meta.border} strokeLinecap="round" strokeOpacity="0.2" strokeWidth={amplitude ? 9 : 2} />
+        <path
+          d={path}
+          fill="none"
+          pathLength="1"
+          stroke={meta.border}
+          strokeLinecap="round"
+          strokeWidth={amplitude ? 2.5 + amplitude * 1.75 : 1.5}
+          sx={{
+            animation: amplitude ? 'pillarPulseFlow 3.8s linear infinite' : 'none',
+            strokeDasharray: amplitude ? '0.16 0.035' : 'none',
+            '@keyframes pillarPulseFlow': {
+              from: { strokeDashoffset: 0 },
+              to: { strokeDashoffset: -0.195 },
+            },
+            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+          }}
+        />
+      </Box>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+        <Typography variant="caption" color="primary" fontWeight={800}>
+          {count} aligned priorit{count === 1 ? 'y' : 'ies'}
+        </Typography>
+        <Typography variant="caption" color={meta.tone} fontWeight={800}>{count ? meta.label : 'No current signal'}</Typography>
+      </Stack>
+    </Box>
+  );
+};
+
 const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
@@ -256,6 +312,14 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
       {strategicPlan2030.pillars.map((pillar) => {
         const pillarPriorities = companyPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
         const progress = averageProgress(pillarPriorities, getPriorityProgress);
+        const maxAlignedPriorities = Math.max(
+          1,
+          ...strategicPlan2030.pillars.map((candidate) => companyPriorities.filter((priority) => priority.strategicPillarId === candidate.id).length),
+        );
+        const amplitude = pillarPriorities.length / maxAlignedPriorities;
+        const pulseStatus = [...pillarPriorities]
+          .map((priority) => getPriorityStatus(priority))
+          .sort((a, b) => getStatusMeta(a).order - getStatusMeta(b).order)[0] || 'No Data';
 
         return (
           <Box
@@ -288,10 +352,12 @@ const PillarCoverage = ({ companyPriorities, onOpenPillar }) => (
               <AccountTreeOutlinedIcon color="primary" fontSize="small" />
             </Stack>
             <Typography variant="body1" color="text.primary" fontWeight={800} sx={{ mt: 1 }}>{pillar.name}</Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>{pillar.description}</Typography>
-            <Typography variant="caption" color="primary" fontWeight={800} sx={{ display: 'block', mt: 1 }}>
-              {pillarPriorities.length} current organizational priorit{pillarPriorities.length === 1 ? 'y' : 'ies'} aligned
-            </Typography>
+            <PillarPulseFlow
+              amplitude={amplitude}
+              count={pillarPriorities.length}
+              pillarName={pillar.name}
+              status={pulseStatus}
+            />
           </Box>
         );
       })}

@@ -581,6 +581,8 @@ describe('clickable user actions', () => {
 
     expect(await screen.findByText(/no quarterly organizational priorities have been defined yet/i)).to.exist;
     expect((await screen.findAllByRole('button', { name: /open pillar detail/i })).length).to.equal(5);
+    expect((await screen.findAllByRole('img', { name: /0 aligned organizational priorities, no data/i })).length).to.equal(5);
+    expect(screen.queryByText(/prioritize resident-centered service delivery/i)).to.equal(null);
   });
 
   it('shows an empty organizational priority register when quarterly priorities do not exist yet', async () => {
