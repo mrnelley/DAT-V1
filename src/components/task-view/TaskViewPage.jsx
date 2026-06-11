@@ -1,12 +1,15 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import DragIndicatorOutlinedIcon from '@mui/icons-material/DragIndicatorOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
@@ -41,17 +44,6 @@ const normalizeStatus = (status) => String(status || '').toLowerCase().replaceAl
 
 const isActiveStatus = (status) => !['complete', 'completed', 'cancelled'].includes(normalizeStatus(status));
 
-const buildInitialForm = (user) => ({
-  description: '',
-  ownerId: user.id,
-  due: '2026-05-19',
-  status: 'Open',
-  visibility: 'private',
-  priority: '',
-  strategicPillar: '',
-  workplanId: '',
-});
-
 const buildAssignmentForm = (item) => ({
   due: item?.due || '2026-05-19',
   note: '',
@@ -80,16 +72,18 @@ const canViewTask = (item, user) => (
 const TaskViewPage = () => {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
-  const { addQueuedTask: persistQueuedTask, addStuck, departmentWorkplans, getTasksForUser, queuedTasks, updateQueuedTask } = useOperatingData();
+  const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, reorderQueuedTasks, updateQueuedTask } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('Assigned to Me');
   const [statusFilter, setStatusFilter] = useState('Active');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState(buildInitialForm(user));
+  const [queueDraft, setQueueDraft] = useState('');
+  const [completingTaskIds, setCompletingTaskIds] = useState([]);
   const [assignmentEvents, setAssignmentEvents] = useState([]);
   const [assignmentForm, setAssignmentForm] = useState(buildAssignmentForm());
   const [selectedItem, setSelectedItem] = useState(null);
   const [stuckTask, setStuckTask] = useState(null);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const queueInputRef = useRef(null);
   const visibleItems = queuedTasks.filter((item) => {
     if (!canViewTask(item, user)) return false;
     const matchesStatus = statusFilter === 'All'
@@ -102,51 +96,99 @@ const TaskViewPage = () => {
     if (scope === 'Due This Week') return item.due >= today && item.due <= weekEnd && isActiveStatus(item.status);
     if (scope === 'Department') return item.department === user.department;
     return true;
-  });
+  }).sort((a, b) => (
+    Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
+    || (Number(a.queueOrder) || 0) - (Number(b.queueOrder) || 0)
+    || a.description.localeCompare(b.description)
+  ));
 
   useEffect(() => {
     if (!['1', 'queue'].includes(searchParams.get('new'))) return;
 
-    setDialogOpen(true);
+    queueInputRef.current?.focus();
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('new');
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
-  const closeDialog = () => {
-    setDialogOpen(false);
-    setForm(buildInitialForm(user));
-  };
   const closeAssignmentDialog = () => {
     setSelectedItem(null);
     setAssignmentForm(buildAssignmentForm());
   };
 
   const addQueuedTask = () => {
-    const owner = users.find((candidate) => candidate.id === form.ownerId) || user;
-    const workplan = departmentWorkplans.find((candidate) => candidate.id === form.workplanId);
+    const description = queueDraft.trim();
+    if (!description) return;
+
     persistQueuedTask({
       assignments: [
-        { profile: owner, role: 'assignee' },
+        { profile: user, role: 'assignee' },
         { profile: user, role: 'assigned_by' },
       ],
       createdBy: user,
-      department: owner.department,
-      description: form.description,
-      due: form.due,
+      department: user.department,
+      description,
+      due: '',
       id: `task-custom-${Date.now()}`,
-      owner,
-      priority: form.priority,
+      owner: user,
+      priority: '',
       source: 'one_off',
       sourceType: 'queued_task',
-      status: form.status,
-      strategicPillar: form.strategicPillar,
-      visibility: form.visibility,
-      workplanId: workplan?.id || null,
-      workplanTitle: workplan?.title || null,
+      status: 'Open',
+      strategicPillar: '',
+      visibility: 'private',
+      workplanId: null,
+      workplanTitle: null,
     });
-    closeDialog();
+    setQueueDraft('');
+    requestAnimationFrame(() => queueInputRef.current?.focus());
+  };
+
+  const completeQueuedTask = (item) => {
+    if (!canManageTask(item, user) || completingTaskIds.includes(item.id)) return;
+
+    if (normalizeStatus(item.status) === 'complete') {
+      updateQueuedTask(item.id, { completedAt: null, status: 'Open' });
+      return;
+    }
+
+    setCompletingTaskIds((current) => [...current, item.id]);
+    window.setTimeout(() => {
+      updateQueuedTask(item.id, { completedAt: new Date().toISOString(), status: 'Complete' });
+      setCompletingTaskIds((current) => current.filter((taskId) => taskId !== item.id));
+    }, 380);
+  };
+
+  const moveTask = (taskId, direction) => {
+    const task = visibleItems.find((item) => item.id === taskId);
+    const group = visibleItems.filter((item) => Boolean(item.pinned) === Boolean(task?.pinned));
+    const index = group.findIndex((item) => item.id === taskId);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= group.length) return;
+
+    const reorderedGroup = [...group];
+    const [moved] = reorderedGroup.splice(index, 1);
+    reorderedGroup.splice(nextIndex, 0, moved);
+    reorderQueuedTasks([
+      ...visibleItems.filter((item) => item.pinned).map((item) => item.id),
+      ...visibleItems.filter((item) => !item.pinned).map((item) => item.id),
+    ].map((id) => {
+      const replacementIndex = group.findIndex((item) => item.id === id);
+      return replacementIndex >= 0 ? reorderedGroup[replacementIndex].id : id;
+    }));
+  };
+
+  const dropTaskBefore = (targetTaskId) => {
+    if (!draggedTaskId || draggedTaskId === targetTaskId) return;
+    const dragged = visibleItems.find((item) => item.id === draggedTaskId);
+    const target = visibleItems.find((item) => item.id === targetTaskId);
+    if (!dragged || !target || Boolean(dragged.pinned) !== Boolean(target.pinned)) return;
+
+    const nextIds = visibleItems.map((item) => item.id);
+    nextIds.splice(nextIds.indexOf(draggedTaskId), 1);
+    nextIds.splice(nextIds.indexOf(targetTaskId), 0, draggedTaskId);
+    reorderQueuedTasks(nextIds);
+    setDraggedTaskId(null);
   };
 
   const openAssignmentWorkflow = (item) => {
@@ -214,7 +256,6 @@ const TaskViewPage = () => {
             Work standalone queued tasks, assignments, and optional department workplan links.
           </Typography>
         </Box>
-        <Button startIcon={<AddOutlinedIcon />} variant="contained" title="Add task to queue" onClick={() => setDialogOpen(true)}>Add to Queue</Button>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
         Weekly commitments and their Action Items live in the Weekly Tracker. Use Task View to queue and manage standalone tasks that do not belong under a weekly priority.
@@ -264,33 +305,109 @@ const TaskViewPage = () => {
           overflow: 'hidden',
         }}
       >
+        <ListItem
+          divider
+          sx={{
+            alignItems: 'center',
+            bgcolor: 'rgba(255,255,255,0.42)',
+            gap: 1,
+            py: 1.25,
+          }}
+        >
+          <CheckCircleOutlineOutlinedIcon aria-hidden color="disabled" sx={{ mx: 1.1 }} />
+          <TextField
+            inputRef={queueInputRef}
+            fullWidth
+            inputProps={{ 'aria-label': 'Add a task to my queue', title: 'Type a task and press Enter to add it to your queue' }}
+            onChange={(event) => setQueueDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter' || event.shiftKey) return;
+              event.preventDefault();
+              addQueuedTask();
+            }}
+            placeholder="Type a task and press Enter"
+            value={queueDraft}
+            variant="standard"
+            InputProps={{ disableUnderline: true }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' }, whiteSpace: 'nowrap' }}>
+            Enter to save
+          </Typography>
+        </ListItem>
         {!visibleItems.length && (
           <ListItem>
-            <Typography variant="body2" color="text.secondary">No tasks match this view.</Typography>
+            <Typography variant="body2" color="text.secondary">Your queue is clear. Add the next thing when it arrives.</Typography>
           </ListItem>
         )}
         {visibleItems.map((item) => {
           const done = normalizeStatus(item.status) === 'complete';
+          const completing = completingTaskIds.includes(item.id);
           const canManage = canManageTask(item, user);
           const canIssueStuck = item.owner?.id === user.id;
           return (
             <ListItem
               key={item.id}
               divider
-              sx={{ alignItems: 'flex-start', gap: 1, bgcolor: done ? 'rgba(94, 184, 168, 0.12)' : 'transparent' }}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => dropTaskBefore(item.id)}
+              sx={{
+                alignItems: 'flex-start',
+                bgcolor: done || completing ? 'rgba(94, 184, 168, 0.12)' : item.pinned ? 'rgba(241, 172, 73, 0.12)' : 'transparent',
+                gap: 1,
+                opacity: completing ? 0 : 1,
+                transform: completing ? 'translateX(110%) rotate(1deg)' : 'translateX(0)',
+                transition: 'transform 360ms cubic-bezier(.4,0,.2,1), opacity 280ms ease, background-color 180ms ease',
+              }}
             >
-              <Checkbox
+              <Tooltip title={done ? 'Return task to queue' : 'Mark task complete'}>
+                <span>
+              <IconButton
                 disabled={!canManage}
-                checked={done}
-                onChange={() => updateQueuedTask(item.id, { status: done ? 'Open' : 'Complete' })}
-                inputProps={{ 'aria-label': `Mark task complete: ${item.description}`, title: `Mark task complete: ${item.description}` }}
+                aria-label={done ? `Return task to queue: ${item.description}` : `Mark task complete: ${item.description}`}
+                onClick={() => completeQueuedTask(item)}
+                title={done ? `Return task to queue: ${item.description}` : `Mark task complete: ${item.description}`}
                 sx={{ mt: 0.25 }}
-              />
+              >
+                {done || completing ? <CheckCircleOutlinedIcon color="success" /> : <CheckCircleOutlineOutlinedIcon />}
+              </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Drag to reorder. Use arrow keys to move within this group.">
+                <Box
+                  aria-label={`Reorder task: ${item.description}`}
+                  draggable={canManage}
+                  onDragEnd={() => setDraggedTaskId(null)}
+                  onDragStart={() => setDraggedTaskId(item.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowUp') {
+                      event.preventDefault();
+                      moveTask(item.id, -1);
+                    }
+                    if (event.key === 'ArrowDown') {
+                      event.preventDefault();
+                      moveTask(item.id, 1);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={canManage ? 0 : -1}
+                  sx={{
+                    color: 'text.secondary',
+                    cursor: canManage ? 'grab' : 'default',
+                    display: 'grid',
+                    mt: 1,
+                    placeItems: 'center',
+                    '&:active': { cursor: canManage ? 'grabbing' : 'default' },
+                    '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+                  }}
+                >
+                  <DragIndicatorOutlinedIcon fontSize="small" />
+                </Box>
+              </Tooltip>
               <Box sx={{ flex: 1, minWidth: 240 }}>
                 <Typography sx={{ textDecoration: done ? 'line-through' : 'none' }}>{item.description}</Typography>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
                   <UserAvatar user={item.owner} size="sm" />
-                  <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />
+                  {item.due && <Chip icon={chipColor(item.due) === 'error' ? <WarningAmberOutlinedIcon /> : undefined} label={item.due} color={chipColor(item.due)} size="small" />}
                   <Chip icon={<VisibilityOutlinedIcon />} label={visibilityLabels[item.visibility] || 'Assigned and created by'} variant="outlined" size="small" />
                   <Chip label={sourceLabels[item.source] || 'Task'} variant="outlined" size="small" />
                   {item.priority && <Chip label={item.priority} color="primary" variant="outlined" size="small" />}
@@ -298,6 +415,20 @@ const TaskViewPage = () => {
                   {item.workplanTitle && <Chip label={item.workplanTitle} color="secondary" variant="outlined" size="small" />}
                 </Stack>
               </Box>
+              <Tooltip title={item.pinned ? 'Unpin task' : 'Pin task to top'}>
+                <span>
+                  <IconButton
+                    aria-label={`${item.pinned ? 'Unpin' : 'Pin'} task: ${item.description}`}
+                    aria-pressed={Boolean(item.pinned)}
+                    disabled={!canManage}
+                    onClick={() => updateQueuedTask(item.id, { pinned: !item.pinned })}
+                    title={`${item.pinned ? 'Unpin' : 'Pin'} task: ${item.description}`}
+                    sx={{ color: item.pinned ? 'warning.dark' : 'text.secondary' }}
+                  >
+                    <PushPinOutlinedIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={canIssueStuck ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
                 <span>
                   <IconButton disabled={!canIssueStuck} aria-label={`Issue a stuck for task ${item.description}`} onClick={() => setStuckTask(item)}>
@@ -314,50 +445,6 @@ const TaskViewPage = () => {
           );
         })}
       </List>
-      <Dialog aria-labelledby="task-queue-dialog-title" open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle id="task-queue-dialog-title">Add Task to Queue</DialogTitle>
-        <DialogContent>
-          <Stack gap={2} sx={{ pt: 1 }}>
-            <Alert severity="warning">
-              Use this only when the task is not pursuant to a weekly priority. Weekly priority work should be authored in the Weekly Tracker first.
-            </Alert>
-            <TextField label="Task" value={form.description} onChange={update('description')} fullWidth />
-            <TextField select label="Owner" value={form.ownerId} onChange={update('ownerId')} fullWidth>
-              {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
-            </TextField>
-            <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-              <TextField label="Due date" type="date" value={form.due} onChange={update('due')} fullWidth InputLabelProps={{ shrink: true }} />
-              <TextField select label="Status" value={form.status} onChange={update('status')} fullWidth>
-                <MenuItem value="Open">Open</MenuItem>
-                <MenuItem value="In Progress">In Progress</MenuItem>
-                <MenuItem value="Complete">Complete</MenuItem>
-              </TextField>
-            </Stack>
-            <TextField select label="Department Workplan (optional)" value={form.workplanId} onChange={update('workplanId')} fullWidth>
-              <MenuItem value="">No workplan link</MenuItem>
-              {departmentWorkplans.map((workplan) => (
-                <MenuItem key={workplan.id} value={workplan.id}>{workplan.department} - {workplan.title}</MenuItem>
-              ))}
-            </TextField>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Advanced visibility</Typography>
-              <FormControl fullWidth>
-                <InputLabel id="action-item-visibility-label">Who can see this task?</InputLabel>
-                <Select labelId="action-item-visibility-label" label="Who can see this task?" value={form.visibility} onChange={update('visibility')}>
-                  <MenuItem value="private">Only assigned and created by</MenuItem>
-                  <MenuItem value="department">Owner's department</MenuItem>
-                  <MenuItem value="olt">Everyone in OLT</MenuItem>
-                  <MenuItem value="organization">All users</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeDialog}>Cancel</Button>
-          <Button variant="contained" onClick={addQueuedTask} disabled={!form.description.trim()}>Add Task to Queue</Button>
-        </DialogActions>
-      </Dialog>
       <Dialog aria-labelledby="task-assignment-dialog-title" open={Boolean(selectedItem)} onClose={closeAssignmentDialog} fullWidth maxWidth="sm">
         <DialogTitle id="task-assignment-dialog-title">Task Assignment Workflow</DialogTitle>
         <DialogContent>

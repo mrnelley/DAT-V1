@@ -68,13 +68,17 @@ export const OperatingDataProvider = ({ children }) => {
   }, [state]);
 
   const addQueuedTask = useCallback((task) => {
-    setState((current) => ({
-      ...current,
-      queuedTasksByOwner: {
-        ...current.queuedTasksByOwner,
-        [task.owner.id]: [task, ...(current.queuedTasksByOwner[task.owner.id] || [])],
-      },
-    }));
+    setState((current) => {
+      const ownerTasks = current.queuedTasksByOwner[task.owner.id] || [];
+      const firstOrder = Math.min(0, ...ownerTasks.map((item) => Number(item.queueOrder) || 0)) - 1;
+      return {
+        ...current,
+        queuedTasksByOwner: {
+          ...current.queuedTasksByOwner,
+          [task.owner.id]: [{ pinned: false, queueOrder: firstOrder, ...task }, ...ownerTasks],
+        },
+      };
+    });
   }, []);
 
   const saveDepartmentWorkplan = useCallback((workplan) => {
@@ -111,6 +115,16 @@ export const OperatingDataProvider = ({ children }) => {
           ...allTasks.filter((task) => task.id !== taskId),
         ]),
       };
+    });
+  }, []);
+
+  const reorderQueuedTasks = useCallback((orderedTaskIds) => {
+    setState((current) => {
+      const orderById = new Map(orderedTaskIds.map((taskId, index) => [taskId, index]));
+      const allTasks = Object.values(current.queuedTasksByOwner).flat().map((task) => (
+        orderById.has(task.id) ? { ...task, queueOrder: orderById.get(task.id) } : task
+      ));
+      return { ...current, queuedTasksByOwner: groupTasksByOwner(allTasks) };
     });
   }, []);
 
@@ -195,6 +209,7 @@ export const OperatingDataProvider = ({ children }) => {
     getTasksForUser,
     huddles: state.huddles,
     queuedTasks,
+    reorderQueuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,
@@ -212,6 +227,7 @@ export const OperatingDataProvider = ({ children }) => {
     deleteDepartmentWorkplan,
     getTasksForUser,
     queuedTasks,
+    reorderQueuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,

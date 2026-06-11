@@ -250,15 +250,13 @@ describe('clickable user actions', () => {
     window.localStorage.clear();
   });
 
-  it('opens the one-off task dialog from Task View', async () => {
-    const { user } = renderWithProviders(<TaskViewPage />);
+  it('provides an inline one-off task input in Task View', async () => {
+    renderWithProviders(<TaskViewPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add to queue/i }));
-
-    expect(screen.getByRole('dialog')).to.exist;
-    expect(screen.getByRole('heading', { name: /add task to queue/i })).to.exist;
+    expect(await screen.findByRole('textbox', { name: /add a task to my queue/i })).to.exist;
+    expect(screen.getByText(/enter to save/i)).to.exist;
+    expect(screen.queryByRole('button', { name: /add to queue/i })).to.equal(null);
     expect(screen.getByText(/weekly commitments and their action items live in the weekly tracker/i)).to.exist;
-    expect(screen.getByText(/advanced visibility/i)).to.exist;
   });
 
   it('uses the user primary dashboard on demo sign in', async () => {
@@ -301,17 +299,61 @@ describe('clickable user actions', () => {
   it('creates and persists a visible one-off task from Task View', async () => {
     const { user } = renderWithProviders(<TaskViewPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add to queue/i }));
-    await user.type(screen.getByLabelText(/^task$/i), 'Confirm Teams card copy');
-    await user.click(screen.getByRole('button', { name: /add task to queue/i }));
+    const queueInput = await screen.findByRole('textbox', { name: /add a task to my queue/i });
+    await user.type(queueInput, 'Confirm Teams card copy{Enter}');
 
     expect(await screen.findByText('Confirm Teams card copy')).to.exist;
+    expect(queueInput.value).to.equal('');
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).to.equal(null);
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
       const savedTask = saved.queuedTasksByOwner.u1.find((task) => task.description === 'Confirm Teams card copy');
       expect(savedTask.workplanId).to.equal(null);
       expect(savedTask.workplanTitle).to.equal(null);
+    });
+  });
+
+  it('flies a completed queued task out and persists its completion timestamp', async () => {
+    const queuedTask = taskFixture();
+    const { user } = renderWithProviders(<TaskViewPage />, '/task-view', 'u1', {
+      queuedTasksByOwner: { u1: [queuedTask] },
+    });
+
+    await user.click(await screen.findByRole('button', { name: /mark task complete: send final q2 priority draft to elt/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText(/send final q2 priority draft to elt/i)).to.equal(null);
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const savedTask = saved.queuedTasksByOwner.u1.find((task) => task.id === queuedTask.id);
+      expect(savedTask.status).to.equal('Complete');
+      expect(savedTask.completedAt).to.be.a('string').and.not.equal('');
+    });
+  });
+
+  it('pins queued tasks to the top and persists manual task ordering', async () => {
+    const firstTask = taskFixture({ description: 'First queue task', id: 'task-first', queueOrder: 0 });
+    const secondTask = taskFixture({ description: 'Second queue task', id: 'task-second', queueOrder: 1 });
+    const { user } = renderWithProviders(<TaskViewPage />, '/task-view', 'u1', {
+      queuedTasksByOwner: { u1: [firstTask, secondTask] },
+    });
+
+    await user.click(await screen.findByRole('button', { name: /pin task: second queue task/i }));
+    const pinnedTask = await screen.findByText('Second queue task');
+    const firstVisibleTask = screen.getByText('First queue task');
+    expect(pinnedTask.compareDocumentPosition(firstVisibleTask) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+
+    await user.click(screen.getByRole('button', { name: /unpin task: second queue task/i }));
+    const reorderHandle = screen.getByRole('button', { name: /reorder task: first queue task/i });
+    reorderHandle.focus();
+    fireEvent.keyDown(reorderHandle, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      const secondVisibleTask = screen.getByText('Second queue task');
+      const movedTask = screen.getByText('First queue task');
+      expect(secondVisibleTask.compareDocumentPosition(movedTask) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const tasks = saved.queuedTasksByOwner.u1;
+      expect(tasks.find((task) => task.id === 'task-second').pinned).to.equal(false);
+      expect(tasks.find((task) => task.id === 'task-second').queueOrder).to.be.lessThan(tasks.find((task) => task.id === 'task-first').queueOrder);
     });
   });
 
