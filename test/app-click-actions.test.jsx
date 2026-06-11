@@ -97,6 +97,7 @@ const { NotificationsProvider } = await import('../src/context/NotificationsCont
 const { OperatingDataProvider } = await import('../src/context/OperatingDataContext.jsx');
 const { default: theme } = await import('../src/theme/index.js');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
+const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
@@ -483,8 +484,13 @@ describe('clickable user actions', () => {
 
     await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
 
-    expect(await screen.findByText(/edit priority/i)).to.exist;
+    expect(await screen.findByText(/edit organizational priority/i)).to.exist;
     expect(screen.getByLabelText(/priority name/i)).to.exist;
+    expect(screen.getByLabelText(/key objective/i)).to.exist;
+    expect(screen.getByLabelText(/objective owner/i)).to.exist;
+    expect(screen.getByLabelText(/kpi - end of/i)).to.exist;
+    expect(screen.queryByText(/success measurement/i)).to.equal(null);
+    expect(screen.queryByLabelText(/^owner$/i)).to.equal(null);
   });
 
   it('shows a bottom-right unavailable alert for unconnected priority save', async () => {
@@ -493,7 +499,25 @@ describe('clickable user actions', () => {
     await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
     await user.click(await screen.findByRole('button', { name: /^save$/i }));
 
-    expect(await screen.findByText(/action is unavailable because priority persistence is not connected yet/i)).to.exist;
+    expect(await screen.findByText(/action is unavailable because organizational priority persistence is not connected yet/i)).to.exist;
+  });
+
+  it('creates an Organizational Priority from owned Key Objectives and rolls up its signal', async () => {
+    const { user } = renderWithProviders(<StrategicPlanSection />, '/metrics', 'u1');
+
+    await user.click((await screen.findAllByRole('button', { name: /open .* q2 2026 roadmap/i }))[0]);
+    await user.click(await screen.findByRole('button', { name: /add org priority/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: /add organizational priority/i });
+    fireEvent.change(within(dialog).getByLabelText(/priority name/i), { target: { value: 'Resident service readiness' } });
+    fireEvent.change(within(dialog).getByLabelText(/key objective/i), { target: { value: 'Publish service standards' } });
+    fireEvent.change(within(dialog).getByLabelText(/kpi - end of/i), { target: { value: 'Standards approved' } });
+    fireEvent.change(within(dialog).getByLabelText(/kpi target/i), { target: { value: 'Approved by June 30' } });
+
+    expect(within(dialog).queryByLabelText(/^owner$/i)).to.equal(null);
+    expect(within(dialog).queryByLabelText(/priority health/i)).to.equal(null);
+    await user.click(within(dialog).getByRole('button', { name: /add key objective/i }));
+    expect(within(dialog).getAllByRole('textbox', { name: /key objective/i })).to.have.length(2);
   });
 
   it('opens the task-linked stuck creation modal', async () => {

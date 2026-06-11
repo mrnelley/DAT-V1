@@ -33,7 +33,14 @@ const statusGroups = [
 
 const clampProgress = (value) => Math.min(100, Math.max(0, Math.round(Number(value) || 0)));
 
-const getPriorityStatus = (priority) => priority.roadmapStatus || priority.status || 'No Data';
+const getPriorityStatus = (priority) => {
+  const objectiveStatuses = (priority.keyObjectives || []).map((objective) => objective.status);
+  if (!objectiveStatuses.length) return 'No Data';
+  if (objectiveStatuses.some((status) => ['Alert', 'Off Course'].includes(status))) return 'Alert';
+  if (objectiveStatuses.some((status) => ['Watch', 'Needs Attention'].includes(status))) return 'Watch';
+  if (objectiveStatuses.every((status) => ['Complete', 'Completed'].includes(status))) return 'Complete';
+  return 'Steady';
+};
 
 const getStatusMeta = (status) => statusMeta[status] || statusMeta['No Data'];
 
@@ -46,8 +53,6 @@ const getPriorityProgress = (priority) => {
 const getTeamOptions = (companyPriorities) => {
   const options = new Set(['All Teams']);
   companyPriorities.forEach((priority) => {
-    if (priority.owner?.department) options.add(priority.owner.department);
-    priority.owner?.teams?.forEach((team) => options.add(team));
     (priority.keyObjectives || []).forEach((objective) => {
       if (objective.department) options.add(objective.department);
       if (objective.workplanAccess) options.add(objective.workplanAccess);
@@ -60,14 +65,13 @@ const getTeamOptions = (companyPriorities) => {
 
 const priorityMatchesTeam = (priority, team) => {
   if (team === 'All Teams') return true;
-  const ownerMatches = priority.owner?.department === team || priority.owner?.teams?.includes(team);
   const objectiveMatches = (priority.keyObjectives || []).some((objective) => (
     objective.department === team
     || objective.workplanAccess === team
     || objective.owner?.department === team
     || objective.owner?.teams?.includes(team)
   ));
-  return ownerMatches || objectiveMatches;
+  return objectiveMatches;
 };
 
 const averageProgress = (items, getProgress) => {
@@ -167,6 +171,7 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
         const Icon = meta.icon;
         const progress = getPriorityProgress(priority);
         const kpis = (priority.keyObjectives || []).flatMap((objective) => objective.kpis || []);
+        const objectiveOwners = Array.from(new Map((priority.keyObjectives || []).map((objective) => [objective.owner?.id, objective.owner])).values()).filter(Boolean);
 
         return (
           <Box
@@ -208,11 +213,11 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
               <Typography variant="body2">{priority.description}</Typography>
             </Box>
 
-            <Stack direction="row" gap={1} alignItems="center">
-              <UserAvatar user={priority.owner} size="sm" />
+            <Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap">
+              {objectiveOwners.slice(0, 3).map((owner) => <UserAvatar key={owner.id} user={owner} size="sm" />)}
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="body2" color="text.primary" fontWeight={700}>{priority.owner?.name || 'Owner not set'}</Typography>
-                <Typography variant="caption">{priority.owner?.department}</Typography>
+                <Typography variant="body2" color="text.primary" fontWeight={700}>{objectiveOwners.length} objective owner{objectiveOwners.length === 1 ? '' : 's'}</Typography>
+                <Typography variant="caption">{priority.keyObjectives?.length || 0} Key Objectives</Typography>
               </Box>
             </Stack>
 

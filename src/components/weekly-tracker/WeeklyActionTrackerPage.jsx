@@ -749,9 +749,9 @@ const WeeklyActionTrackerPage = () => {
                   <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>{selectedEntry.alignedPriorityLabel || 'No alignment set'}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {selectedEntry.alignmentType === 'both'
-                      ? 'Enterprise priority and department workplan'
+                      ? 'Organizational Priority and department workplan'
                       : selectedEntry.alignmentType === 'enterprise'
-                        ? 'Enterprise priority'
+                        ? 'Organizational Priority'
                         : 'Department workplan'}
                   </Typography>
                 </Box>

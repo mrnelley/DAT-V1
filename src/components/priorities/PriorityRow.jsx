@@ -1,20 +1,44 @@
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Box, Card, Chip, IconButton, LinearProgress, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Card, Chip, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { statusColorMap } from '../../utils/statusColors';
 import UserAvatar from '../shared/UserAvatar';
-import PriorityGraph from './PriorityGraph';
-import PriorityHeatmap from './PriorityHeatmap';
+
+const getRollupStatus = (objectives) => {
+  const statuses = objectives.map((objective) => objective.status);
+  if (!statuses.length) return 'no_data';
+  if (statuses.some((status) => ['Alert', 'Off Course'].includes(status))) return 'off_course';
+  if (statuses.some((status) => ['Watch', 'Needs Attention'].includes(status))) return 'needs_attention';
+  if (statuses.every((status) => ['Complete', 'Completed'].includes(status))) return 'completed';
+  return 'on_course';
+};
+
+const getRollupProgress = (objectives) => {
+  const kpis = objectives.flatMap((objective) => objective.kpis || []);
+  if (!kpis.length) return 0;
+  return Math.round(kpis.reduce((total, kpi) => total + Number(kpi.progress || 0), 0) / kpis.length);
+};
+
+const rollupLabel = {
+  completed: 'Complete',
+  needs_attention: 'Needs Attention',
+  no_data: 'No Data',
+  off_course: 'Off Track',
+  on_course: 'On Track',
+};
 
 const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) => {
   const { unavailable } = useActionFeedback();
   const [expanded, setExpanded] = useState(expandedAll);
-  const [tab, setTab] = useState(0);
   const toggleExpanded = () => setExpanded((value) => !value);
-  const canManage = priority.owner?.id === currentUser?.id || priority.ownerIds?.includes(currentUser?.id);
+  const objectives = priority.keyObjectives || [];
+  const objectiveOwners = Array.from(new Map(objectives.map((objective) => [objective.owner?.id, objective.owner])).values()).filter(Boolean);
+  const canManage = currentUser?.workingGroup === 'ELT';
+  const rollupStatus = getRollupStatus(objectives);
+  const rollupProgress = getRollupProgress(objectives);
 
   return (
     <Box sx={{ ml: depth ? 3 : 0, mb: 0.5 }}>
@@ -32,29 +56,30 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           aria-expanded={expanded}
           aria-label={`${expanded ? 'Collapse' : 'Expand'} priority ${priority.name}`}
           title={`${expanded ? 'Collapse' : 'Expand'} priority ${priority.name}`}
-          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '32px 40px minmax(220px, 1fr) 110px minmax(180px, 260px) 64px 44px' }, gap: 1, alignItems: 'center', p: 1.5, cursor: 'pointer' }}
+          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '32px 90px minmax(220px, 1fr) 150px minmax(180px, 260px) 64px 44px' }, gap: 1, alignItems: 'center', p: 1.5, cursor: 'pointer' }}
         >
           <DragIndicatorIcon color="disabled" />
-          <UserAvatar user={priority.owner} size="md" />
+          <Stack direction="row" spacing={-0.75}>
+            {objectiveOwners.slice(0, 3).map((owner) => <UserAvatar key={owner.id} user={owner} size="md" />)}
+          </Stack>
           <Box>
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
               <Typography variant="body1" fontWeight={700}>{priority.name}</Typography>
-              {priority.company && <Chip label="COMPANY PRIORITY" size="small" sx={{ bgcolor: 'rgba(7,44,94,0.12)', color: 'primary.main' }} />}
-              {canManage ? (
-                <Chip label="MY PRIORITY" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.15)', color: 'secondary.dark' }} />
-              ) : (
-                <Chip label="VIEW ONLY" size="small" variant="outlined" />
-              )}
+              <Chip label="ORGANIZATIONAL PRIORITY" size="small" sx={{ bgcolor: 'rgba(7,44,94,0.12)', color: 'primary.main' }} />
+              {canManage ? <Chip label="ELT MANAGED" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.15)', color: 'secondary.dark' }} /> : <Chip label="VIEW ONLY" size="small" variant="outlined" />}
               {priority.strategicPillar && <Chip label={priority.strategicPillar} size="small" variant="outlined" />}
             </Stack>
           </Box>
-          <Chip label={priority.type} size="small" variant="outlined" color={priority.type === 'TASK' ? 'secondary' : priority.type === 'ROLLUP' ? 'warning' : 'primary'} />
+          <Chip label={`${objectives.length} Key Objective${objectives.length === 1 ? '' : 's'}`} size="small" variant="outlined" color="primary" />
           <Box>
-            <LinearProgress variant="determinate" value={priority.percent} sx={{ '& .MuiLinearProgress-bar': { bgcolor: statusColorMap[priority.status] } }} />
-            <Typography variant="caption">{priority.start} / {priority.current} / {priority.target}</Typography>
+            <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+              <Typography variant="caption">Objective KPI rollup</Typography>
+              <Typography variant="caption">{rollupProgress}%</Typography>
+            </Stack>
+            <LinearProgress variant="determinate" value={rollupProgress} sx={{ '& .MuiLinearProgress-bar': { bgcolor: statusColorMap[rollupStatus] } }} />
           </Box>
-          <Typography variant="h4" color={statusColorMap[priority.status]}>{priority.percent}%</Typography>
-          <Tooltip title={canManage ? 'Priority options' : 'Only tied owners can update this priority'}>
+          <Typography variant="caption" color={statusColorMap[rollupStatus]} fontWeight={800}>{rollupLabel[rollupStatus]}</Typography>
+          <Tooltip title={canManage ? 'Priority options' : 'Only ELT can update Organizational Priorities'}>
             <span>
               <IconButton disabled={!canManage} title={`More options for priority ${priority.name}`} aria-label={`More options for priority ${priority.name}`} onClick={(event) => { event.stopPropagation(); unavailable('priority options need the priority detail drawer.'); }}><MoreHorizOutlinedIcon /></IconButton>
             </span>
@@ -63,17 +88,26 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
         <AnimatePresence>
           {expanded && (
             <Box component={motion.div} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 240, damping: 22 }} sx={{ overflow: 'hidden' }}>
-              <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ bgcolor: 'background.default', p: 1.5, borderRadius: 1, mb: 1.5 }}>
-                  <Typography variant="body2">{priority.description}</Typography>
-                </Box>
-                <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 1 }}>
-                  <Tab label="GRAPH" />
-                  <Tab label="HEATMAP" />
-                </Tabs>
-                {tab === 0 ? <PriorityGraph priority={priority} /> : <PriorityHeatmap values={priority.heatmap} />}
-                {priority.children?.map((child) => <PriorityRow key={child.id} currentUser={currentUser} priority={child} depth={depth + 1} />)}
-              </Box>
+              <Stack gap={1} sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                {objectives.map((objective) => (
+                  <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
+                      <Box>
+                        <Typography variant="body1" fontWeight={800}>{objective.title}</Typography>
+                        <Typography variant="body2">{objective.kpis?.[0]?.title || 'KPI not defined'}: {objective.kpis?.[0]?.target || 'Target not defined'}</Typography>
+                      </Box>
+                      <Stack direction="row" alignItems="center" gap={1}>
+                        <UserAvatar user={objective.owner} size="sm" />
+                        <Box>
+                          <Typography variant="body2" fontWeight={700}>{objective.owner?.name || 'Owner not assigned'}</Typography>
+                          <Typography variant="caption">{objective.status || 'No Data'}</Typography>
+                        </Box>
+                      </Stack>
+                    </Stack>
+                  </Box>
+                ))}
+                {!objectives.length && <Typography variant="body2">No Key Objectives have been defined for this Organizational Priority.</Typography>}
+              </Stack>
             </Box>
           )}
         </AnimatePresence>

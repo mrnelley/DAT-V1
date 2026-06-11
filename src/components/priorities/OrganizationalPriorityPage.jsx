@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogTitle,
   LinearProgress,
-  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -56,13 +55,14 @@ const getPriorityProgress = (priority) => {
   return clampProgress(kpis.reduce((total, kpi) => total + Number(kpi.progress || 0), 0) / kpis.length);
 };
 
-const getPriorityGoal = (priority) => {
-  const kpis = (priority.keyObjectives || []).flatMap((objective) => objective.kpis || []);
-  const lowestProgressKpi = [...kpis].sort((a, b) => Number(a.progress || 0) - Number(b.progress || 0))[0];
-  return lowestProgressKpi?.target || priority.description;
+const priorityStatus = (priority) => {
+  const objectiveStatuses = (priority.keyObjectives || []).map((objective) => objective.status);
+  if (!objectiveStatuses.length) return 'No Data';
+  if (objectiveStatuses.some((status) => ['Alert', 'Off Course'].includes(status))) return 'Alert';
+  if (objectiveStatuses.some((status) => ['Watch', 'Needs Attention'].includes(status))) return 'Watch';
+  if (objectiveStatuses.every((status) => ['Complete', 'Completed'].includes(status))) return 'Complete';
+  return 'Steady';
 };
-
-const priorityStatus = (priority) => priority.roadmapStatus || priority.status || 'Watch';
 
 const matchesPriority = (value, priority) => value?.toLowerCase().includes(priority.name.toLowerCase());
 
@@ -77,7 +77,7 @@ const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
     || matchesPriority(item.alignedTo, priority)
   ));
   const relatedActions = queuedTasks.filter((item) => item.priority === priority.name);
-  const ownerIds = new Set(priority.ownerIds || []);
+  const ownerIds = new Set((priority.keyObjectives || []).map((objective) => objective.owner?.id).filter(Boolean));
   const relatedStucks = stucks.filter((stuck) => (
     ownerIds.has(stuck.personStuck?.id)
     || ownerIds.has(stuck.helpFrom?.id)
@@ -97,12 +97,6 @@ const EditPriorityDialog = ({ form, open, onClose, onSave, onUpdate }) => (
     <DialogContent sx={{ pt: 1 }}>
       <Stack gap={2} sx={{ mt: 1 }}>
         <TextField label="Priority Name" value={form.name} onChange={onUpdate('name')} fullWidth required />
-        <TextField select label="Health" value={form.roadmapStatus} onChange={onUpdate('roadmapStatus')} fullWidth>
-          {q2Roadmap.statusOptions.map((status) => (
-            <MenuItem key={status} value={status}>{getStatusMeta(status).label}</MenuItem>
-          ))}
-        </TextField>
-        <TextField label={`${q2Roadmap.quarter} Goal`} value={form.goal} onChange={onUpdate('goal')} fullWidth multiline minRows={2} />
         <TextField label="Executive Note" value={form.note} onChange={onUpdate('note')} fullWidth multiline minRows={3} />
       </Stack>
     </DialogContent>
@@ -130,10 +124,8 @@ const OrganizationalPriorityPage = () => {
   const [localPriority, setLocalPriority] = useState(sourcePriority);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState(() => ({
-    goal: sourcePriority ? getPriorityGoal(sourcePriority) : '',
     name: sourcePriority?.name || '',
     note: sourcePriority?.description || '',
-    roadmapStatus: sourcePriority?.roadmapStatus || 'Watch',
   }));
 
   const priority = localPriority || sourcePriority;
@@ -160,7 +152,8 @@ const OrganizationalPriorityPage = () => {
   const StatusIcon = meta.icon;
   const progress = getPriorityProgress(priority);
   const objectives = priority.keyObjectives || [];
-  const canEdit = user.workingGroup === 'ELT' || priority.ownerIds?.includes(user.id) || priority.owner?.id === user.id;
+  const objectiveOwners = Array.from(new Map(objectives.map((objective) => [objective.owner?.id, objective.owner])).values()).filter(Boolean);
+  const canEdit = user.workingGroup === 'ELT';
   const objectiveAverage = objectives.length
     ? clampProgress(objectives.reduce((total, objective) => total + getObjectiveProgress(objective), 0) / objectives.length)
     : progress;
@@ -171,7 +164,6 @@ const OrganizationalPriorityPage = () => {
       ...current,
       description: form.note,
       name: form.name,
-      roadmapStatus: form.roadmapStatus,
     }));
     setEditOpen(false);
   };
@@ -191,14 +183,14 @@ const OrganizationalPriorityPage = () => {
             </Stack>
             <Typography variant="h1" sx={{ mt: 1 }}>{priority.name}</Typography>
             <Typography variant="body1" sx={{ mt: 0.75, color: 'text.primary', maxWidth: 880 }}>
-              {form.goal || getPriorityGoal(priority)}
+              {objectives.length} Key Objectives with independently owned KPI targets
             </Typography>
           </Box>
-          <Stack direction="row" alignItems="center" gap={1} sx={{ alignSelf: { lg: 'flex-start' } }}>
-            <UserAvatar user={priority.owner} size="md" />
+          <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap" sx={{ alignSelf: { lg: 'flex-start' } }}>
+            {objectiveOwners.slice(0, 4).map((owner) => <UserAvatar key={owner.id} user={owner} size="md" />)}
             <Box>
-              <Typography variant="body1" fontWeight={800}>{priority.owner.name}</Typography>
-              <Typography variant="caption">Organizational priority owner</Typography>
+              <Typography variant="body1" fontWeight={800}>{objectiveOwners.length} objective owner{objectiveOwners.length === 1 ? '' : 's'}</Typography>
+              <Typography variant="caption">Accountability is assigned at the Key Objective level</Typography>
             </Box>
             {canEdit && (
             <Button variant="contained" startIcon={<EditOutlinedIcon />} title={`Edit ${priority.name}`} onClick={() => setEditOpen(true)} sx={{ ml: 1 }}>
@@ -211,7 +203,7 @@ const OrganizationalPriorityPage = () => {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' }, gap: 1.25 }}>
           <StatTile label="Priority Health" value={meta.label} helper="Current executive signal" />
           <StatTile label="Percent to Goal" value={`${progress}%`} helper="Average KPI progress" />
-          <StatTile label="Workplan Objectives" value={objectives.length} helper="Objective-level commitments" />
+          <StatTile label="Key Objectives" value={objectives.length} helper="Independently owned outcomes" />
           <StatTile label="Department Plans" value={related.relatedWorkplans.length} helper="Plans connected to this priority" />
         </Box>
 

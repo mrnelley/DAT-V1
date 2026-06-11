@@ -43,6 +43,35 @@ const getUser = (id) => users.find((candidate) => candidate.id === id) || users[
 
 const ownershipText = 'Finance-owned workplans can only be created or changed by Finance team members. Assigned collaborators can still complete assigned tasks or respond to stucks tied to the workplan.';
 
+const blankObjectiveDraft = (user) => ({
+  id: `objective-draft-${Date.now()}-${Math.random()}`,
+  kpiTarget: '',
+  kpiTitle: '',
+  ownerId: user.id,
+  status: 'Steady',
+  title: '',
+});
+
+const objectiveDraftsFromPriority = (priority, user) => (
+  priority?.keyObjectives?.length
+    ? priority.keyObjectives.map((objective) => ({
+      id: objective.id,
+      kpiTarget: objective.kpis?.[0]?.target || '',
+      kpiTitle: objective.kpis?.[0]?.title || '',
+      ownerId: objective.owner?.id || user.id,
+      status: objective.status || 'Steady',
+      title: objective.title,
+    }))
+    : [blankObjectiveDraft(user)]
+);
+
+const roadmapStatusFromObjectives = (objectives) => {
+  const statusRank = { Alert: 0, 'Off Course': 0, Watch: 1, 'Needs Attention': 1, Steady: 2, 'On Course': 2, Complete: 3, Completed: 3 };
+  return [...objectives].sort((a, b) => (statusRank[a.status] ?? 1) - (statusRank[b.status] ?? 1))[0]?.status || 'Watch';
+};
+
+const getPriorityRollupStatus = (priority) => roadmapStatusFromObjectives(priority.keyObjectives || []);
+
 const getBlankForm = (type, selectedPillar, user, priorityId, objectiveId) => ({
   type,
   priorityId,
@@ -57,16 +86,37 @@ const getBlankForm = (type, selectedPillar, user, priorityId, objectiveId) => ({
   workplanAccess: user.department,
   workplanSummary: '',
   target: '',
+  kpiTarget: '',
+  kpiTitle: '',
   currentLabel: '',
   progress: 0,
   notes: '',
   strategicPillarId: selectedPillar?.id,
+  objectiveDrafts: type === 'priority' ? [blankObjectiveDraft(user)] : [],
 });
 
 const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) => {
   const [form, setForm] = useState(() => editor.form);
 
   const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+  const updateObjectiveDraft = (draftId, field) => (event) => setForm((current) => ({
+    ...current,
+    objectiveDrafts: current.objectiveDrafts.map((draft) => (
+      draft.id === draftId ? { ...draft, [field]: event.target.value } : draft
+    )),
+  }));
+  const addObjectiveDraft = () => setForm((current) => ({
+    ...current,
+    objectiveDrafts: [...current.objectiveDrafts, blankObjectiveDraft(user)],
+  }));
+  const removeObjectiveDraft = (draftId) => setForm((current) => ({
+    ...current,
+    objectiveDrafts: current.objectiveDrafts.filter((draft) => draft.id !== draftId),
+  }));
+  const priorityReady = form.name.trim()
+    && form.objectiveDrafts.length > 0
+    && form.objectiveDrafts.every((draft) => draft.title.trim() && draft.ownerId && draft.kpiTitle.trim() && draft.kpiTarget.trim());
+  const objectiveReady = form.title.trim() && form.ownerId && form.kpiTitle.trim() && form.kpiTarget.trim();
 
   return (
     <Dialog aria-labelledby="roadmap-editor-dialog-title" open={editor.open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -78,12 +128,41 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
           {editor.type === 'priority' && (
             <>
               <TextField label="Priority Name" value={form.name} onChange={update('name')} fullWidth required />
-              <TextField select label="Owner" value={form.ownerId} onChange={update('ownerId')} fullWidth>
-                {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
-              </TextField>
-              <TextField select label="Quarter Outcome" value={form.roadmapStatus} onChange={update('roadmapStatus')} fullWidth>
-                {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
-              </TextField>
+              <Typography variant="body2">
+                Organizational Priorities are grouping lanes. Ownership and KPI accountability belong to each Key Objective.
+              </Typography>
+              <Stack gap={1.25}>
+                {form.objectiveDrafts.map((draft, index) => (
+                  <Box key={draft.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                      <Typography variant="h3">Key Objective {index + 1}</Typography>
+                      {form.objectiveDrafts.length > 1 && (
+                        <Tooltip title={`Remove Key Objective ${index + 1}`}>
+                          <IconButton aria-label={`Remove Key Objective ${index + 1}`} onClick={() => removeObjectiveDraft(draft.id)} size="small">
+                            <DeleteOutlineIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Stack>
+                    <Stack gap={1.25}>
+                      <TextField label="Key Objective" value={draft.title} onChange={updateObjectiveDraft(draft.id, 'title')} fullWidth required />
+                      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
+                        <TextField select label="Objective Owner" value={draft.ownerId} onChange={updateObjectiveDraft(draft.id, 'ownerId')} fullWidth required>
+                          {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
+                        </TextField>
+                        <TextField select label="Objective Status" value={draft.status} onChange={updateObjectiveDraft(draft.id, 'status')} fullWidth>
+                          {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                        </TextField>
+                      </Stack>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
+                        <TextField label={`KPI - End of ${q2Roadmap.quarter}`} value={draft.kpiTitle} onChange={updateObjectiveDraft(draft.id, 'kpiTitle')} fullWidth required />
+                        <TextField label="KPI Target" value={draft.kpiTarget} onChange={updateObjectiveDraft(draft.id, 'kpiTarget')} fullWidth required />
+                      </Stack>
+                    </Stack>
+                  </Box>
+                ))}
+                <Button startIcon={<AddIcon />} onClick={addObjectiveDraft} variant="outlined">Add Key Objective</Button>
+              </Stack>
             </>
           )}
 
@@ -101,6 +180,10 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <TextField label="Department" value={form.department} onChange={update('department')} fullWidth />
                 <TextField label="Workplan Access Team" value={form.workplanAccess} onChange={update('workplanAccess')} fullWidth />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+                <TextField label={`KPI - End of ${q2Roadmap.quarter}`} value={form.kpiTitle} onChange={update('kpiTitle')} fullWidth required />
+                <TextField label="KPI Target" value={form.kpiTarget} onChange={update('kpiTarget')} fullWidth required />
               </Stack>
               <TextField label="Workplan Title" value={form.workplanTitle} onChange={update('workplanTitle')} fullWidth />
               <TextField label="Workplan Summary" value={form.workplanSummary} onChange={update('workplanSummary')} fullWidth multiline minRows={2} />
@@ -130,7 +213,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={() => onSave({ ...form, user })} disabled={editor.type === 'priority' ? !form.name.trim() : !form.title.trim()}>
+        <Button variant="contained" onClick={() => onSave({ ...form, user })} disabled={editor.type === 'priority' ? !priorityReady : editor.type === 'objective' ? !objectiveReady : !form.title.trim()}>
           Save
         </Button>
       </DialogActions>
@@ -156,18 +239,17 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
     <DialogContent>
       <Stack gap={1.5} sx={{ py: 1 }}>
         {(pillar?.priorityItems || []).map((priority) => (
-          <Box key={priority.id} sx={{ border: '1px solid', borderColor: priority.roadmapStatus === 'Paused' ? 'divider' : 'primary.light', borderRadius: 1, p: 1.5, opacity: priority.roadmapStatus === 'Paused' ? 0.55 : 1 }}>
+          <Box key={priority.id} sx={{ border: '1px solid', borderColor: 'primary.light', borderRadius: 1, p: 1.5 }}>
             <Stack direction={{ xs: 'column', md: 'row' }} gap={1} justifyContent="space-between">
               <Box>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
                   <Typography variant="h3">{priority.name}</Typography>
-                  <Chip label={priority.roadmapStatus || 'Steady'} color={statusColor[priority.roadmapStatus] || 'default'} size="small" />
+                  <Chip label={getPriorityRollupStatus(priority)} color={statusColor[getPriorityRollupStatus(priority)] || 'default'} size="small" />
                   <Chip label={priority.period} variant="outlined" size="small" />
                 </Stack>
-                <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 0.75 }}>
-                  <UserAvatar user={priority.owner} size="sm" />
-                  <Typography variant="body2">{priority.owner.name} owns the organizational priority</Typography>
-                </Stack>
+                <Typography variant="body2" sx={{ mt: 0.75 }}>
+                  {priority.keyObjectives?.length || 0} Key Objectives with individual owners and KPI targets
+                </Typography>
               </Box>
               {canManage && (
                 <Stack direction="row" gap={0.5}>
@@ -198,7 +280,6 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
                       <Stack direction="row" gap={0.5}>
                         <Tooltip title="Edit objective"><IconButton aria-label={`Edit ${objective.title}`} onClick={() => onOpenEditor('objective', 'edit', { objective, pillar, priority })}><EditOutlinedIcon /></IconButton></Tooltip>
                         <Tooltip title="Delete objective"><IconButton aria-label={`Delete ${objective.title}`} onClick={() => onDeleteObjective(priority.id, objective.id)}><DeleteOutlineIcon /></IconButton></Tooltip>
-                        <Button startIcon={<AddIcon />} title={`Add KPI for ${objective.title}`} onClick={() => onOpenEditor('kpi', 'create', { objective, pillar, priority })}>KPI</Button>
                       </Stack>
                     )}
                   </Stack>
@@ -289,9 +370,16 @@ const StrategicPlanSection = () => {
   const openEditor = (type, mode, context = {}) => {
     const base = getBlankForm(type, context.pillar, user, context.priority?.id, context.objective?.id);
     const form = type === 'priority' && context.priority
-      ? { ...base, ...context.priority, ownerId: context.priority.owner?.id || user.id }
+      ? { ...base, ...context.priority, objectiveDrafts: objectiveDraftsFromPriority(context.priority, user) }
       : type === 'objective' && context.objective
-        ? { ...base, ...context.objective, ownerId: context.objective.owner?.id || user.id, priorityId: context.priority?.id }
+        ? {
+          ...base,
+          ...context.objective,
+          kpiTarget: context.objective.kpis?.[0]?.target || '',
+          kpiTitle: context.objective.kpis?.[0]?.title || '',
+          ownerId: context.objective.owner?.id || user.id,
+          priorityId: context.priority?.id,
+        }
         : type === 'kpi' && context.kpi
           ? { ...base, ...context.kpi, priorityId: context.priority?.id, objectiveId: context.objective?.id }
           : { ...base, priorityId: context.priority?.id, objectiveId: context.objective?.id };
@@ -304,27 +392,41 @@ const StrategicPlanSection = () => {
   const saveEditor = (form) => {
     setRoadmapPriorities((current) => {
       if (form.type === 'priority') {
-        const owner = getUser(form.ownerId);
+        const keyObjectives = form.objectiveDrafts.map((draft, index) => {
+          const owner = getUser(draft.ownerId);
+          return {
+            id: draft.id.startsWith('objective-draft-') ? `objective-${Date.now()}-${index}` : draft.id,
+            title: draft.title,
+            owner,
+            ownerIds: [owner.id],
+            department: owner.department,
+            status: draft.status,
+            workplanTitle: '',
+            workplanAccess: owner.department,
+            workplanSummary: '',
+            notes: '',
+            kpis: [{
+              id: `kpi-${Date.now()}-${index}`,
+              title: draft.kpiTitle,
+              target: draft.kpiTarget,
+              currentLabel: '',
+              progress: 0,
+              status: draft.status,
+            }],
+          };
+        });
         const nextPriority = {
           id: form.id || `q2-priority-${Date.now()}`,
           name: form.name,
-          owner,
-          ownerIds: Array.from(new Set([owner.id, user.id])),
           type: 'ROLLUP',
-          current: 0,
-          start: 0,
-          target: 100,
-          percent: 0,
-          status: 'no_data',
-          roadmapStatus: form.roadmapStatus,
+          roadmapStatus: roadmapStatusFromObjectives(keyObjectives),
           company: true,
           period: q2Roadmap.quarter,
           strategicPlan: strategicPlan2030.name,
           strategicPillarId: form.strategicPillarId,
           strategicPillar: strategicPlan2030.pillars.find((pillar) => pillar.id === form.strategicPillarId)?.name,
           description: `${q2Roadmap.quarter} organizational priority aligned to ${form.strategicPillarId}.`,
-          heatmap: ['no_data', 'no_data', 'no_data'],
-          keyObjectives: form.keyObjectives || [],
+          keyObjectives,
           children: [],
         };
         return form.id ? current.map((priority) => (priority.id === form.id ? { ...priority, ...nextPriority } : priority)) : [nextPriority, ...current];
@@ -343,7 +445,14 @@ const StrategicPlanSection = () => {
           workplanAccess: form.workplanAccess,
           workplanSummary: form.workplanSummary,
           notes: form.notes,
-          kpis: form.kpis || [],
+          kpis: [{
+            id: form.kpis?.[0]?.id || `kpi-${Date.now()}`,
+            title: form.kpiTitle,
+            target: form.kpiTarget,
+            currentLabel: form.kpis?.[0]?.currentLabel || '',
+            progress: form.kpis?.[0]?.progress || 0,
+            status: form.status,
+          }],
         };
         return current.map((priority) => {
           if (priority.id !== form.priorityId) return priority;
@@ -444,7 +553,7 @@ const StrategicPlanSection = () => {
                           <Chip label={`${priority.keyObjectives?.length || 0} objectives`} size="small" variant="outlined" />
                         </Stack>
                       </Stack>
-                      <Typography variant="caption">{priority.owner.name}</Typography>
+                      <Typography variant="caption">{priority.keyObjectives?.length || 0} objective owners</Typography>
                     </Box>
                   ))
                 ) : (
@@ -457,7 +566,7 @@ const StrategicPlanSection = () => {
               <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Success Metrics</Typography>
               <Stack gap={0.75} sx={{ mt: 0.75 }}>
                 {pillar.successMetrics.slice(0, 3).map((metric) => (
-                  <Stack key={metric.id} direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
+                  <Stack key={`${metric.label}-${metric.target}`} direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
                     <Typography variant="body2" color="text.primary">{metric.label}</Typography>
                     <Chip label={metric.target} color="secondary" size="small" variant="outlined" sx={{ flexShrink: 0 }} />
                   </Stack>

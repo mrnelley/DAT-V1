@@ -308,7 +308,7 @@ const WeeklyPrioritiesSection = ({ user, weeklyEntries }) => {
               </Stack>
 
               <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                <Chip label={priority.alignmentType === 'both' ? 'Enterprise + workplan' : priority.alignmentType === 'enterprise' ? 'Enterprise priority' : 'Workplan'} color="primary" variant="outlined" size="small" />
+                <Chip label={priority.alignmentType === 'both' ? 'Organizational Priority + workplan' : priority.alignmentType === 'enterprise' ? 'Organizational Priority' : 'Workplan'} color="primary" variant="outlined" size="small" />
                 {priority.priorityId && <Chip label={priority.priorityId} variant="outlined" size="small" />}
                 {priority.workplanId && <Chip label={priority.workplanId} variant="outlined" size="small" />}
               </Stack>
