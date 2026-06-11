@@ -7,7 +7,6 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Collapse, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -20,13 +19,12 @@ import UserAvatar from '../shared/UserAvatar';
 const dashboardItems = [
   { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
   { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
-  { featureKey: 'initiatives', label: 'Annual Initiatives', path: '/initiatives' },
+  { featureKey: 'priorities', label: 'Organizational Priorities', path: '/priorities' },
   { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },
 ];
 
 const navSections = [
   [
-    { featureKey: 'priorities', icon: TrendingUpIcon, label: 'Operational Priorities', path: '/priorities' },
     { featureKey: 'workplans', icon: FactCheckOutlinedIcon, label: 'Department Workplans', path: '/workplans' },
   ],
   [

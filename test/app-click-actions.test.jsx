@@ -102,7 +102,7 @@ const { default: HuddleItemPage } = await import('../src/components/huddles/Hudd
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
 const { default: LearnPage } = await import('../src/components/learn/LearnPage.jsx');
 const { default: LoginPage } = await import('../src/components/auth/LoginPage.jsx');
-const { default: OperationalPriorityPage } = await import('../src/components/priorities/OperationalPriorityPage.jsx');
+const { default: OrganizationalPriorityPage } = await import('../src/components/priorities/OrganizationalPriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: SideNav } = await import('../src/components/layout/SideNav.jsx');
@@ -277,16 +277,16 @@ describe('clickable user actions', () => {
     const dashboards = await screen.findByText('Dashboards');
     const companyDashboard = await screen.findByText('Company Dashboard');
     const myDashboard = screen.getByText('My Dashboard');
-    const annualInitiatives = screen.getByText('Annual Initiatives');
-    const operationalPriorities = screen.getByText('Operational Priorities');
+    const organizationalPriorities = screen.getByText('Organizational Priorities');
+    const departmentWorkplans = screen.getByText('Department Workplans');
     const weeklyTracker = screen.getByText('Weekly Tracker');
     const taskView = screen.getByText('Task View');
 
     expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(myDashboard.compareDocumentPosition(annualInitiatives) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(annualInitiatives.compareDocumentPosition(operationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(operationalPriorities.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(myDashboard.compareDocumentPosition(organizationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(organizationalPriorities.compareDocumentPosition(departmentWorkplans) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(departmentWorkplans.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(weeklyTracker.compareDocumentPosition(taskView) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(screen.queryByText('Notifications')).to.equal(null);
     expect(screen.queryByText('Data Table')).to.equal(null);
@@ -481,7 +481,7 @@ describe('clickable user actions', () => {
   it('opens the priority drawer from Add Priority', async () => {
     const { user } = renderWithProviders(<PrioritiesPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add priority/i }));
+    await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
 
     expect(await screen.findByText(/edit priority/i)).to.exist;
     expect(screen.getByLabelText(/priority name/i)).to.exist;
@@ -490,7 +490,7 @@ describe('clickable user actions', () => {
   it('shows a bottom-right unavailable alert for unconnected priority save', async () => {
     const { user } = renderWithProviders(<PrioritiesPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add priority/i }));
+    await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
     await user.click(await screen.findByRole('button', { name: /^save$/i }));
 
     expect(await screen.findByText(/action is unavailable because priority persistence is not connected yet/i)).to.exist;
@@ -559,9 +559,8 @@ describe('clickable user actions', () => {
     );
 
     const destinations = [
-      ['Strategy', 'Annual Initiatives', '/initiatives'],
       ['Strategy', 'Company Dashboard', '/dashboard/company'],
-      ['Strategy', 'Priority Map', '/priorities'],
+      ['Strategy', 'Organizational Priorities', '/priorities'],
       ['Strategy', 'Weekly Tracker', '/weekly-tracker'],
       ['Culture', 'Huddles', '/huddles'],
       ['Culture', 'Stucks', '/stucks'],
@@ -604,7 +603,7 @@ describe('clickable user actions', () => {
     expect(screen.getByLabelText(/team filter/i)).to.exist;
     expect(screen.getByText(/0\/0 q2 2026 organizational priorities/i)).to.exist;
     expect(screen.getByText(/no quarterly organizational priorities have been defined yet/i)).to.exist;
-    expect(screen.queryByRole('button', { name: /open operational priority detail/i })).to.equal(null);
+    expect(screen.queryByRole('button', { name: /open organizational priority detail/i })).to.equal(null);
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
   });
 
@@ -679,10 +678,10 @@ describe('clickable user actions', () => {
     expect(within(dialog).getByText(/no current organizational priorities are aligned to this pillar yet/i)).to.exist;
   });
 
-  it('shows a not-found state for an unavailable operational priority page', async () => {
+  it('shows a not-found state for an unavailable organizational priority page', async () => {
     renderWithProviders(
       <Routes>
-        <Route path="/dashboard/company/priorities/:priorityId" element={<OperationalPriorityPage />} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<OrganizationalPriorityPage />} />
       </Routes>,
       '/dashboard/company/priorities/q2-operational-efficiency',
     );

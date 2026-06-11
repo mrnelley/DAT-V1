@@ -24,19 +24,13 @@ export const featureCatalog = [
     category: 'Accountability',
     description: 'Quarterly priorities, status signals, objectives, and KPI links.',
     key: 'priorities',
-    label: 'Priorities',
+    label: 'Organizational Priorities',
   },
   {
     category: 'Accountability',
     description: 'Department workplans and linked priority commitments.',
     key: 'workplans',
     label: 'Workplans',
-  },
-  {
-    category: 'Accountability',
-    description: 'Annual initiatives and strategic project lanes.',
-    key: 'initiatives',
-    label: 'Annual Initiatives',
   },
   {
     category: 'Operating Rhythm',

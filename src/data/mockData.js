@@ -298,7 +298,6 @@ export const huddles = [];
 export const stucks = [];
 export const queuedTasks = [];
 export const notificationEvents = [];
-export const initiatives = [];
 export const calendarEvents = [];
 export const advocacyContacts = [];
 export const advocacyTouchpoints = [];

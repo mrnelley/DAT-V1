@@ -47,7 +47,7 @@ export const getQuarterTransitionState = (date = new Date()) => {
     return {
       label: 'Quarter setup',
       mode: 'setting',
-      guidance: 'ELT should stage operational priorities and OLT can draft weekly priorities against the available plan.',
+      guidance: 'ELT should stage organizational priorities and OLT can draft weekly priorities against the available plan.',
     };
   }
 

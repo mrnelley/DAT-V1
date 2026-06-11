@@ -34,15 +34,15 @@ const PrioritiesPage = () => {
     <PageWrapper>
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" gap={1}>
-          <Typography variant="h1">Manage Priorities</Typography>
+          <Typography variant="h1">Organizational Priorities</Typography>
           <IconButton title="Open priorities help" aria-label="Open priorities help" onClick={() => unavailable('priority help content has not been authored yet.')}><HelpOutlineIcon /></IconButton>
         </Stack>
         <Stack direction="row" gap={1} flexWrap="wrap">
-          <Button variant="contained" onClick={() => setPanelOpen(true)}>Add Priority</Button>
+          <Button variant="contained" onClick={() => setPanelOpen(true)}>Add Organizational Priority</Button>
           <Button variant="outlined" onClick={() => unavailable('bulk priority value updates need a connected metric source.')}>Update Priority Values</Button>
           <Button startIcon={<FilterListOutlinedIcon />} onClick={() => setFiltersOpen((value) => !value)}>Filter</Button>
           <Button startIcon={<ExpandMoreIcon />} onClick={() => setExpandedAll((value) => !value)}>Expand All</Button>
-          <Button startIcon={<ContentCopyIcon />} onClick={() => unavailable('previous-quarter priority import is not connected yet.')}>Copy Previous Priorities</Button>
+          <Button startIcon={<ContentCopyIcon />} onClick={() => unavailable('previous-quarter organizational priority import is not connected yet.')}>Copy Previous Priorities</Button>
         </Stack>
       </Stack>
       <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>

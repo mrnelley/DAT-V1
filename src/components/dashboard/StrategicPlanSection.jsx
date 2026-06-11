@@ -4,10 +4,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { initiatives, priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
+import { priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
@@ -266,7 +266,6 @@ const StrategicPlanSection = () => {
   const flatPriorities = flattenPriorities(roadmapPriorities);
   const pillarSummaries = strategicPlan2030.pillars.map((pillar) => {
     const pillarWorkplans = departmentWorkplans.filter((workplan) => workplan.strategicPillarId === pillar.id);
-    const pillarInitiatives = initiatives.filter((initiative) => initiative.strategicPillarId === pillar.id);
     const pillarPriorities = flatPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
     const pillarActions = queuedTasks.filter((item) => item.strategicPillarId === pillar.id);
     const attentionCount = pillarWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length;
@@ -275,7 +274,6 @@ const StrategicPlanSection = () => {
       ...pillar,
       actions: pillarActions.length,
       attentionCount,
-      initiatives: pillarInitiatives.length,
       priorityItems: pillarPriorities.filter((priority) => priority.company),
       priorities: pillarPriorities.length,
       progress: getAverageProgress(pillarWorkplans),
@@ -399,7 +397,7 @@ const StrategicPlanSection = () => {
             <Typography variant="h1" sx={{ mt: 0.5 }}>{strategicPlan2030.name}</Typography>
             <Typography variant="h2" sx={{ mt: 1 }}>{q2Roadmap.quarter} Roadmap: {q2Roadmap.theme}</Typography>
             <Typography variant="body2" sx={{ mt: 0.75 }}>
-              ELT sets organizational priorities and key objectives; OLT defines KPIs, updates departmental workplans, and contributes progress through assigned work.
+              ELT defines strategic pillars, organizational priorities, key objectives, KPI targets, and accountable Director-owners. OLT contributes progress through departmental workplans and assigned work.
             </Typography>
           </Box>
           <Stack direction="row" gap={1} flexWrap="wrap" alignItems="flex-start">
@@ -433,8 +431,6 @@ const StrategicPlanSection = () => {
               <Chip label={pillar.attentionCount ? `${pillar.attentionCount} need focus` : 'Clear'} color={pillar.attentionCount ? 'warning' : 'success'} size="small" variant={pillar.attentionCount ? 'filled' : 'outlined'} />
             </Stack>
             <Typography variant="h3" sx={{ mt: 1 }}>{pillar.name}</Typography>
-            <Typography variant="body2" sx={{ mt: 0.75 }}>{pillar.description}</Typography>
-
             <Box sx={{ mt: 1.5 }}>
               <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>{q2Roadmap.quarter} Priorities</Typography>
               <Stack gap={0.75} sx={{ mt: 0.75 }}>

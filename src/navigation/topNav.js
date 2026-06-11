@@ -2,9 +2,8 @@ export const topNavMenus = [
   {
     label: 'Strategy',
     items: [
-      { featureKey: 'initiatives', label: 'Annual Initiatives', path: '/initiatives' },
       { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
-      { featureKey: 'priorities', label: 'Priority Map', path: '/priorities' },
+      { featureKey: 'priorities', label: 'Organizational Priorities', path: '/priorities' },
       { featureKey: 'weeklyTracker', label: 'Weekly Tracker', path: '/weekly-tracker' },
     ],
   },
@@ -38,7 +37,7 @@ export const topNavMenus = [
 export const quickAddItems = [
   { featureKey: 'weeklyTracker', label: 'Weekly Priority', path: '/weekly-tracker?new=priority' },
   { featureKey: 'taskView', label: 'Queued Task', path: '/task-view?new=queue' },
-  { featureKey: 'priorities', label: 'Priority', path: '/priorities?new=1' },
+  { featureKey: 'priorities', label: 'Organizational Priority', path: '/priorities?new=1' },
   { featureKey: 'stucks', label: 'Stuck', path: '/stucks?new=1' },
   { featureKey: 'workplans', label: 'Workplan', path: '/workplans?new=1' },
 ];

@@ -560,7 +560,7 @@ const WeeklyActionTrackerPage = () => {
                       <>
                         <Typography fontWeight={800} sx={{ mt: 1 }}>{entry.title}</Typography>
                         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                          <Chip label={entry.alignmentType === 'both' ? 'Enterprise + workplan aligned' : entry.alignmentType === 'enterprise' ? 'Enterprise aligned' : 'Workplan aligned'} size="small" variant="outlined" />
+                          <Chip label={entry.alignmentType === 'both' ? 'Organizational Priority + workplan aligned' : entry.alignmentType === 'enterprise' ? 'Organizational Priority aligned' : 'Workplan aligned'} size="small" variant="outlined" />
                           {movement && <Chip icon={<ArrowForwardOutlinedIcon />} label={movement} size="small" color={movement === 'Same rank' ? 'default' : 'secondary'} variant="outlined" />}
                           {entry.carriedFromEntryId && <Chip label="Carried forward" size="small" color="warning" />}
                         </Stack>
@@ -677,8 +677,8 @@ const WeeklyActionTrackerPage = () => {
               fullWidth
             />
             <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
-            <TextField select label="Enterprise Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
-              <MenuItem value="">No enterprise priority link</MenuItem>
+            <TextField select label="Organizational Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
+              <MenuItem value="">No organizational priority link</MenuItem>
               {priorities.map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
             </TextField>
             <TextField select label="Department Workplan (optional)" value={priorityForm.workplanId} onChange={updatePriorityForm('workplanId')} fullWidth>

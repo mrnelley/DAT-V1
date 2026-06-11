@@ -8,15 +8,15 @@ import DashboardPage from './components/dashboard/DashboardPage';
 import HuddlesPage from './components/huddles/HuddlesPage';
 import HuddleFormPage from './components/huddles/HuddleFormPage';
 import HuddleItemPage from './components/huddles/HuddleItemPage';
-import InitiativesPage from './components/initiatives/InitiativesPage';
 import AppShell from './components/layout/AppShell';
 import LearnPage from './components/learn/LearnPage';
 import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
-import OperationalPriorityPage from './components/priorities/OperationalPriorityPage';
+import OrganizationalPriorityPage from './components/priorities/OrganizationalPriorityPage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
+import MetricsPage from './components/metrics/MetricsPage';
 import FeatureGate from './components/shared/FeatureGate';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
@@ -43,12 +43,10 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Navigate to={primaryDashboardPath} replace />} />
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
         <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
-        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><OperationalPriorityPage /></FeatureGate>} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><OrganizationalPriorityPage /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
         <Route path="/workplans" element={<FeatureGate featureKey="workplans"><WorkplansPage /></FeatureGate>} />
-        <Route path="/initiatives" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
-        <Route path="/initiatives/:id" element={<FeatureGate featureKey="initiatives"><InitiativesPage /></FeatureGate>} />
         <Route path="/huddles" element={<FeatureGate featureKey="huddles"><HuddlesPage /></FeatureGate>} />
         <Route path="/huddles/new" element={<FeatureGate featureKey="huddles"><HuddleFormPage /></FeatureGate>} />
         <Route path="/huddles/:id/settings" element={<FeatureGate featureKey="huddles"><HuddleFormPage /></FeatureGate>} />
@@ -58,7 +56,7 @@ const AnimatedRoutes = () => {
         <Route path="/culture/team-health" element={<FeatureGate featureKey="teamHealth"><CompassDestinationPage page="teamHealth" /></FeatureGate>} />
         <Route path="/task-view" element={<FeatureGate featureKey="taskView"><TaskViewPage /></FeatureGate>} />
         <Route path="/weekly-tracker" element={<FeatureGate featureKey="weeklyTracker"><WeeklyActionTrackerPage /></FeatureGate>} />
-        <Route path="/metrics" element={<FeatureGate featureKey="metrics"><PlaceholderPage title="Metrics Management" /></FeatureGate>} />
+        <Route path="/metrics" element={<FeatureGate featureKey="metrics"><MetricsPage /></FeatureGate>} />
         <Route path="/metrics/table" element={<FeatureGate featureKey="dataTable"><DataTablePage /></FeatureGate>} />
         <Route path="/reports/executive-summary" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="executiveSummary" /></FeatureGate>} />
         <Route path="/reports/exports" element={<FeatureGate featureKey="reports"><CompassDestinationPage page="exports" /></FeatureGate>} />

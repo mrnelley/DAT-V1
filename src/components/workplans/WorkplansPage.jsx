@@ -353,7 +353,7 @@ const WorkplansPage = () => {
         <Box>
           <Typography variant="h1">Workplans</Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            Departmental workplans connected to quarterly initiatives and the 2030 strategic plan.
+            Departmental workplans connected to organizational priorities and the 2030 strategic plan.
           </Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">

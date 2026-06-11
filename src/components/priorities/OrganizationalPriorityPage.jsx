@@ -92,8 +92,8 @@ const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
 };
 
 const EditPriorityDialog = ({ form, open, onClose, onSave, onUpdate }) => (
-  <Dialog aria-labelledby="edit-operational-priority-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle id="edit-operational-priority-title">Edit Operational Priority</DialogTitle>
+  <Dialog aria-labelledby="edit-organizational-priority-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <DialogTitle id="edit-organizational-priority-title">Edit Organizational Priority</DialogTitle>
     <DialogContent sx={{ pt: 1 }}>
       <Stack gap={2} sx={{ mt: 1 }}>
         <TextField label="Priority Name" value={form.name} onChange={onUpdate('name')} fullWidth required />
@@ -121,7 +121,7 @@ const StatTile = ({ helper, label, value }) => (
   </Box>
 );
 
-const OperationalPriorityPage = () => {
+const OrganizationalPriorityPage = () => {
   const { priorityId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -146,7 +146,7 @@ const OperationalPriorityPage = () => {
       <PageWrapper>
         <EmptyState
           actionLabel="Back to Company Dashboard"
-          body="That operational priority is not available in the current roadmap data."
+          body="That organizational priority is not available in the current roadmap data."
           icon={<WarningAmberOutlinedIcon />}
           onAction={() => navigate('/dashboard/company')}
           title="Priority Not Found"
@@ -198,7 +198,7 @@ const OperationalPriorityPage = () => {
             <UserAvatar user={priority.owner} size="md" />
             <Box>
               <Typography variant="body1" fontWeight={800}>{priority.owner.name}</Typography>
-              <Typography variant="caption">Operational priority owner</Typography>
+              <Typography variant="caption">Organizational priority owner</Typography>
             </Box>
             {canEdit && (
             <Button variant="contained" startIcon={<EditOutlinedIcon />} title={`Edit ${priority.name}`} onClick={() => setEditOpen(true)} sx={{ ml: 1 }}>
@@ -219,7 +219,7 @@ const OperationalPriorityPage = () => {
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
             <Box>
               <Typography variant="overline" color="primary">Executive Signal</Typography>
-              <Typography variant="h2">Operational health and goal progress</Typography>
+              <Typography variant="h2">Organizational priority health and goal progress</Typography>
             </Box>
             <Chip label={`${objectiveAverage}% average objective progress`} color={meta.color} variant="outlined" />
           </Stack>
@@ -328,4 +328,4 @@ const OperationalPriorityPage = () => {
   );
 };
 
-export default OperationalPriorityPage;
+export default OrganizationalPriorityPage;

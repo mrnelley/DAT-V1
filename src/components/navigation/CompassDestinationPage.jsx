@@ -413,7 +413,7 @@ const TeamsPage = () => {
 
 const PermissionsPage = () => {
   const permissionRows = [
-    { area: 'ELT', manage: 'Organization dashboards, initiatives, priorities, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
+    { area: 'ELT', manage: 'Strategic pillars, organizational priorities, KPI targets, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
     { area: 'OLT', manage: 'Department workplans, weekly action tracker follow-through, and team huddle work.', members: users.filter((user) => user.workingGroup === 'OLT') },
     { area: 'Team Member', manage: 'Assigned actions, personal dashboard signals, and related weekly commitments.', members: users.filter((user) => user.workingGroup === 'Team Member') },
   ];
@@ -445,7 +445,7 @@ const pageActions = {
   adminFeatures: [{ label: 'Review Users', path: '/admin/users' }, { label: 'View Permissions', path: '/admin/permissions' }],
   adminTeams: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Users', path: '/admin/users' }],
   adminUsers: [{ label: 'Open Profile', path: '/profile' }, { label: 'View Permissions', path: '/admin/permissions' }],
-  executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Priority Map', path: '/priorities' }],
+  executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Organizational Priorities', path: '/priorities' }],
   exports: [{ featureKey: 'dataTable', label: 'Open Data Table', path: '/metrics/table' }, { label: 'Company Dashboard', path: '/dashboard/company' }],
   teamHealth: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Stucks', path: '/stucks' }],
 };
