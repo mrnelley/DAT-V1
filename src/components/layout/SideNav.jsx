@@ -19,7 +19,7 @@ import UserAvatar from '../shared/UserAvatar';
 const dashboardItems = [
   { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
   { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
-  { featureKey: 'priorities', label: 'Organizational Priorities', path: '/priorities' },
+  { featureKey: 'priorities', label: 'Enterprise Priorities', path: '/priorities' },
   { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },
 ];
 

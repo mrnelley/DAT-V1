@@ -14,7 +14,7 @@ import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import ProfilePage from './components/profile/ProfilePage';
-import OrganizationalPriorityPage from './components/priorities/OrganizationalPriorityPage';
+import EnterprisePriorityPage from './components/priorities/EnterprisePriorityPage';
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import MetricsPage from './components/metrics/MetricsPage';
 import FeatureGate from './components/shared/FeatureGate';
@@ -43,7 +43,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Navigate to={primaryDashboardPath} replace />} />
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
         <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
-        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><OrganizationalPriorityPage /></FeatureGate>} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><EnterprisePriorityPage /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
         <Route path="/workplans" element={<FeatureGate featureKey="workplans"><WorkplansPage /></FeatureGate>} />

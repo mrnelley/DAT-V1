@@ -1,7 +1,6 @@
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import {
   Box,
   Button,
@@ -25,67 +24,65 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
-import { activeRoadmap } from '../../data/quarterlyRoadmap';
+import { users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  clampProgress,
+  decorateWorkplan,
+  getDepartmentLead,
+  workplanStatuses,
+} from '../../utils/workplans';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
+  Alert: 'error',
+  Completed: 'success',
+  Rescheduled: 'default',
   Steady: 'success',
   Watch: 'warning',
-  Alert: 'error',
-  Completed: 'primary',
-  Rescheduled: 'default',
 };
 
-const workplanStatuses = ['Steady', 'Watch', 'Alert', 'Completed', 'Rescheduled'];
+const departments = Array.from(new Set(users.map((user) => user.department))).sort();
 
-const clampProgress = (value) => Math.min(100, Math.max(0, Number(value) || 0));
+const formatDate = (date) => date
+  ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  : 'No date';
 
-const formatDate = (date) => {
-  if (!date) return 'No date';
-
-  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
-const defaultForm = (user) => ({
-  id: '',
-  title: '',
-  department: user.department,
-  leadId: user.id,
-  scope: user.department,
-  quarter: activeRoadmap.quarter,
-  quarterlyInitiative: '',
-  strategicPlan: strategicPlan2030.name,
-  strategicPillarId: strategicPlan2030.pillars[0].id,
-  strategicPillar: strategicPlan2030.pillars[0].name,
+const blankObjective = (user, strategicPlan) => ({
+  description: '',
+  due: `${new Date().getFullYear()}-12-31`,
+  enterprisePriorityId: '',
+  id: `department-objective-${Date.now()}-${Math.random()}`,
+  ownerId: user.id,
+  progress: 0,
   status: 'Steady',
-  due: activeRoadmap.end,
-  progress: 25,
-  outcome: '',
-  ownerIds: [user.id],
-  priorityLinksText: '',
+  strategicPillarId: strategicPlan.pillars[0]?.id || '',
+  title: '',
 });
 
-const toForm = (workplan, user) => {
-  if (!workplan) return defaultForm(user);
-
-  const strategicPillarId = workplan.strategicPillarId
-    || strategicPlan2030.pillars.find((pillar) => pillar.name === workplan.strategicPillar)?.id
-    || strategicPlan2030.pillars[0].id;
-
+const defaultForm = (user, strategicPlan) => {
+  const lead = getDepartmentLead(user.department, user);
   return {
-    ...workplan,
-    leadId: workplan.lead?.id || user.id,
-    ownerIds: workplan.ownerIds || [workplan.lead?.id || user.id],
-    strategicPillarId,
-    strategicPillar: strategicPillarById[strategicPillarId]?.name || workplan.strategicPillar,
-    priorityLinksText: (workplan.priorityLinks || []).join('\n'),
+    department: user.department,
+    id: '',
+    leadId: lead.id,
+    objectives: [blankObjective(user, strategicPlan)],
+    year: String(new Date().getFullYear()),
+  };
+};
+
+const toForm = (workplan, user, strategicPlan) => {
+  if (!workplan) return defaultForm(user, strategicPlan);
+  return {
+    department: workplan.department,
+    id: workplan.id,
+    leadId: workplan.lead.id,
+    objectives: workplan.objectives.map((objective) => ({
+      ...objective,
+      ownerId: objective.owner?.id || objective.ownerId || user.id,
+    })),
+    year: String(workplan.year),
   };
 };
 
@@ -93,204 +90,208 @@ const canManageWorkplan = (workplan, user) => (
   workplan.lead?.id === user.id || workplan.ownerIds?.includes(user.id)
 );
 
-const StatTile = ({ label, value, helper }) => (
-  <Box
-    sx={{
-      bgcolor: 'background.paper',
-      border: '1px solid',
-      borderColor: 'divider',
-      borderRadius: 1,
-      p: 1.5,
-    }}
-  >
+const StatTile = ({ helper, label, value }) => (
+  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
     <Typography variant="caption" color="text.secondary">{label}</Typography>
     <Typography variant="h3" sx={{ mt: 0.25 }}>{value}</Typography>
-    {helper && <Typography variant="body2" sx={{ mt: 0.5 }}>{helper}</Typography>}
+    <Typography variant="body2" sx={{ mt: 0.5 }}>{helper}</Typography>
   </Box>
 );
 
-const WorkplanDialog = ({ item, onClose, onSave, open, user }) => {
-  const [form, setForm] = useState(() => toForm(item, user));
+const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, strategicPlan, user }) => {
+  const [form, setForm] = useState(() => toForm(item, user, strategicPlan));
 
   useEffect(() => {
-    if (open) setForm(toForm(item, user));
-  }, [item, open, user]);
+    if (open) setForm(toForm(item, user, strategicPlan));
+  }, [item, open, strategicPlan, user]);
 
   const update = (field) => (event) => {
-    setForm((current) => ({ ...current, [field]: event.target.value }));
+    const value = event.target.value;
+    setForm((current) => {
+      if (field !== 'department') return { ...current, [field]: value };
+      return { ...current, department: value, leadId: getDepartmentLead(value, user).id };
+    });
   };
+  const updateObjective = (id, field) => (event) => setForm((current) => ({
+    ...current,
+    objectives: current.objectives.map((objective) => (
+      objective.id === id ? { ...objective, [field]: event.target.value } : objective
+    )),
+  }));
+  const addObjective = () => setForm((current) => ({
+    ...current,
+    objectives: [...current.objectives, blankObjective(user, strategicPlan)],
+  }));
+  const removeObjective = (id) => setForm((current) => ({
+    ...current,
+    objectives: current.objectives.filter((objective) => objective.id !== id),
+  }));
+  const ready = form.department
+    && form.year
+    && form.objectives.length > 0
+    && form.objectives.every((objective) => objective.title.trim() && objective.strategicPillarId && objective.ownerId);
 
   const save = () => {
-    const lead = users.find((candidate) => candidate.id === form.leadId) || user;
-    const { leadId, priorityLinksText, ...rest } = form;
-    const strategicPillar = strategicPillarById[form.strategicPillarId] || strategicPlan2030.pillars[0];
-    const priorityLinks = priorityLinksText
-      .split('\n')
-      .map((value) => value.trim())
-      .filter(Boolean);
-
+    if (!ready) return;
+    const lead = getDepartmentLead(form.department, user);
     onSave({
-      ...rest,
+      department: form.department,
+      id: form.id,
       lead,
-      progress: clampProgress(form.progress),
-      ownerIds: Array.from(new Set([lead.id, ...(form.ownerIds || [])])),
-      priorityLinks,
-      strategicPlan: strategicPlan2030.name,
-      strategicPillarId: strategicPillar.id,
-      strategicPillar: strategicPillar.name,
+      objectives: form.objectives.map((objective) => ({
+        ...objective,
+        description: objective.description.trim(),
+        enterprisePriorityId: objective.enterprisePriorityId || null,
+        owner: users.find((candidate) => candidate.id === objective.ownerId) || user,
+        progress: clampProgress(objective.progress),
+        title: objective.title.trim(),
+      })),
+      ownerIds: [lead.id],
+      title: `${form.year} ${form.department.toUpperCase()} WORKPLAN`,
+      year: form.year,
     });
   };
 
   return (
-    <Dialog aria-labelledby="workplan-dialog-title" open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle id="workplan-dialog-title">{item ? 'Edit Workplan' : 'Add Workplan'}</DialogTitle>
+    <Dialog aria-labelledby="workplan-dialog-title" open={open} onClose={onClose} fullWidth maxWidth="lg">
+      <DialogTitle id="workplan-dialog-title">{item ? 'Edit Department Workplan' : 'Add Department Workplan'}</DialogTitle>
       <DialogContent>
         <Stack gap={2} sx={{ pt: 1 }}>
-          <TextField label="Title" value={form.title} onChange={update('title')} fullWidth required />
+          <Typography variant="body2">
+            The workplan is the department&apos;s annual container. Strategic alignment and Enterprise Priority relationships are validated on each Department Objective.
+          </Typography>
           <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
-            <TextField label="Department" value={form.department} onChange={update('department')} fullWidth />
-            <TextField select label="Lead" value={form.leadId} onChange={update('leadId')} fullWidth>
-              {users.map((candidate) => (
-                <MenuItem key={candidate.id} value={candidate.id}>{candidate.name}</MenuItem>
-              ))}
+            <TextField label="Year" value={form.year} onChange={update('year')} fullWidth required />
+            <TextField select label="Department" value={form.department} onChange={update('department')} fullWidth required>
+              {departments.map((department) => <MenuItem key={department} value={department}>{department}</MenuItem>)}
             </TextField>
+            <TextField label="Workplan Lead" value={users.find((candidate) => candidate.id === form.leadId)?.name || ''} fullWidth InputProps={{ readOnly: true }} />
           </Stack>
-          <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
-            <TextField select label="Status" value={form.status} onChange={update('status')} fullWidth>
-              {workplanStatuses.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
-            </TextField>
-            <TextField label="Due" type="date" value={form.due} onChange={update('due')} fullWidth InputLabelProps={{ shrink: true }} />
-            <TextField label="Progress" type="number" value={form.progress} onChange={update('progress')} fullWidth inputProps={{ min: 0, max: 100 }} />
+          <TextField label="Generated Title" value={`${form.year} ${form.department.toUpperCase()} WORKPLAN`} fullWidth InputProps={{ readOnly: true }} />
+
+          <Stack gap={1.5}>
+            {form.objectives.map((objective, index) => (
+              <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ mb: 1.25 }}>
+                  <Typography variant="h3">Department Objective {index + 1}</Typography>
+                  {form.objectives.length > 1 && (
+                    <Tooltip title={`Remove Department Objective ${index + 1}`}>
+                      <IconButton aria-label={`Remove Department Objective ${index + 1}`} onClick={() => removeObjective(objective.id)}>
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Stack>
+                <Stack gap={1.25}>
+                  <TextField label="Department Objective" value={objective.title} onChange={updateObjective(objective.id, 'title')} fullWidth required />
+                  <TextField label="Progress and Challenges" value={objective.description} onChange={updateObjective(objective.id, 'description')} multiline minRows={2} fullWidth />
+                  <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
+                    <TextField select label="Objective Lead" value={objective.ownerId} onChange={updateObjective(objective.id, 'ownerId')} fullWidth required>
+                      {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
+                    </TextField>
+                    <TextField select label="Status" value={objective.status} onChange={updateObjective(objective.id, 'status')} fullWidth>
+                      {workplanStatuses.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                    </TextField>
+                    <TextField label="Progress" type="number" value={objective.progress} onChange={updateObjective(objective.id, 'progress')} fullWidth inputProps={{ min: 0, max: 100 }} />
+                    <TextField label="Due" type="date" value={objective.due} onChange={updateObjective(objective.id, 'due')} fullWidth InputLabelProps={{ shrink: true }} />
+                  </Stack>
+                  <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
+                    <TextField select label="Strategic Pillar" value={objective.strategicPillarId} onChange={updateObjective(objective.id, 'strategicPillarId')} fullWidth required>
+                      {strategicPlan.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
+                    </TextField>
+                    <TextField
+                      select
+                      label="Enterprise Priority"
+                      value={objective.enterprisePriorityId || ''}
+                      onChange={updateObjective(objective.id, 'enterprisePriorityId')}
+                      helperText="Only saved Enterprise Priority records can be linked."
+                      fullWidth
+                    >
+                      <MenuItem value="">No Enterprise Priority link</MenuItem>
+                      {enterprisePriorities.map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
+                    </TextField>
+                  </Stack>
+                </Stack>
+              </Box>
+            ))}
           </Stack>
-          <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
-            <TextField label="Quarter" value={form.quarter} onChange={update('quarter')} fullWidth />
-            <TextField label="Quarterly Initiative" value={form.quarterlyInitiative} onChange={update('quarterlyInitiative')} fullWidth />
-          </Stack>
-          <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
-            <TextField label="Strategic Plan" value={strategicPlan2030.name} fullWidth InputProps={{ readOnly: true }} />
-            <TextField select label="Strategic Pillar" value={form.strategicPillarId} onChange={update('strategicPillarId')} fullWidth>
-              {strategicPlan2030.pillars.map((pillar) => (
-                <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-          <TextField label="Expected Outcome" value={form.outcome} onChange={update('outcome')} fullWidth multiline minRows={3} />
-          <TextField
-            label="Linked Priorities"
-            value={form.priorityLinksText}
-            onChange={update('priorityLinksText')}
-            fullWidth
-            multiline
-            minRows={3}
-          />
+          <Button startIcon={<AddIcon />} onClick={addObjective} variant="outlined">Add Department Objective</Button>
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={save} disabled={!form.title.trim()}>Save Workplan</Button>
+        <Button variant="contained" onClick={save} disabled={!ready}>Save Department Workplan</Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
+const WorkplanCard = ({ canManage, enterprisePriorities, onDelete, onEdit, strategicPlan, workplan }) => (
   <Card
     aria-label={canManage ? `Edit workplan ${workplan.title}` : undefined}
     onClick={canManage ? () => onEdit(workplan) : undefined}
-    onKeyDown={(event) => {
-      if (event.target !== event.currentTarget || !canManage || !['Enter', ' '].includes(event.key)) return;
-      event.preventDefault();
-      onEdit(workplan);
-    }}
     role={canManage ? 'button' : undefined}
     tabIndex={canManage ? 0 : undefined}
-    title={canManage ? `Edit workplan ${workplan.title}` : workplan.title}
     variant="outlined"
-    sx={{
-      borderRadius: 1,
-      cursor: canManage ? 'pointer' : 'default',
-      transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
-      '&:focus-visible': {
-        outline: '3px solid',
-        outlineColor: 'secondary.main',
-        outlineOffset: 2,
-      },
-      '&:hover': canManage ? {
-        borderColor: 'secondary.main',
-        boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)',
-        transform: 'translateY(-1px)',
-      } : undefined,
-    }}
+    sx={{ borderRadius: 1, cursor: canManage ? 'pointer' : 'default' }}
   >
     <CardContent>
       <Stack direction={{ xs: 'column', md: 'row' }} gap={2} justifyContent="space-between">
-        <Box sx={{ minWidth: 0 }}>
+        <Box>
           <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 1 }}>
             <Chip label={workplan.department} color="primary" size="small" />
             <Chip label={workplan.status} color={statusColor[workplan.status] || 'default'} size="small" />
-            <Chip label={`Due ${formatDate(workplan.due)}`} variant="outlined" size="small" />
-            {!canManage && <Chip label="View only" size="small" variant="outlined" />}
+            <Chip label={`${workplan.objectives.length} objective${workplan.objectives.length === 1 ? '' : 's'}`} variant="outlined" size="small" />
           </Stack>
           <Typography variant="h3">{workplan.title}</Typography>
-          <Typography variant="body2" sx={{ mt: 0.75 }}>{workplan.outcome}</Typography>
+          <Typography variant="body2" sx={{ mt: 0.5 }}>Owned by the department lead; alignment is documented per objective.</Typography>
         </Box>
-        <Stack direction="row" alignItems="center" gap={1} sx={{ flexShrink: 0 }}>
+        <Stack direction="row" alignItems="center" gap={1}>
           <UserAvatar user={workplan.lead} size="sm" />
           <Box>
-            <Typography variant="body2" color="text.primary" fontWeight={700}>{workplan.lead.name}</Typography>
+            <Typography variant="body2" fontWeight={700}>{workplan.lead.name}</Typography>
             <Typography variant="caption">{workplan.lead.role}</Typography>
           </Box>
           {canManage && (
             <Tooltip title="Delete workplan">
-              <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={(event) => {
-                event.stopPropagation();
-                onDelete(workplan.id);
-              }}>
+              <IconButton aria-label={`Delete workplan ${workplan.title}`} onClick={(event) => { event.stopPropagation(); onDelete(workplan.id); }}>
                 <DeleteOutlineIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
         </Stack>
       </Stack>
-
-      <Box sx={{ mt: 2 }}>
-        <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
-          <Typography variant="caption">Progress</Typography>
-          <Typography variant="caption">{clampProgress(workplan.progress)}%</Typography>
-        </Stack>
-        <LinearProgress
-          aria-label={`${workplan.title} progress`}
-          value={clampProgress(workplan.progress)}
-          variant="determinate"
-        />
-      </Box>
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 1.5, mt: 2 }}>
-        <Stack direction="row" gap={1} alignItems="flex-start">
-          <FlagOutlinedIcon color="primary" fontSize="small" />
-          <Box>
-            <Typography variant="caption">Quarterly Initiative</Typography>
-            <Typography variant="body2" color="text.primary">{workplan.quarterlyInitiative || 'Not linked'}</Typography>
-            <Typography variant="caption">{workplan.quarter || 'No quarter set'}</Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row" gap={1} alignItems="flex-start">
-          <AccountTreeOutlinedIcon color="primary" fontSize="small" />
-          <Box>
-            <Typography variant="caption">{workplan.strategicPlan || 'Strategic Plan'}</Typography>
-            <Typography variant="body2" color="text.primary">{workplan.strategicPillar || 'No pillar set'}</Typography>
-          </Box>
-        </Stack>
-      </Box>
-
-      <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 2 }}>
-        {(workplan.priorityLinks || []).length ? (
-          workplan.priorityLinks.map((priority) => (
-            <Chip key={priority} label={priority} size="small" variant="outlined" />
-          ))
-        ) : (
-          <Chip label="No priority links yet" size="small" variant="outlined" />
-        )}
+      <Stack direction="row" justifyContent="space-between" sx={{ mt: 2, mb: 0.5 }}>
+        <Typography variant="caption">Objective rollup</Typography>
+        <Typography variant="caption">{workplan.progress}%</Typography>
+      </Stack>
+      <LinearProgress value={workplan.progress} variant="determinate" />
+      <Stack gap={1} sx={{ mt: 2 }}>
+        {workplan.objectives.map((objective) => {
+          const priorityName = enterprisePriorities.find((priority) => priority.id === objective.enterprisePriorityId)?.name;
+          const pillar = strategicPlan.pillars.find((candidate) => candidate.id === objective.strategicPillarId);
+          return (
+            <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
+                <Box>
+                  <Typography variant="body1" fontWeight={800}>{objective.title}</Typography>
+                  <Typography variant="body2">{objective.description || 'No progress and challenges note yet.'}</Typography>
+                </Box>
+                <Stack direction="row" gap={0.5} flexWrap="wrap" alignItems="flex-start">
+                  <Chip label={objective.status} color={statusColor[objective.status] || 'default'} size="small" />
+                  <Chip label={`${clampProgress(objective.progress)}%`} size="small" variant="outlined" />
+                  <Chip label={`Due ${formatDate(objective.due)}`} size="small" variant="outlined" />
+                </Stack>
+              </Stack>
+              <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 1 }}>
+                <Chip icon={<AccountTreeOutlinedIcon />} label={pillar?.name || 'Pillar not found'} size="small" variant="outlined" />
+                {priorityName
+                  ? <Chip label={priorityName} color="primary" size="small" variant="outlined" />
+                  : <Chip label="No Enterprise Priority link" size="small" variant="outlined" />}
+              </Stack>
+            </Box>
+          );
+        })}
       </Stack>
     </CardContent>
   </Card>
@@ -298,111 +299,83 @@ const WorkplanCard = ({ canManage, onDelete, onEdit, workplan }) => (
 
 const WorkplansPage = () => {
   const { user } = useAuth();
-  const { deleteDepartmentWorkplan, departmentWorkplans, saveDepartmentWorkplan } = useOperatingData();
+  const {
+    deleteDepartmentWorkplan,
+    departmentWorkplans,
+    enterprisePriorities,
+    saveDepartmentWorkplan,
+    strategicPlan,
+  } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [dialog, setDialog] = useState({ item: null, open: false });
   const [scope, setScope] = useState('all');
+  const decoratedWorkplans = useMemo(
+    () => departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities)),
+    [departmentWorkplans, enterprisePriorities],
+  );
 
   useEffect(() => {
     if (searchParams.get('new') !== '1') return;
-
     setDialog({ item: null, open: true });
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('new');
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const visibleWorkplans = useMemo(() => (
-    departmentWorkplans
-      .filter((workplan) => scope === 'all' || workplan.lead.id === user.id || workplan.ownerIds?.includes(user.id))
-      .sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`))
-  ), [departmentWorkplans, scope, user.id]);
-
-  const summary = useMemo(() => {
-    const average = visibleWorkplans.length
-      ? Math.round(visibleWorkplans.reduce((total, workplan) => total + clampProgress(workplan.progress), 0) / visibleWorkplans.length)
-      : 0;
-
-    return {
-      average,
-      departments: new Set(visibleWorkplans.map((workplan) => workplan.department)).size,
-      needsAttention: visibleWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length,
-      total: visibleWorkplans.length,
-    };
-  }, [visibleWorkplans]);
-
-  const saveWorkplan = (workplan) => {
-    if (workplan.id) {
-      const existing = departmentWorkplans.find((item) => item.id === workplan.id);
-      if (existing && !canManageWorkplan(existing, user)) return;
-    }
-
-    saveDepartmentWorkplan(workplan);
-    setDialog({ item: null, open: false });
-  };
-
-  const deleteWorkplan = (id) => {
-    const existing = departmentWorkplans.find((workplan) => workplan.id === id);
-    if (existing && !canManageWorkplan(existing, user)) return;
-    deleteDepartmentWorkplan(id);
-  };
+  const visibleWorkplans = decoratedWorkplans
+    .filter((workplan) => scope === 'all' || canManageWorkplan(workplan, user))
+    .sort((a, b) => a.department.localeCompare(b.department));
+  const average = visibleWorkplans.length
+    ? Math.round(visibleWorkplans.reduce((total, workplan) => total + workplan.progress, 0) / visibleWorkplans.length)
+    : 0;
 
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ lg: 'center' }} justifyContent="space-between" sx={{ mb: 2 }}>
         <Box>
-          <Typography variant="h1">Workplans</Typography>
+          <Typography variant="h1">Department Workplans</Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            Departmental workplans connected to organizational priorities and the 2030 strategic plan.
+            Annual department containers with objective-level Strategic Pillar and Enterprise Priority alignment.
           </Typography>
         </Box>
-        <Stack direction="row" gap={1} flexWrap="wrap">
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={scope}
-            onChange={(_, value) => value && setScope(value)}
-            aria-label="Filter workplans"
-          >
-            <ToggleButton value="all" aria-label="Show all workplans">All</ToggleButton>
-            <ToggleButton value="mine" aria-label="Show my workplans">Mine</ToggleButton>
+        <Stack direction="row" gap={1}>
+          <ToggleButtonGroup exclusive size="small" value={scope} onChange={(_, value) => value && setScope(value)}>
+            <ToggleButton value="all">All</ToggleButton>
+            <ToggleButton value="mine">Mine</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialog({ item: null, open: true })}>
-            Add Workplan
-          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialog({ item: null, open: true })}>Add Department Workplan</Button>
         </Stack>
       </Stack>
-
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <StatTile label="Visible Workplans" value={summary.total} helper={scope === 'mine' ? `${user.name}'s lane` : 'All departments'} />
-        <StatTile label="Needs Focus" value={summary.needsAttention} helper="Watch or Alert" />
-        <StatTile label="Average Progress" value={`${summary.average}%`} helper="Across this view" />
-        <StatTile label="Departments" value={summary.departments} helper="Represented here" />
+        <StatTile label="Visible Workplans" value={visibleWorkplans.length} helper="Annual department plans" />
+        <StatTile label="Department Objectives" value={visibleWorkplans.reduce((total, workplan) => total + workplan.objectives.length, 0)} helper="Validated alignment rows" />
+        <StatTile label="Needs Focus" value={visibleWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length} helper="Objective rollup" />
+        <StatTile label="Average Progress" value={`${average}%`} helper="Across objective rows" />
       </Box>
-
       <Stack gap={1.5}>
-        {visibleWorkplans.length ? (
-          visibleWorkplans.map((workplan) => (
-            <WorkplanCard
-              key={workplan.id}
-              canManage={canManageWorkplan(workplan, user)}
-              onDelete={deleteWorkplan}
-              onEdit={(item) => canManageWorkplan(item, user) && setDialog({ item, open: true })}
-              workplan={workplan}
-            />
-          ))
-        ) : (
+        {visibleWorkplans.length ? visibleWorkplans.map((workplan) => (
+          <WorkplanCard
+            key={workplan.id}
+            canManage={canManageWorkplan(workplan, user)}
+            enterprisePriorities={enterprisePriorities}
+            onDelete={deleteDepartmentWorkplan}
+            onEdit={(item) => setDialog({ item, open: true })}
+            strategicPlan={strategicPlan}
+            workplan={workplan}
+          />
+        )) : (
           <Box sx={{ bgcolor: 'background.paper', border: '1px dashed', borderColor: 'divider', borderRadius: 1, p: 3, textAlign: 'center' }}>
-            <Typography variant="h3">No workplans in this view.</Typography>
+            <Typography variant="h3">No department workplans in this view.</Typography>
           </Box>
         )}
       </Stack>
-
       <WorkplanDialog
+        enterprisePriorities={enterprisePriorities}
         item={dialog.item}
         onClose={() => setDialog({ item: null, open: false })}
-        onSave={saveWorkplan}
+        onSave={(workplan) => { saveDepartmentWorkplan(workplan); setDialog({ item: null, open: false }); }}
         open={dialog.open}
+        strategicPlan={strategicPlan}
         user={user}
       />
     </PageWrapper>

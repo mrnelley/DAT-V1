@@ -7,8 +7,9 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { priorities, q2Roadmap, strategicPlan2030, users } from '../../data/mockData';
+import { q2Roadmap, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
+import { decorateWorkplan } from '../../utils/workplans';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
@@ -29,8 +30,6 @@ const flattenPriorities = (items) => items.flatMap((priority) => [
   priority,
   ...(priority.children?.length ? flattenPriorities(priority.children) : []),
 ]);
-
-const clonePriorities = () => JSON.parse(JSON.stringify(priorities));
 
 const clampProgress = (value) => Math.min(100, Math.max(0, Number(value) || 0));
 
@@ -121,7 +120,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
   return (
     <Dialog aria-labelledby="roadmap-editor-dialog-title" open={editor.open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle id="roadmap-editor-dialog-title">
-        {editor.mode === 'edit' ? 'Edit' : 'Add'} {editor.type === 'priority' ? 'Organizational Priority' : editor.type === 'objective' ? 'Key Objective' : 'KPI'}
+        {editor.mode === 'edit' ? 'Edit' : 'Add'} {editor.type === 'priority' ? 'Enterprise Priority' : editor.type === 'objective' ? 'Key Objective' : 'KPI'}
       </DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
@@ -129,7 +128,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
             <>
               <TextField label="Priority Name" value={form.name} onChange={update('name')} fullWidth required />
               <Typography variant="body2">
-                Organizational Priorities are grouping lanes. Ownership and KPI accountability belong to each Key Objective.
+                Enterprise Priorities are grouping lanes. Ownership and KPI accountability belong to each Key Objective.
               </Typography>
               <Stack gap={1.25}>
                 {form.objectiveDrafts.map((draft, index) => (
@@ -230,8 +229,8 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
           <Typography variant="h2">{pillar?.name}</Typography>
         </Box>
         {canManage && (
-          <Button startIcon={<AddIcon />} variant="contained" title={`Add organizational priority for ${pillar?.name}`} onClick={() => onOpenEditor('priority', 'create', { pillar })}>
-            Add Org Priority
+          <Button startIcon={<AddIcon />} variant="contained" title={`Add Enterprise Priority for ${pillar?.name}`} onClick={() => onOpenEditor('priority', 'create', { pillar })}>
+            Add Enterprise Priority
           </Button>
         )}
       </Stack>
@@ -338,15 +337,21 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
 
 const StrategicPlanSection = () => {
   const { user } = useAuth();
-  const { departmentWorkplans, queuedTasks } = useOperatingData();
-  const [roadmapPriorities, setRoadmapPriorities] = useState(clonePriorities);
+  const {
+    departmentWorkplans,
+    enterprisePriorities,
+    queuedTasks,
+    setEnterprisePriorities,
+    strategicPlan,
+  } = useOperatingData();
   const [selectedPillarId, setSelectedPillarId] = useState(null);
   const [editor, setEditor] = useState({ open: false, type: null, mode: 'create', form: {} });
   const canManageRoadmap = eltUserIds.has(user.id);
 
-  const flatPriorities = flattenPriorities(roadmapPriorities);
-  const pillarSummaries = strategicPlan2030.pillars.map((pillar) => {
-    const pillarWorkplans = departmentWorkplans.filter((workplan) => workplan.strategicPillarId === pillar.id);
+  const flatPriorities = flattenPriorities(enterprisePriorities);
+  const decoratedWorkplans = departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities));
+  const pillarSummaries = strategicPlan.pillars.map((pillar) => {
+    const pillarWorkplans = decoratedWorkplans.filter((workplan) => workplan.objectives.some((objective) => objective.strategicPillarId === pillar.id));
     const pillarPriorities = flatPriorities.filter((priority) => priority.strategicPillarId === pillar.id);
     const pillarActions = queuedTasks.filter((item) => item.strategicPillarId === pillar.id);
     const attentionCount = pillarWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status)).length;
@@ -363,8 +368,8 @@ const StrategicPlanSection = () => {
   });
 
   const selectedPillar = pillarSummaries.find((pillar) => pillar.id === selectedPillarId) || null;
-  const alignedWorkplans = [...departmentWorkplans]
-    .sort((a, b) => new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`))
+  const alignedWorkplans = [...decoratedWorkplans]
+    .sort((a, b) => String(a.due).localeCompare(String(b.due)))
     .slice(0, 7);
 
   const openEditor = (type, mode, context = {}) => {
@@ -390,7 +395,7 @@ const StrategicPlanSection = () => {
   const closeEditor = () => setEditor({ open: false, type: null, mode: 'create', form: {} });
 
   const saveEditor = (form) => {
-    setRoadmapPriorities((current) => {
+    setEnterprisePriorities((current) => {
       if (form.type === 'priority') {
         const keyObjectives = form.objectiveDrafts.map((draft, index) => {
           const owner = getUser(draft.ownerId);
@@ -422,10 +427,10 @@ const StrategicPlanSection = () => {
           roadmapStatus: roadmapStatusFromObjectives(keyObjectives),
           company: true,
           period: q2Roadmap.quarter,
-          strategicPlan: strategicPlan2030.name,
+          strategicPlan: strategicPlan.name,
           strategicPillarId: form.strategicPillarId,
-          strategicPillar: strategicPlan2030.pillars.find((pillar) => pillar.id === form.strategicPillarId)?.name,
-          description: `${q2Roadmap.quarter} organizational priority aligned to ${form.strategicPillarId}.`,
+          strategicPillar: strategicPlan.pillars.find((pillar) => pillar.id === form.strategicPillarId)?.name,
+          description: `${q2Roadmap.quarter} Enterprise Priority aligned to ${form.strategicPillarId}.`,
           keyObjectives,
           children: [],
         };
@@ -485,11 +490,11 @@ const StrategicPlanSection = () => {
     closeEditor();
   };
 
-  const deletePriority = (priorityId) => setRoadmapPriorities((current) => current.filter((priority) => priority.id !== priorityId));
-  const deleteObjective = (priorityId, objectiveId) => setRoadmapPriorities((current) => current.map((priority) => (
+  const deletePriority = (priorityId) => setEnterprisePriorities((current) => current.filter((priority) => priority.id !== priorityId));
+  const deleteObjective = (priorityId, objectiveId) => setEnterprisePriorities((current) => current.map((priority) => (
     priority.id === priorityId ? { ...priority, keyObjectives: (priority.keyObjectives || []).filter((objective) => objective.id !== objectiveId) } : priority
   )));
-  const deleteKpi = (priorityId, objectiveId, kpiId) => setRoadmapPriorities((current) => current.map((priority) => (
+  const deleteKpi = (priorityId, objectiveId, kpiId) => setEnterprisePriorities((current) => current.map((priority) => (
     priority.id === priorityId
       ? { ...priority, keyObjectives: (priority.keyObjectives || []).map((objective) => (objective.id === objectiveId ? { ...objective, kpis: (objective.kpis || []).filter((kpi) => kpi.id !== kpiId) } : objective)) }
       : priority
@@ -501,17 +506,17 @@ const StrategicPlanSection = () => {
         <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={2}>
           <Box sx={{ maxWidth: 780 }}>
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
-              Strategic Plan {strategicPlan2030.timeframe}
+              Strategic Plan {strategicPlan.timeframe}
             </Typography>
-            <Typography variant="h1" sx={{ mt: 0.5 }}>{strategicPlan2030.name}</Typography>
+            <Typography variant="h1" sx={{ mt: 0.5 }}>{strategicPlan.name}</Typography>
             <Typography variant="h2" sx={{ mt: 1 }}>{q2Roadmap.quarter} Roadmap: {q2Roadmap.theme}</Typography>
             <Typography variant="body2" sx={{ mt: 0.75 }}>
-              ELT defines strategic pillars, organizational priorities, key objectives, KPI targets, and accountable Director-owners. OLT contributes progress through departmental workplans and assigned work.
+              ELT defines strategic pillars, Enterprise Priorities, key objectives, KPI targets, and accountable Director-owners. OLT contributes progress through departmental workplans and assigned work.
             </Typography>
           </Box>
           <Stack direction="row" gap={1} flexWrap="wrap" alignItems="flex-start">
-            <Chip icon={<AccountTreeOutlinedIcon />} label={`${strategicPlan2030.pillars.length} pillars`} color="primary" />
-            <Chip label={`${strategicPlan2030.pillars.reduce((total, pillar) => total + pillar.successMetrics.length, 0)} success metrics`} variant="outlined" />
+            <Chip icon={<AccountTreeOutlinedIcon />} label={`${strategicPlan.pillars.length} pillars`} color="primary" />
+            <Chip label={`${strategicPlan.pillars.reduce((total, pillar) => total + pillar.successMetrics.length, 0)} success metrics`} variant="outlined" />
             <Chip icon={<FlagOutlinedIcon />} label={`${departmentWorkplans.length} workplans`} variant="outlined" />
             <Chip icon={<TaskAltOutlinedIcon />} label={`${queuedTasks.length} queued tasks`} variant="outlined" />
           </Stack>
@@ -557,7 +562,7 @@ const StrategicPlanSection = () => {
                     </Box>
                   ))
                 ) : (
-                  <Chip label={`No ${q2Roadmap.quarter} organizational priority set`} size="small" variant="outlined" />
+                  <Chip label={`No ${q2Roadmap.quarter} Enterprise Priority set`} size="small" variant="outlined" />
                 )}
               </Stack>
             </Box>

@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 const require = createRequire(import.meta.url);
@@ -98,14 +97,15 @@ const { NotificationsProvider } = await import('../src/context/NotificationsCont
 const { OperatingDataProvider } = await import('../src/context/OperatingDataContext.jsx');
 const { default: theme } = await import('../src/theme/index.js');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
-const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
+const { default: CurrentWeekPrioritiesSection } = await import('../src/components/dashboard/CurrentWeekPrioritiesSection.jsx');
 const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
+const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
 const { default: HuddlesPage } = await import('../src/components/huddles/HuddlesPage.jsx');
 const { default: LearnPage } = await import('../src/components/learn/LearnPage.jsx');
 const { default: LoginPage } = await import('../src/components/auth/LoginPage.jsx');
-const { default: OrganizationalPriorityPage } = await import('../src/components/priorities/OrganizationalPriorityPage.jsx');
+const { default: EnterprisePriorityPage } = await import('../src/components/priorities/EnterprisePriorityPage.jsx');
 const { default: PrioritiesPage } = await import('../src/components/priorities/PrioritiesPage.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: SideNav } = await import('../src/components/layout/SideNav.jsx');
@@ -115,14 +115,18 @@ const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 const { default: WorkplansPage } = await import('../src/components/workplans/WorkplansPage.jsx');
 const { users } = await import('../src/data/mockData.js');
+const { currentWeeklyReport } = await import('../src/data/weeklyTrackerConfig.js');
 
 const testUser = (id) => users.find((user) => user.id === id);
 
 const blankOperatingData = (overrides = {}) => ({
   huddles: [],
+  enterprisePriorities: [],
   queuedTasksByOwner: {},
   stucks: [],
+  version: 4,
   weeklyActionItems: [],
+  weeklyPriorityEntriesByWeek: {},
   ...overrides,
 });
 
@@ -274,25 +278,65 @@ describe('clickable user actions', () => {
     expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/me');
   });
 
-  it('keeps Weekly Tracker priority data out of the shared individual dashboard', () => {
-    const source = readFileSync(
-      new URL('../src/components/dashboard/FocusedDashboard.jsx', import.meta.url),
-      'utf8',
-    );
+  it('projects only Tammie-owned current-week priorities onto Tammie personal dashboard', async () => {
+    const tammie = testUser('u8');
+    const parnell = testUser('u11');
+    const entries = [
+      {
+        department: tammie.department,
+        due: currentWeeklyReport.weekEnd,
+        id: 'tammie-live-priority',
+        owner: tammie,
+        rank: 1,
+        reportId: currentWeeklyReport.id,
+        status: 'steady',
+        tasks: [],
+        title: 'Tammie live Weekly Tracker priority',
+      },
+      {
+        department: parnell.department,
+        due: currentWeeklyReport.weekEnd,
+        id: 'parnell-live-priority',
+        owner: parnell,
+        rank: 1,
+        reportId: currentWeeklyReport.id,
+        status: 'steady',
+        tasks: [],
+        title: 'Parnell operations priority',
+      },
+    ];
 
-    expect(source).not.to.include('hdc_compass_weekly_tracker_entries');
-    expect(source).not.to.include('WeeklyPrioritiesSection');
-    expect(source).not.to.include('Priority Task List');
-    expect(source).not.to.include("['Weekly Priorities'");
+    renderWithProviders(<CurrentWeekPrioritiesSection entries={entries} user={tammie} />, '/dashboard/me', tammie.id);
+
+    expect(await screen.findByRole('heading', { name: /tammie's weekly priorities/i })).to.exist;
+    expect(screen.getByText('Tammie live Weekly Tracker priority')).to.exist;
+    expect(screen.queryByText('Parnell operations priority')).to.equal(null);
+    expect(screen.queryByText(/operations weekly priorities/i)).to.equal(null);
   });
 
-  it('does not surface hard-coded weekly priorities on the advocacy dashboard', async () => {
-    renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
+  it('uses live Weekly Tracker priorities instead of a hard-coded advocacy priority list', async () => {
+    const dana = testUser('u1');
+    const livePriority = {
+      department: dana.department,
+      due: currentWeeklyReport.weekEnd,
+      id: 'dana-live-priority',
+      owner: dana,
+      rank: 1,
+      reportId: currentWeeklyReport.id,
+      status: 'steady',
+      tasks: [],
+      title: 'Dana live Weekly Tracker priority',
+    };
 
-    expect(await screen.findByRole('heading', { name: /advocacy command center/i })).to.exist;
+    renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', dana.id, {
+      weeklyPriorityEntriesByWeek: {
+        [currentWeeklyReport.id]: [livePriority],
+      },
+    });
+
+    expect(await screen.findByText('Dana live Weekly Tracker priority')).to.exist;
     expect(screen.queryByText(/individual priorities this week/i)).to.equal(null);
     expect(screen.queryByRole('button', { name: /add priority/i })).to.equal(null);
-    expect(screen.queryByText(/priority progress/i)).to.equal(null);
   });
 
   it('orders the side navigation and keeps Data Table admin-only', async () => {
@@ -301,15 +345,15 @@ describe('clickable user actions', () => {
     const dashboards = await screen.findByText('Dashboards');
     const companyDashboard = await screen.findByText('Company Dashboard');
     const myDashboard = screen.getByText('My Dashboard');
-    const organizationalPriorities = screen.getByText('Organizational Priorities');
+    const enterprisePriorities = screen.getByText('Enterprise Priorities');
     const departmentWorkplans = screen.getByText('Department Workplans');
     const weeklyTracker = screen.getByText('Weekly Tracker');
     const taskView = screen.getByText('Task View');
 
     expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(myDashboard.compareDocumentPosition(organizationalPriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(organizationalPriorities.compareDocumentPosition(departmentWorkplans) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(myDashboard.compareDocumentPosition(enterprisePriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(enterprisePriorities.compareDocumentPosition(departmentWorkplans) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(departmentWorkplans.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(weeklyTracker.compareDocumentPosition(taskView) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(screen.queryByText('Notifications')).to.equal(null);
@@ -422,9 +466,12 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/send summary to tammie/i)).to.exist;
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).to.equal(null);
-      const entries = JSON.parse(window.localStorage.getItem('hdc_compass_weekly_tracker_entries'));
-      const savedPriority = Object.values(entries).flat().find((entry) => entry.title === 'Publish operations support summary');
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const savedPriority = saved.weeklyPriorityEntriesByWeek[currentWeeklyReport.id]
+        .find((entry) => entry.title === 'Publish operations support summary');
       expect(savedPriority.tasks.some((task) => task.title === 'Send summary to Tammie')).to.equal(true);
+      expect(savedPriority.sourceType).to.equal('weekly_priority_entry');
+      expect(window.localStorage.getItem('hdc_compass_weekly_tracker_entries')).to.equal(null);
     });
   });
 
@@ -449,6 +496,7 @@ describe('clickable user actions', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Review vendor onboarding' } });
     await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).to.equal(null));
 
     await user.click(await screen.findByRole('button', { name: /open weekly priority detail for review vendor onboarding/i }));
 
@@ -465,8 +513,9 @@ describe('clickable user actions', () => {
     await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
     await waitFor(() => {
-      const entries = JSON.parse(window.localStorage.getItem('hdc_compass_weekly_tracker_entries'));
-      const savedPriority = Object.values(entries).flat().find((entry) => entry.title === 'Coordinate launch readiness');
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const savedPriority = saved.weeklyPriorityEntriesByWeek[currentWeeklyReport.id]
+        .find((entry) => entry.title === 'Coordinate launch readiness');
       expect(savedPriority.alignmentType).to.equal('department');
       expect(savedPriority.priorityId).to.equal(null);
       expect(savedPriority.workplanId).to.equal(null);
@@ -476,8 +525,82 @@ describe('clickable user actions', () => {
   it('shows an empty workplan state when no department workplans exist yet', async () => {
     renderWithProviders(<WorkplansPage />, '/workplans', 'u2');
 
-    expect(await screen.findByRole('heading', { name: /^workplans$/i })).to.exist;
-    expect(await screen.findByText(/no workplans in this view/i)).to.exist;
+    expect(await screen.findByRole('heading', { name: /^department workplans$/i })).to.exist;
+    expect(await screen.findByText(/no department workplans in this view/i)).to.exist;
+  });
+
+  it('creates an annual department workplan with objective-level alignment', async () => {
+    const { user } = renderWithProviders(<WorkplansPage />, '/workplans', 'u2');
+
+    await user.click(await screen.findByRole('button', { name: /add department workplan/i }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByDisplayValue('2026 FINANCE WORKPLAN')).to.exist;
+    expect(within(dialog).getByDisplayValue('Sam Jordan')).to.exist;
+    await user.type(within(dialog).getByRole('textbox', { name: /department objective/i }), 'Reduce accounts receivable');
+    await user.click(within(dialog).getByRole('button', { name: /save department workplan/i }));
+
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const workplan = saved.departmentWorkplans.find((item) => item.department === 'Finance');
+      expect(workplan.title).to.equal('2026 FINANCE WORKPLAN');
+      expect(workplan.lead.id).to.equal('u2');
+      expect(workplan.objectives[0].title).to.equal('Reduce accounts receivable');
+      expect(workplan.objectives[0].strategicPillarId).to.equal('care-connection');
+      expect(workplan.priorityLinks).to.equal(undefined);
+    });
+  });
+
+  it('links a weekly priority to a validated Department Objective and Enterprise Priority', async () => {
+    const financePriority = {
+      company: true,
+      id: 'enterprise-financial-resilience',
+      keyObjectives: [],
+      name: 'Financial Resilience',
+      strategicPillarId: 'sustainable-growth',
+    };
+    const financeWorkplan = {
+      department: 'Finance',
+      id: 'finance-workplan',
+      lead: testUser('u2'),
+      objectives: [{
+        description: '',
+        due: '2026-12-31',
+        enterprisePriorityId: financePriority.id,
+        id: 'ar-objective',
+        owner: testUser('u9'),
+        ownerId: 'u9',
+        progress: 20,
+        status: 'Alert',
+        strategicPillarId: 'sustainable-growth',
+        title: 'Reduce accounts receivable',
+      }],
+      ownerIds: ['u2'],
+      title: '2026 FINANCE WORKPLAN',
+      year: '2026',
+    };
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2', {
+      departmentWorkplans: [financeWorkplan],
+      enterprisePriorities: [financePriority],
+    });
+
+    await user.click(await screen.findByRole('button', { name: /set weekly priority 1 for sam jordan/i }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Resolve aging receivables' } });
+    await user.click(within(dialog).getByLabelText(/department objective/i));
+    await user.click(await screen.findByRole('option', { name: /finance - reduce accounts receivable/i }));
+    await user.click(within(dialog).getByLabelText(/enterprise priority/i));
+    await user.click(await screen.findByRole('option', { name: /financial resilience/i }));
+    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const weekly = saved.weeklyPriorityEntriesByWeek[currentWeeklyReport.id]
+        .find((entry) => entry.title === 'Resolve aging receivables');
+      expect(weekly.objectiveId).to.equal('ar-objective');
+      expect(weekly.workplanId).to.equal('finance-workplan');
+      expect(weekly.priorityId).to.equal('enterprise-financial-resilience');
+      expect(weekly.strategicPillarId).to.equal('sustainable-growth');
+    });
   });
 
   it('issues a stuck directly from an owned Weekly Tracker Action Item', async () => {
@@ -505,9 +628,9 @@ describe('clickable user actions', () => {
   it('opens the priority drawer from Add Priority', async () => {
     const { user } = renderWithProviders(<PrioritiesPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
+    await user.click(await screen.findByRole('button', { name: /add Enterprise Priority/i }));
 
-    expect(await screen.findByText(/edit organizational priority/i)).to.exist;
+    expect(await screen.findByText(/edit Enterprise Priority/i)).to.exist;
     expect(screen.getByLabelText(/priority name/i)).to.exist;
     expect(screen.getByLabelText(/key objective/i)).to.exist;
     expect(screen.getByLabelText(/objective owner/i)).to.exist;
@@ -516,22 +639,34 @@ describe('clickable user actions', () => {
     expect(screen.queryByLabelText(/^owner$/i)).to.equal(null);
   });
 
-  it('shows a bottom-right unavailable alert for unconnected priority save', async () => {
+  it('creates and persists an Enterprise Priority from the priority drawer', async () => {
     const { user } = renderWithProviders(<PrioritiesPage />);
 
-    await user.click(await screen.findByRole('button', { name: /add organizational priority/i }));
-    await user.click(await screen.findByRole('button', { name: /^save$/i }));
+    await user.click(await screen.findByRole('button', { name: /add Enterprise Priority/i }));
+    await user.type(screen.getByLabelText(/Enterprise Priority name/i), 'Resident service readiness');
+    await user.type(screen.getByLabelText(/key objective/i), 'Publish service standards');
+    await user.click(screen.getByLabelText(/objective owner/i));
+    await user.click(await screen.findByRole('option', { name: /dana hanchin/i }));
+    await user.type(screen.getByLabelText(/kpi - end of/i), 'Standards approved');
+    await user.type(screen.getByLabelText(/kpi target/i), 'Approved by June 30');
+    await user.click(screen.getByRole('button', { name: /^save$/i }));
 
-    expect(await screen.findByText(/action is unavailable because organizational priority persistence is not connected yet/i)).to.exist;
+    expect(await screen.findByText('Resident service readiness')).to.exist;
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const priority = saved.enterprisePriorities.find((item) => item.name === 'Resident service readiness');
+      expect(priority.keyObjectives[0].owner.id).to.equal('u1');
+      expect(priority.keyObjectives[0].kpis[0].target).to.equal('Approved by June 30');
+    });
   });
 
-  it('creates an Organizational Priority from owned Key Objectives and rolls up its signal', async () => {
+  it('creates an Enterprise Priority from owned Key Objectives and rolls up its signal', async () => {
     const { user } = renderWithProviders(<StrategicPlanSection />, '/metrics', 'u1');
 
     await user.click((await screen.findAllByRole('button', { name: /open .* q2 2026 roadmap/i }))[0]);
-    await user.click(await screen.findByRole('button', { name: /add org priority/i }));
+    await user.click(await screen.findByRole('button', { name: /add Enterprise Priority/i }));
 
-    const dialog = await screen.findByRole('dialog', { name: /add organizational priority/i });
+    const dialog = await screen.findByRole('dialog', { name: /add Enterprise Priority/i });
     fireEvent.change(within(dialog).getByLabelText(/priority name/i), { target: { value: 'Resident service readiness' } });
     fireEvent.change(within(dialog).getByLabelText(/key objective/i), { target: { value: 'Publish service standards' } });
     fireEvent.change(within(dialog).getByLabelText(/kpi - end of/i), { target: { value: 'Standards approved' } });
@@ -607,7 +742,7 @@ describe('clickable user actions', () => {
 
     const destinations = [
       ['Strategy', 'Company Dashboard', '/dashboard/company'],
-      ['Strategy', 'Organizational Priorities', '/priorities'],
+      ['Strategy', 'Enterprise Priorities', '/priorities'],
       ['Strategy', 'Weekly Tracker', '/weekly-tracker'],
       ['Culture', 'Huddles', '/huddles'],
       ['Culture', 'Stucks', '/stucks'],
@@ -628,7 +763,7 @@ describe('clickable user actions', () => {
     }
   });
 
-  it('pins quarterly organizational priority health on the company dashboard', async () => {
+  it('pins quarterly Enterprise Priority health on the company dashboard', async () => {
     renderWithProviders(
       <CompanyDashboardOverview
         calendarEvents={[]}
@@ -646,12 +781,55 @@ describe('clickable user actions', () => {
     );
 
     expect(await screen.findByText(/executive quarter pulse/i)).to.exist;
-    expect(await screen.findByRole('heading', { name: /quarterly organizational priority health/i })).to.exist;
+    expect(await screen.findByRole('heading', { name: /quarterly Enterprise Priority health/i })).to.exist;
     expect(screen.getByLabelText(/team filter/i)).to.exist;
-    expect(screen.getByText(/0\/0 q2 2026 organizational priorities/i)).to.exist;
-    expect(screen.getByText(/no quarterly organizational priorities have been defined yet/i)).to.exist;
-    expect(screen.queryByRole('button', { name: /open organizational priority detail/i })).to.equal(null);
+    expect(screen.getByText(/0\/0 q2 2026 Enterprise Priorities/i)).to.exist;
+    expect(screen.getByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
+    expect(screen.queryByRole('button', { name: /open Enterprise Priority detail/i })).to.equal(null);
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
+  });
+
+  it('reads company dashboard priorities from the canonical operating store', async () => {
+    const dana = testUser('u1');
+    const priority = {
+      children: [],
+      company: true,
+      description: 'Visible anywhere Enterprise Priorities are read.',
+      id: 'canonical-priority',
+      keyObjectives: [{
+        department: dana.department,
+        id: 'canonical-objective',
+        kpis: [{ id: 'canonical-kpi', progress: 25, status: 'Steady', target: 'Complete', title: 'Readiness' }],
+        owner: dana,
+        status: 'Steady',
+        title: 'Confirm readiness',
+      }],
+      name: 'Canonical Enterprise Priority',
+      period: 'Q2 2026',
+      roadmapStatus: 'Steady',
+      strategicPillar: 'Care & Connection',
+      strategicPillarId: 'care-connection',
+    };
+
+    renderWithProviders(
+      <CompanyDashboardOverview
+        calendarEvents={[]}
+        calendarProps={{
+          onApprove: () => {},
+          onCreateCalendarEvent: () => {},
+          onDecline: () => {},
+          onSendToOrg: () => {},
+          onUpdateCalendarEvent: () => {},
+        }}
+        isAdmin
+      />,
+      '/dashboard/company',
+      'u1',
+      { enterprisePriorities: [priority] },
+    );
+
+    expect(await screen.findByText('Canonical Enterprise Priority')).to.exist;
+    expect(screen.getByText(/1\/1 q2 2026 Enterprise Priorities/i)).to.exist;
   });
 
   it('shows the blank company priority state without hiding pillar coverage', async () => {
@@ -673,13 +851,13 @@ describe('clickable user actions', () => {
       '/dashboard/company',
     );
 
-    expect(await screen.findByText(/no quarterly organizational priorities have been defined yet/i)).to.exist;
+    expect(await screen.findByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
     expect((await screen.findAllByRole('button', { name: /open pillar detail/i })).length).to.equal(5);
-    expect((await screen.findAllByRole('img', { name: /0 aligned organizational priorities, no data/i })).length).to.equal(5);
+    expect((await screen.findAllByRole('img', { name: /0 aligned Enterprise Priorities, no data/i })).length).to.equal(5);
     expect(screen.queryByText(/prioritize resident-centered service delivery/i)).to.equal(null);
   });
 
-  it('shows an empty organizational priority register when quarterly priorities do not exist yet', async () => {
+  it('shows an empty Enterprise Priority register when quarterly priorities do not exist yet', async () => {
     renderWithProviders(
       <CompanyDashboardOverview
         calendarEvents={[]}
@@ -695,7 +873,7 @@ describe('clickable user actions', () => {
       '/dashboard/company',
     );
 
-    expect(await screen.findByText(/no quarterly organizational priorities have been defined yet/i)).to.exist;
+    expect(await screen.findByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
     expect(screen.queryByRole('button', { name: /engage teammates about objective/i })).to.equal(null);
   });
 
@@ -722,13 +900,13 @@ describe('clickable user actions', () => {
     expect(within(dialog).getAllByRole('heading', { name: /care and connection/i })).to.have.length.greaterThan(0);
     expect(within(dialog).getByRole('heading', { name: /success metrics/i })).to.exist;
     expect(within(dialog).getByText(/resident satisfaction/i)).to.exist;
-    expect(within(dialog).getByText(/no current organizational priorities are aligned to this pillar yet/i)).to.exist;
+    expect(within(dialog).getByText(/no current Enterprise Priorities are aligned to this pillar yet/i)).to.exist;
   });
 
-  it('shows a not-found state for an unavailable organizational priority page', async () => {
+  it('shows a not-found state for an unavailable Enterprise Priority page', async () => {
     renderWithProviders(
       <Routes>
-        <Route path="/dashboard/company/priorities/:priorityId" element={<OrganizationalPriorityPage />} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<EnterprisePriorityPage />} />
       </Routes>,
       '/dashboard/company/priorities/q2-operational-efficiency',
     );

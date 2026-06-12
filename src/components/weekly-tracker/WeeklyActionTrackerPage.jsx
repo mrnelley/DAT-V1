@@ -11,8 +11,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { priorities, weeklyActionEntries, weeklyActionReports, users } from '../../data/mockData';
+import { users } from '../../data/mockData';
+import { currentWeeklyReport, weeklyTrackerWeekOptions } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
+import { findWorkplanObjective } from '../../utils/workplans';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 import AddStuckModal from '../stucks/AddStuckModal';
@@ -33,43 +35,8 @@ const statusColors = {
 
 const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over'];
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
-const baseReport = weeklyActionReports[0] || {
-  id: 'war-2026-06-08',
-  label: 'Current week',
-  reviewMeetingAt: '2026-06-12T10:00:00-04:00',
-  status: 'planning',
-  submissionDueAt: '2026-06-12T12:00:00-04:00',
-  weekEnd: '2026-06-12',
-  weekStart: '2026-06-08',
-};
-const weeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
-
-const weekOptions = [
-  {
-    ...baseReport,
-    id: 'war-2026-06-01',
-    label: 'Previous week',
-    reviewMeetingAt: '2026-06-05T10:00:00-04:00',
-    status: 'locked',
-    submissionDueAt: '2026-06-05T12:00:00-04:00',
-    weekEnd: '2026-06-05',
-    weekStart: '2026-06-01',
-  },
-  {
-    ...baseReport,
-    label: 'Current week',
-  },
-  {
-    ...baseReport,
-    id: 'war-2026-06-15',
-    label: 'Upcoming week',
-    reviewMeetingAt: '2026-06-19T10:00:00-04:00',
-    status: 'planning',
-    submissionDueAt: '2026-06-19T12:00:00-04:00',
-    weekEnd: '2026-06-19',
-    weekStart: '2026-06-15',
-  },
-];
+const baseReport = currentWeeklyReport;
+const weekOptions = weeklyTrackerWeekOptions;
 
 const formatDateTime = (value) => new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
@@ -103,6 +70,7 @@ const buildPriorityForm = (entry, user) => ({
   firstTaskDue: entry?.due || '2026-05-22',
   firstTaskOwnerId: user.id,
   firstTaskTitle: '',
+  objectiveId: entry?.objectiveId || '',
   priorityId: entry?.priorityId || '',
   riskSupportNote: entry?.riskSupportNote || '',
   status: entry?.status === 'no_data' ? 'steady' : entry?.status || 'steady',
@@ -127,42 +95,6 @@ const buildEmptyEntry = (participant, rank, report) => ({
   title: '',
 });
 
-const cloneTaskForReport = (task, report) => ({
-  ...task,
-  due: report.weekEnd,
-  id: `${task.id}-${report.id}`,
-});
-
-const cloneEntryForReport = (entry, report, mode) => ({
-  ...entry,
-  carriedFromEntryId: mode === 'upcoming' ? null : entry.carriedFromEntryId,
-  due: report.weekEnd,
-  id: `${entry.id}-${report.id}`,
-  previousRank: mode === 'upcoming' ? entry.rank : entry.previousRank,
-  reportId: report.id,
-  riskSupportNote: mode === 'upcoming' ? '' : entry.riskSupportNote,
-  status: mode === 'upcoming' ? 'no_data' : entry.status,
-  tasks: mode === 'upcoming' ? [] : entry.tasks.map((task) => cloneTaskForReport(task, report)),
-  title: mode === 'upcoming' ? '' : entry.title,
-});
-
-const buildEntriesForWeek = (report) => {
-  if (report.id === baseReport.id) return weeklyActionEntries;
-  const mode = report.id > baseReport.id ? 'upcoming' : 'previous';
-  return weeklyActionEntries.map((entry) => cloneEntryForReport(entry, report, mode));
-};
-
-const readEntriesByWeek = () => {
-  const fallback = Object.fromEntries(weekOptions.map((week) => [week.id, buildEntriesForWeek(week)]));
-  if (typeof window === 'undefined') return fallback;
-
-  try {
-    return JSON.parse(window.localStorage.getItem(weeklyTrackerStorageKey)) || fallback;
-  } catch {
-    return fallback;
-  }
-};
-
 const normalizeTaskStatus = (status) => {
   const normalized = String(status || 'open').toLowerCase().replaceAll(' ', '_');
   return taskStatuses.includes(normalized) ? normalized : 'open';
@@ -181,15 +113,17 @@ const WeeklyActionTrackerPage = () => {
     addStuck,
     departmentWorkplans,
     getTasksForUser,
+    enterprisePriorities,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
+    setWeeklyPriorityEntriesForWeek,
     stucks,
     updateWeeklyActionItem,
+    weeklyPriorityEntriesByWeek,
   } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('all');
   const [selectedWeekId, setSelectedWeekId] = useState(baseReport.id);
-  const [entriesByWeek, setEntriesByWeek] = useState(readEntriesByWeek);
   const [priorityForm, setPriorityForm] = useState(buildPriorityForm(null, user));
   const [priorityDialogEntry, setPriorityDialogEntry] = useState(null);
   const [selectedEntryId, setSelectedEntryId] = useState(null);
@@ -197,13 +131,8 @@ const WeeklyActionTrackerPage = () => {
   const [taskDialogEntry, setTaskDialogEntry] = useState(null);
   const [stuckTask, setStuckTask] = useState(null);
   const report = weekOptions.find((week) => week.id === selectedWeekId) || weekOptions[1];
-  const entries = entriesByWeek[selectedWeekId] || [];
-  const setCurrentEntries = (updater) => setEntriesByWeek((current) => ({
-    ...current,
-    [selectedWeekId]: typeof updater === 'function'
-      ? updater(current[selectedWeekId] || [])
-      : updater,
-  }));
+  const entries = weeklyPriorityEntriesByWeek[selectedWeekId] || [];
+  const setCurrentEntries = (updater) => setWeeklyPriorityEntriesForWeek(selectedWeekId, updater);
   const rows = useMemo(() => users.map((participant) => {
     const participantEntries = entries
       .filter((entry) => entry.owner.id === participant.id)
@@ -248,10 +177,6 @@ const WeeklyActionTrackerPage = () => {
   }, [rows, scope, user.id]);
 
   useEffect(() => {
-    window.localStorage.setItem(weeklyTrackerStorageKey, JSON.stringify(entriesByWeek));
-  }, [entriesByWeek]);
-
-  useEffect(() => {
     const entryParam = searchParams.get('entry');
     if (entryParam && entries.some((entry) => entry.id === entryParam)) {
       setSelectedEntryId(entryParam);
@@ -285,14 +210,31 @@ const WeeklyActionTrackerPage = () => {
     setPriorityForm(buildPriorityForm(null, user));
   };
 
-  const updatePriorityForm = (field) => (event) => setPriorityForm((current) => ({ ...current, [field]: event.target.value }));
+  const updatePriorityForm = (field) => (event) => {
+    const value = event.target.value;
+    setPriorityForm((current) => {
+      if (field !== 'objectiveId') return { ...current, [field]: value };
+      const linked = findWorkplanObjective(departmentWorkplans, value);
+      return {
+        ...current,
+        objectiveId: value,
+        priorityId: linked?.objective.enterprisePriorityId || '',
+        workplanId: linked?.workplan.id || '',
+      };
+    });
+  };
 
   const saveWeeklyPriority = () => {
     if (!priorityDialogEntry || !priorityForm.title.trim()) return;
 
     const owner = priorityDialogEntry.owner;
-    const linkedPriority = priorities.find((candidate) => candidate.id === priorityForm.priorityId);
-    const linkedWorkplan = departmentWorkplans.find((candidate) => candidate.id === priorityForm.workplanId);
+    const objectiveLink = findWorkplanObjective(departmentWorkplans, priorityForm.objectiveId);
+    const linkedWorkplan = objectiveLink?.workplan || null;
+    const linkedObjective = objectiveLink?.objective || null;
+    const linkedPriority = enterprisePriorities.find((candidate) => candidate.id === (priorityForm.priorityId || linkedObjective?.enterprisePriorityId));
+    const validatedPriority = linkedObjective && linkedPriority && linkedObjective.enterprisePriorityId !== linkedPriority.id
+      ? null
+      : linkedPriority;
     const taskOwner = users.find((candidate) => candidate.id === priorityForm.firstTaskOwnerId) || user;
     const firstTask = priorityForm.firstTaskTitle.trim()
       ? [{
@@ -311,14 +253,19 @@ const WeeklyActionTrackerPage = () => {
       entry.id === priorityDialogEntry.id
         ? {
           ...entry,
-          alignedPriorityLabel: [linkedPriority?.name, linkedWorkplan?.title].filter(Boolean).join(' + '),
-          alignmentType: linkedPriority && linkedWorkplan ? 'both' : linkedPriority ? 'enterprise' : 'department',
+          alignedPriorityLabel: [validatedPriority?.name, linkedObjective?.title].filter(Boolean).join(' + '),
+          alignmentType: validatedPriority && linkedObjective ? 'both' : validatedPriority ? 'enterprise' : 'department',
+          createdAt: entry.createdAt || new Date().toISOString(),
           due: priorityForm.due,
-          priorityId: linkedPriority?.id || null,
+          objectiveId: linkedObjective?.id || null,
+          priorityId: validatedPriority?.id || null,
           riskSupportNote: priorityForm.riskSupportNote,
+          sourceType: 'weekly_priority_entry',
           status: priorityForm.status,
           tasks: [...firstTask, ...(entry.tasks || [])],
           title: priorityForm.title.trim(),
+          updatedAt: new Date().toISOString(),
+          strategicPillarId: linkedObjective?.strategicPillarId || null,
           workplanId: linkedWorkplan?.id || null,
         }
         : entry
@@ -560,7 +507,7 @@ const WeeklyActionTrackerPage = () => {
                       <>
                         <Typography fontWeight={800} sx={{ mt: 1 }}>{entry.title}</Typography>
                         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                          <Chip label={entry.alignmentType === 'both' ? 'Organizational Priority + workplan aligned' : entry.alignmentType === 'enterprise' ? 'Organizational Priority aligned' : 'Workplan aligned'} size="small" variant="outlined" />
+                          <Chip label={entry.alignmentType === 'both' ? 'Enterprise Priority + objective aligned' : entry.alignmentType === 'enterprise' ? 'Enterprise Priority aligned' : 'Department Objective aligned'} size="small" variant="outlined" />
                           {movement && <Chip icon={<ArrowForwardOutlinedIcon />} label={movement} size="small" color={movement === 'Same rank' ? 'default' : 'secondary'} variant="outlined" />}
                           {entry.carriedFromEntryId && <Chip label="Carried forward" size="small" color="warning" />}
                         </Stack>
@@ -677,13 +624,20 @@ const WeeklyActionTrackerPage = () => {
               fullWidth
             />
             <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
-            <TextField select label="Organizational Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
-              <MenuItem value="">No organizational priority link</MenuItem>
-              {priorities.map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
+            <TextField select label="Department Objective (optional)" value={priorityForm.objectiveId} onChange={updatePriorityForm('objectiveId')} fullWidth>
+              <MenuItem value="">No Department Objective link</MenuItem>
+              {departmentWorkplans.flatMap((workplan) => (workplan.objectives || []).map((objective) => (
+                <MenuItem key={objective.id} value={objective.id}>{workplan.department} - {objective.title}</MenuItem>
+              )))}
             </TextField>
-            <TextField select label="Department Workplan (optional)" value={priorityForm.workplanId} onChange={updatePriorityForm('workplanId')} fullWidth>
-              <MenuItem value="">No workplan link</MenuItem>
-              {departmentWorkplans.map((workplan) => <MenuItem key={workplan.id} value={workplan.id}>{workplan.department} - {workplan.title}</MenuItem>)}
+            <TextField select label="Enterprise Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
+              <MenuItem value="">No Enterprise Priority link</MenuItem>
+              {enterprisePriorities
+                .filter((priority) => {
+                  const linked = findWorkplanObjective(departmentWorkplans, priorityForm.objectiveId);
+                  return !linked || linked.objective.enterprisePriorityId === priority.id;
+                })
+                .map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
             </TextField>
             <TextField select label="Priority health" value={priorityForm.status} onChange={updatePriorityForm('status')} fullWidth>
               {weeklyPriorityStatuses.map((status) => (
@@ -749,10 +703,10 @@ const WeeklyActionTrackerPage = () => {
                   <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>{selectedEntry.alignedPriorityLabel || 'No alignment set'}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {selectedEntry.alignmentType === 'both'
-                      ? 'Organizational Priority and department workplan'
+                      ? 'Enterprise Priority and Department Objective'
                       : selectedEntry.alignmentType === 'enterprise'
-                        ? 'Organizational Priority'
-                        : 'Department workplan'}
+                        ? 'Enterprise Priority'
+                        : 'Department Objective'}
                   </Typography>
                 </Box>
                 <Box sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>

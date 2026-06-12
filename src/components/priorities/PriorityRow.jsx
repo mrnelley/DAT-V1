@@ -65,7 +65,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           <Box>
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
               <Typography variant="body1" fontWeight={700}>{priority.name}</Typography>
-              <Chip label="ORGANIZATIONAL PRIORITY" size="small" sx={{ bgcolor: 'rgba(7,44,94,0.12)', color: 'primary.main' }} />
+              <Chip label="ENTERPRISE PRIORITY" size="small" sx={{ bgcolor: 'rgba(7,44,94,0.12)', color: 'primary.main' }} />
               {canManage ? <Chip label="ELT MANAGED" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.15)', color: 'secondary.dark' }} /> : <Chip label="VIEW ONLY" size="small" variant="outlined" />}
               {priority.strategicPillar && <Chip label={priority.strategicPillar} size="small" variant="outlined" />}
             </Stack>
@@ -79,7 +79,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
             <LinearProgress variant="determinate" value={rollupProgress} sx={{ '& .MuiLinearProgress-bar': { bgcolor: statusColorMap[rollupStatus] } }} />
           </Box>
           <Typography variant="caption" color={statusColorMap[rollupStatus]} fontWeight={800}>{rollupLabel[rollupStatus]}</Typography>
-          <Tooltip title={canManage ? 'Priority options' : 'Only ELT can update Organizational Priorities'}>
+          <Tooltip title={canManage ? 'Priority options' : 'Only ELT can update Enterprise Priorities'}>
             <span>
               <IconButton disabled={!canManage} title={`More options for priority ${priority.name}`} aria-label={`More options for priority ${priority.name}`} onClick={(event) => { event.stopPropagation(); unavailable('priority options need the priority detail drawer.'); }}><MoreHorizOutlinedIcon /></IconButton>
             </span>
@@ -106,7 +106,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
                     </Stack>
                   </Box>
                 ))}
-                {!objectives.length && <Typography variant="body2">No Key Objectives have been defined for this Organizational Priority.</Typography>}
+                {!objectives.length && <Typography variant="body2">No Key Objectives have been defined for this Enterprise Priority.</Typography>}
               </Stack>
             </Box>
           )}

@@ -9,12 +9,12 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   metrics,
-  priorities,
   users,
-  weeklyActionReports,
 } from '../../data/mockData';
+import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { getWorkplanStatus } from '../../utils/workplans';
 import FeatureRolloutPage from '../admin/FeatureRolloutPage';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -167,7 +167,7 @@ const TeamHealthPage = () => {
   const { departmentWorkplans, huddles, queuedTasks, stucks } = useOperatingData();
   const teamSummaries = useMemo(buildTeamSummaries, []);
   const openTaskItems = queuedTasks.filter((item) => item.status !== 'Complete').length;
-  const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(workplan.status));
+  const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(getWorkplanStatus(workplan)));
 
   return (
     <>
@@ -217,19 +217,20 @@ const TeamHealthPage = () => {
 };
 
 const ExecutiveSummaryPage = () => {
-  const priorityCounts = priorities.reduce((counts, priority) => {
+  const { enterprisePriorities } = useOperatingData();
+  const priorityCounts = enterprisePriorities.reduce((counts, priority) => {
     const status = priority.roadmapStatus || priority.status || 'No Data';
     return { ...counts, [status]: (counts[status] || 0) + 1 };
   }, {});
   const metricAverage = metrics.length
     ? Math.round(metrics.reduce((total, metric) => total + ((metric.current / metric.target) * 100), 0) / metrics.length)
     : 0;
-  const report = weeklyActionReports[0] || null;
+  const report = currentWeeklyReport;
 
   return (
     <>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <StatTile label="Priority Health" value={`${priorityCounts.Steady || 0}/${priorities.length}`} helper="Steady quarterly priorities" />
+        <StatTile label="Priority Health" value={`${priorityCounts.Steady || 0}/${enterprisePriorities.length}`} helper="Steady quarterly Enterprise Priorities" />
         <StatTile label="Needs Focus" value={(priorityCounts.Watch || 0) + (priorityCounts.Alert || 0)} helper="Watch or alert priorities" />
         <StatTile label="Critical Number Pace" value={`${metricAverage}%`} helper="Average current-to-target" />
         <StatTile label="Weekly Review" value={report?.status || 'Not scheduled'} helper={report ? `${report.weekStart} to ${report.weekEnd}` : 'No weekly review created yet'} />
@@ -242,7 +243,7 @@ const ExecutiveSummaryPage = () => {
           subtitle="Items that should be visible before the next executive discussion."
         >
           <Stack gap={1}>
-            {priorities.length ? priorities.slice(0, 5).map((priority) => (
+            {enterprisePriorities.length ? enterprisePriorities.slice(0, 5).map((priority) => (
               <Box key={priority.id} sx={{ borderTop: '1px solid', borderColor: 'divider', py: 1.25 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1}>
                   <Box>
@@ -253,7 +254,7 @@ const ExecutiveSummaryPage = () => {
                 </Stack>
               </Box>
             )) : (
-              <Typography variant="body2" color="text.secondary">No enterprise priorities have been created yet.</Typography>
+              <Typography variant="body2" color="text.secondary">No Enterprise Priorities have been created yet.</Typography>
             )}
           </Stack>
         </SectionPanel>
@@ -289,7 +290,7 @@ const ExecutiveSummaryPage = () => {
 };
 
 const ExportsPage = () => {
-  const { queuedTasks } = useOperatingData();
+  const { enterprisePriorities, queuedTasks } = useOperatingData();
   const exportCatalog = [
     {
       description: 'Metric title, owner, current value, target, and source.',
@@ -308,9 +309,9 @@ const ExportsPage = () => {
       description: 'Quarterly priority status, owner, pillar, and description.',
       filename: 'compass-priorities.csv',
       label: 'Priorities',
-      rows: priorities.map((priority) => ({
+      rows: enterprisePriorities.map((priority) => ({
         description: priority.description,
-        owner: priority.owner.name,
+        objectiveOwners: Array.from(new Set((priority.keyObjectives || []).map((objective) => objective.owner?.name).filter(Boolean))).join('; '),
         pillar: priority.strategicPillar,
         status: priority.roadmapStatus || priority.status,
         title: priority.name,
@@ -335,7 +336,7 @@ const ExportsPage = () => {
     <SectionPanel
       icon={<DownloadOutlinedIcon />}
       title="Export Catalog"
-      subtitle="Each download is generated in-browser from the current demo data set."
+      subtitle="Each download is generated in-browser from the current Compass records."
     >
       <Stack gap={1.25}>
         {exportCatalog.map((item) => (
@@ -360,11 +361,11 @@ const ExportsPage = () => {
 const UsersPage = () => (
   <>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5, mb: 2 }}>
-      <StatTile label="Users" value={users.length} helper="Demo profiles available" />
+      <StatTile label="Users" value={users.length} helper="Profiles available" />
       <StatTile label="Departments" value={new Set(users.map((user) => user.department)).size} helper="Represented in Compass" />
       <StatTile label="Leadership Users" value={users.filter((user) => ['ELT', 'OLT'].includes(user.workingGroup)).length} helper="ELT or OLT lanes" />
     </Box>
-    <SectionPanel icon={<GroupsOutlinedIcon />} title="Directory" subtitle="People currently seeded into the demo environment.">
+    <SectionPanel icon={<GroupsOutlinedIcon />} title="Directory" subtitle="People currently available in Compass.">
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(2, 1fr)' }, gap: 1 }}>
         {users.map((user) => (
           <Box key={user.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
@@ -413,7 +414,7 @@ const TeamsPage = () => {
 
 const PermissionsPage = () => {
   const permissionRows = [
-    { area: 'ELT', manage: 'Strategic pillars, organizational priorities, KPI targets, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
+    { area: 'ELT', manage: 'Strategic pillars, Enterprise Priorities, KPI targets, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
     { area: 'OLT', manage: 'Department workplans, weekly action tracker follow-through, and team huddle work.', members: users.filter((user) => user.workingGroup === 'OLT') },
     { area: 'Team Member', manage: 'Assigned actions, personal dashboard signals, and related weekly commitments.', members: users.filter((user) => user.workingGroup === 'Team Member') },
   ];
@@ -445,7 +446,7 @@ const pageActions = {
   adminFeatures: [{ label: 'Review Users', path: '/admin/users' }, { label: 'View Permissions', path: '/admin/permissions' }],
   adminTeams: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Users', path: '/admin/users' }],
   adminUsers: [{ label: 'Open Profile', path: '/profile' }, { label: 'View Permissions', path: '/admin/permissions' }],
-  executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Organizational Priorities', path: '/priorities' }],
+  executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Enterprise Priorities', path: '/priorities' }],
   exports: [{ featureKey: 'dataTable', label: 'Open Data Table', path: '/metrics/table' }, { label: 'Company Dashboard', path: '/dashboard/company' }],
   teamHealth: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Stucks', path: '/stucks' }],
 };

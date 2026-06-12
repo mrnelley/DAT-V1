@@ -1,21 +1,52 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   departmentWorkplans,
+  priorities as seededEnterprisePriorities,
   queuedTasks,
   huddles as seededHuddles,
   strategicPlan2030,
   stucks as seededStucks,
   users,
-  weeklyActionEntries,
 } from '../data/mockData';
+import { findWorkplanObjective, normalizeWorkplan } from '../utils/workplans';
 
 const OperatingDataContext = createContext(null);
 const storageKey = 'hdc_compass_operating_data';
+const stateVersion = 4;
+const legacyWeeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
 
 const groupTasksByOwner = (tasks) => tasks.reduce((groups, task) => ({
   ...groups,
   [task.owner.id]: [...(groups[task.owner.id] || []), task],
 }), {});
+
+const sanitizeWeeklyAlignments = (entriesByWeek, workplans, enterprisePriorities) => Object.fromEntries(
+  Object.entries(entriesByWeek || {}).map(([weekId, entries]) => [
+    weekId,
+    entries.map((entry) => {
+      const objectiveLink = findWorkplanObjective(workplans, entry.objectiveId)
+        || (() => {
+          const legacyWorkplan = workplans.find((workplan) => workplan.id === entry.workplanId);
+          return legacyWorkplan?.objectives?.length === 1
+            ? { objective: legacyWorkplan.objectives[0], workplan: legacyWorkplan }
+            : null;
+        })();
+      const priority = enterprisePriorities.find((candidate) => candidate.id === entry.priorityId);
+      const validatedPriority = priority && (!objectiveLink || objectiveLink.objective.enterprisePriorityId === priority.id)
+        ? priority
+        : null;
+      return {
+        ...entry,
+        alignedPriorityLabel: [validatedPriority?.name, objectiveLink?.objective.title].filter(Boolean).join(' + '),
+        alignmentType: validatedPriority && objectiveLink ? 'both' : validatedPriority ? 'enterprise' : 'department',
+        objectiveId: objectiveLink?.objective.id || null,
+        priorityId: validatedPriority?.id || null,
+        strategicPillarId: objectiveLink?.objective.strategicPillarId || null,
+        workplanId: objectiveLink?.workplan.id || null,
+      };
+    }),
+  ]),
+);
 
 const buildInitialState = () => ({
   departmentWorkplans,
@@ -28,6 +59,7 @@ const buildInitialState = () => ({
     ownerId: users[0].id,
     ...huddle,
   })),
+  enterprisePriorities: seededEnterprisePriorities,
   queuedTasksByOwner: groupTasksByOwner(queuedTasks),
   strategicPlan: strategicPlan2030,
   stucks: seededStucks.map((stuck) => ({
@@ -38,15 +70,9 @@ const buildInitialState = () => ({
     status: stuck.status || 'active',
     ...stuck,
   })),
-  weeklyActionItems: weeklyActionEntries.flatMap((entry) => entry.tasks.map((task) => ({
-    ...task,
-    description: task.title,
-    entryId: entry.id,
-    sourceId: task.id,
-    sourceLabel: entry.title,
-    sourceType: 'weekly_action_item',
-    weeklyPriorityTitle: entry.title,
-  }))),
+  version: stateVersion,
+  weeklyActionItems: [],
+  weeklyPriorityEntriesByWeek: {},
 });
 
 const readState = () => {
@@ -54,7 +80,23 @@ const readState = () => {
 
   try {
     const parsed = JSON.parse(window.localStorage.getItem(storageKey));
-    return parsed ? { ...buildInitialState(), ...parsed } : buildInitialState();
+    if (!parsed) return buildInitialState();
+
+    const hasCanonicalWeeklyPriorities = Object.prototype.hasOwnProperty.call(parsed, 'weeklyPriorityEntriesByWeek');
+    const enterprisePriorities = parsed.enterprisePriorities || parsed.organizationalPriorities || seededEnterprisePriorities;
+    const normalizedWorkplans = (parsed.departmentWorkplans || departmentWorkplans)
+      .map((workplan) => normalizeWorkplan(workplan, enterprisePriorities));
+    const weeklyPriorityEntriesByWeek = hasCanonicalWeeklyPriorities ? parsed.weeklyPriorityEntriesByWeek || {} : {};
+    return {
+      ...buildInitialState(),
+      ...parsed,
+      departmentWorkplans: normalizedWorkplans,
+      enterprisePriorities,
+      organizationalPriorities: undefined,
+      version: stateVersion,
+      weeklyActionItems: hasCanonicalWeeklyPriorities ? parsed.weeklyActionItems || [] : [],
+      weeklyPriorityEntriesByWeek: sanitizeWeeklyAlignments(weeklyPriorityEntriesByWeek, normalizedWorkplans, enterprisePriorities),
+    };
   } catch {
     return buildInitialState();
   }
@@ -66,6 +108,7 @@ export const OperatingDataProvider = ({ children }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(storageKey, JSON.stringify(state));
+      window.localStorage.removeItem(legacyWeeklyTrackerStorageKey);
     }
   }, [state]);
 
@@ -85,13 +128,26 @@ export const OperatingDataProvider = ({ children }) => {
 
   const saveDepartmentWorkplan = useCallback((workplan) => {
     setState((current) => {
-      const next = workplan.id ? workplan : { ...workplan, id: `dw-${Date.now()}` };
+      const id = workplan.id || `dw-${Date.now()}`;
+      const validPriorityIds = new Set(current.enterprisePriorities.map((priority) => priority.id));
+      const validPillarIds = new Set(current.strategicPlan.pillars.map((pillar) => pillar.id));
+      const next = normalizeWorkplan({
+        ...workplan,
+        id,
+        objectives: (workplan.objectives || []).map((objective) => ({
+          ...objective,
+          enterprisePriorityId: validPriorityIds.has(objective.enterprisePriorityId) ? objective.enterprisePriorityId : null,
+          strategicPillarId: validPillarIds.has(objective.strategicPillarId) ? objective.strategicPillarId : current.strategicPlan.pillars[0]?.id,
+        })),
+      }, current.enterprisePriorities);
 
+      const nextWorkplans = workplan.id
+        ? current.departmentWorkplans.map((item) => (item.id === workplan.id ? next : item))
+        : [next, ...current.departmentWorkplans];
       return {
         ...current,
-        departmentWorkplans: workplan.id
-          ? current.departmentWorkplans.map((item) => (item.id === workplan.id ? next : item))
-          : [next, ...current.departmentWorkplans],
+        departmentWorkplans: nextWorkplans,
+        weeklyPriorityEntriesByWeek: sanitizeWeeklyAlignments(current.weeklyPriorityEntriesByWeek, nextWorkplans, current.enterprisePriorities),
       };
     });
   }, []);
@@ -128,10 +184,14 @@ export const OperatingDataProvider = ({ children }) => {
   }, []);
 
   const deleteDepartmentWorkplan = useCallback((workplanId) => {
-    setState((current) => ({
-      ...current,
-      departmentWorkplans: current.departmentWorkplans.filter((workplan) => workplan.id !== workplanId),
-    }));
+    setState((current) => {
+      const nextWorkplans = current.departmentWorkplans.filter((workplan) => workplan.id !== workplanId);
+      return {
+        ...current,
+        departmentWorkplans: nextWorkplans,
+        weeklyPriorityEntriesByWeek: sanitizeWeeklyAlignments(current.weeklyPriorityEntriesByWeek, nextWorkplans, current.enterprisePriorities),
+      };
+    });
   }, []);
 
   const updateQueuedTask = useCallback((taskId, changes) => {
@@ -186,6 +246,51 @@ export const OperatingDataProvider = ({ children }) => {
       weeklyActionItems: current.weeklyActionItems.filter((item) => item.id !== itemId),
     }));
   }, []);
+
+  const setWeeklyPriorityEntriesForWeek = useCallback((weekId, updater) => {
+    setState((current) => {
+      const currentEntries = current.weeklyPriorityEntriesByWeek[weekId] || [];
+      const nextEntries = typeof updater === 'function' ? updater(currentEntries) : updater;
+      return {
+        ...current,
+        weeklyPriorityEntriesByWeek: {
+          ...current.weeklyPriorityEntriesByWeek,
+          [weekId]: nextEntries,
+        },
+      };
+    });
+  }, []);
+
+  const setEnterprisePriorities = useCallback((updater) => {
+    setState((current) => {
+      const enterprisePriorities = typeof updater === 'function'
+        ? updater(current.enterprisePriorities)
+        : updater;
+      const validPriorityIds = new Set(enterprisePriorities.map((priority) => priority.id));
+      const departmentWorkplans = current.departmentWorkplans.map((workplan) => ({
+        ...workplan,
+        objectives: workplan.objectives.map((objective) => ({
+          ...objective,
+          enterprisePriorityId: validPriorityIds.has(objective.enterprisePriorityId) ? objective.enterprisePriorityId : null,
+        })),
+      }));
+      return {
+        ...current,
+        departmentWorkplans,
+        enterprisePriorities,
+        weeklyPriorityEntriesByWeek: sanitizeWeeklyAlignments(current.weeklyPriorityEntriesByWeek, departmentWorkplans, enterprisePriorities),
+      };
+    });
+  }, []);
+
+  const saveEnterprisePriority = useCallback((priority) => {
+    setEnterprisePriorities((current) => {
+      const existing = current.some((item) => item.id === priority.id);
+      return existing
+        ? current.map((item) => (item.id === priority.id ? priority : item))
+        : [priority, ...current];
+    });
+  }, [setEnterprisePriorities]);
 
   const addStuck = useCallback((stuck) => {
     setState((current) => ({ ...current, stucks: [stuck, ...current.stucks] }));
@@ -242,12 +347,16 @@ export const OperatingDataProvider = ({ children }) => {
     getHuddle: (huddleId) => state.huddles.find((huddle) => huddle.id === huddleId),
     getTasksForUser,
     huddles: state.huddles,
+    enterprisePriorities: state.enterprisePriorities,
     queuedTasks,
     reorderQueuedTasks,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,
+    saveEnterprisePriority,
     saveStrategicPillar,
+    setEnterprisePriorities,
+    setWeeklyPriorityEntriesForWeek,
     strategicPlan: state.strategicPlan,
     stucks: state.stucks,
     updateHuddle,
@@ -255,6 +364,7 @@ export const OperatingDataProvider = ({ children }) => {
     updateStuck,
     updateWeeklyActionItem,
     weeklyActionItems: state.weeklyActionItems,
+    weeklyPriorityEntriesByWeek: state.weeklyPriorityEntriesByWeek,
   }), [
     addHuddle,
     addHuddleItem,
@@ -268,12 +378,17 @@ export const OperatingDataProvider = ({ children }) => {
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     saveDepartmentWorkplan,
+    saveEnterprisePriority,
     saveStrategicPillar,
+    setEnterprisePriorities,
+    setWeeklyPriorityEntriesForWeek,
     state.departmentWorkplans,
     state.huddles,
+    state.enterprisePriorities,
     state.stucks,
     state.strategicPlan,
     state.weeklyActionItems,
+    state.weeklyPriorityEntriesByWeek,
     updateHuddle,
     updateQueuedTask,
     updateStuck,

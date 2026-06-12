@@ -24,7 +24,7 @@ export const featureCatalog = [
     category: 'Accountability',
     description: 'Quarterly priorities, status signals, objectives, and KPI links.',
     key: 'priorities',
-    label: 'Organizational Priorities',
+    label: 'Enterprise Priorities',
   },
   {
     category: 'Accountability',

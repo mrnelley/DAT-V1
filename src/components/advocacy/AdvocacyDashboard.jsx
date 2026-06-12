@@ -8,8 +8,12 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { advocacyContacts, advocacyInitiatives, advocacyTouchpoints, advocacyWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
+import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
+import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
+import CurrentWeekPrioritiesSection from '../dashboard/CurrentWeekPrioritiesSection';
 
 const periods = [
   { value: 'day', label: 'DAY', title: 'Today', context: 'May 13, 2026' },
@@ -34,7 +38,6 @@ const statusTone = {
 };
 
 const entityLabels = {
-  priority: 'Priority',
   workplan: 'Departmental Workplan',
   initiative: 'Quarterly Initiative',
 };
@@ -99,20 +102,6 @@ const assessCadence = (contact) => {
 };
 
 const emptyEntity = (type) => {
-  if (type === 'priority') {
-    return {
-      title: '',
-      status: 'Steady',
-      target: 5,
-      current: 0,
-      circle: 'Local Government',
-      workplanId: '',
-      initiativeId: '',
-      strategicPillarId: 'advocate-change',
-      nextAction: '',
-    };
-  }
-
   if (type === 'workplan') {
     return {
       title: '',
@@ -138,8 +127,8 @@ const emptyEntity = (type) => {
   };
 };
 
-const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiatives, workplans }) => {
-  const [form, setForm] = useState(emptyEntity(type || 'priority'));
+const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiatives }) => {
+  const [form, setForm] = useState(emptyEntity(type || 'workplan'));
 
   useEffect(() => {
     if (!open || !type) return;
@@ -153,16 +142,6 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
 
   const update = (field) => (event) => {
     const value = event.target.value;
-    if (type === 'priority' && field === 'workplanId') {
-      const workplan = workplans.find((candidate) => candidate.id === value);
-      setForm((current) => ({
-        ...current,
-        workplanId: value,
-        initiativeId: workplan?.initiativeId || current.initiativeId,
-        strategicPillarId: workplan?.strategicPillarId || current.strategicPillarId,
-      }));
-      return;
-    }
     setForm((current) => ({ ...current, [field]: value }));
   };
 
@@ -178,45 +157,6 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
       <DialogContent sx={{ pt: 1 }}>
         <Stack gap={2} sx={{ mt: 1 }}>
           <TextField label="Title" value={form.title || ''} onChange={update('title')} required fullWidth />
-
-          {type === 'priority' && (
-            <>
-              <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                <TextField label="Current" type="number" value={form.current || 0} onChange={update('current')} fullWidth />
-                <TextField label="Target" type="number" value={form.target || 0} onChange={update('target')} fullWidth />
-              </Stack>
-              <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select label="Status" value={form.status || 'Steady'} onChange={update('status')}>
-                    {Object.keys(statusColor).map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
-                  </Select>
-                </FormControl>
-                <TextField label="Circle" value={form.circle || ''} onChange={update('circle')} fullWidth />
-              </Stack>
-              <FormControl fullWidth>
-                <InputLabel>Departmental Workplan</InputLabel>
-                <Select label="Departmental Workplan" value={form.workplanId || ''} onChange={update('workplanId')}>
-                  <MenuItem value="">Unlinked</MenuItem>
-                  {workplans.map((workplan) => <MenuItem key={workplan.id} value={workplan.id}>{workplan.title}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Quarterly Initiative</InputLabel>
-                <Select label="Quarterly Initiative" value={form.initiativeId || ''} onChange={update('initiativeId')}>
-                  <MenuItem value="">Unlinked</MenuItem>
-                  {initiatives.map((initiative) => <MenuItem key={initiative.id} value={initiative.id}>{initiative.title}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Strategic Pillar</InputLabel>
-                <Select label="Strategic Pillar" value={form.strategicPillarId || 'advocate-change'} onChange={update('strategicPillarId')}>
-                  {strategicPlan2030.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <TextField label="Next Action" value={form.nextAction || ''} onChange={update('nextAction')} multiline minRows={2} />
-            </>
-          )}
 
           {type === 'workplan' && (
             <>
@@ -457,6 +397,8 @@ const TouchpointLogDialog = ({ contacts, onClose, onSave, open, period }) => {
 };
 
 const AdvocacyDashboard = () => {
+  const { user } = useAuth();
+  const { weeklyPriorityEntriesByWeek } = useOperatingData();
   const [period, setPeriod] = useState('month');
   const [contacts, setContacts] = useState(advocacyContacts);
   const [touchpoints, setTouchpoints] = useState(advocacyTouchpoints);
@@ -483,6 +425,7 @@ const AdvocacyDashboard = () => {
     visibleTouchpoints.map((touchpoint) => contactsById[touchpoint.contactId]?.circle).filter(Boolean),
   ).size;
 
+  const currentWeeklyPriorities = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
   const cadenceAssessments = useMemo(() => (
     contacts.map((contact) => ({ contact, assessment: assessCadence(contact) }))
   ), [contacts]);
@@ -690,6 +633,8 @@ const AdvocacyDashboard = () => {
         )}
       </Box>
 
+      <CurrentWeekPrioritiesSection entries={currentWeeklyPriorities} user={user} />
+
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
           <Box>
@@ -770,7 +715,6 @@ const AdvocacyDashboard = () => {
         onSave={saveEntity}
         open={dialog.open}
         type={dialog.type}
-        workplans={workplans}
       />
       <TouchpointLogDialog
         contacts={contacts}

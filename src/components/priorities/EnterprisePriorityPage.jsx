@@ -21,7 +21,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { priorities, q2Roadmap, weeklyPriorities } from '../../data/mockData';
+import { q2Roadmap } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EmptyState from '../shared/EmptyState';
@@ -66,17 +66,30 @@ const priorityStatus = (priority) => {
 
 const matchesPriority = (value, priority) => value?.toLowerCase().includes(priority.name.toLowerCase());
 
-const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
+const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks, weeklyEntries) => {
   const objectiveTitles = new Set((priority.keyObjectives || []).map((objective) => objective.workplanTitle));
   const relatedWorkplans = departmentWorkplans.filter((workplan) => (
-    (workplan.priorityLinks || []).includes(priority.name)
+    (workplan.objectives || []).some((objective) => objective.enterprisePriorityId === priority.id)
     || objectiveTitles.has(workplan.title)
   ));
-  const relatedWeekly = weeklyPriorities.filter((item) => (
-    item.organizationalPriority === priority.name
-    || matchesPriority(item.alignedTo, priority)
+  const relatedWeekly = weeklyEntries.filter((item) => (
+    item.priorityId === priority.id
+    || matchesPriority(item.alignedPriorityLabel, priority)
   ));
-  const relatedActions = queuedTasks.filter((item) => item.priority === priority.name);
+  const weeklyCommitments = relatedWeekly.map((item) => ({
+    ...item,
+    description: item.title,
+  }));
+  const weeklyActions = relatedWeekly.flatMap((entry) => (entry.tasks || []).map((task) => ({
+    ...task,
+    department: entry.department,
+    description: task.title,
+  })));
+  const relatedActions = [
+    ...queuedTasks.filter((item) => item.priority === priority.name),
+    ...weeklyCommitments,
+    ...weeklyActions,
+  ];
   const ownerIds = new Set((priority.keyObjectives || []).map((objective) => objective.owner?.id).filter(Boolean));
   const relatedStucks = stucks.filter((stuck) => (
     ownerIds.has(stuck.personStuck?.id)
@@ -92,8 +105,8 @@ const getRelatedWork = (priority, departmentWorkplans, queuedTasks, stucks) => {
 };
 
 const EditPriorityDialog = ({ form, open, onClose, onSave, onUpdate }) => (
-  <Dialog aria-labelledby="edit-organizational-priority-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle id="edit-organizational-priority-title">Edit Organizational Priority</DialogTitle>
+  <Dialog aria-labelledby="edit-enterprise-priority-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <DialogTitle id="edit-enterprise-priority-title">Edit Enterprise Priority</DialogTitle>
     <DialogContent sx={{ pt: 1 }}>
       <Stack gap={2} sx={{ mt: 1 }}>
         <TextField label="Priority Name" value={form.name} onChange={onUpdate('name')} fullWidth required />
@@ -115,30 +128,40 @@ const StatTile = ({ helper, label, value }) => (
   </Box>
 );
 
-const OrganizationalPriorityPage = () => {
+const EnterprisePriorityPage = () => {
   const { priorityId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { departmentWorkplans, queuedTasks, stucks } = useOperatingData();
-  const sourcePriority = priorities.find((candidate) => candidate.id === priorityId);
-  const [localPriority, setLocalPriority] = useState(sourcePriority);
+  const {
+    departmentWorkplans,
+    enterprisePriorities,
+    queuedTasks,
+    saveEnterprisePriority,
+    stucks,
+    weeklyPriorityEntriesByWeek,
+  } = useOperatingData();
+  const sourcePriority = enterprisePriorities.find((candidate) => candidate.id === priorityId);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState(() => ({
     name: sourcePriority?.name || '',
     note: sourcePriority?.description || '',
   }));
 
-  const priority = localPriority || sourcePriority;
+  const priority = sourcePriority;
+  const weeklyEntries = useMemo(
+    () => Object.values(weeklyPriorityEntriesByWeek).flat(),
+    [weeklyPriorityEntriesByWeek],
+  );
   const related = useMemo(() => (
-    priority ? getRelatedWork(priority, departmentWorkplans, queuedTasks, stucks) : null
-  ), [departmentWorkplans, priority, queuedTasks, stucks]);
+    priority ? getRelatedWork(priority, departmentWorkplans, queuedTasks, stucks, weeklyEntries) : null
+  ), [departmentWorkplans, priority, queuedTasks, stucks, weeklyEntries]);
 
   if (!priority) {
     return (
       <PageWrapper>
         <EmptyState
           actionLabel="Back to Company Dashboard"
-          body="That organizational priority is not available in the current roadmap data."
+          body="That Enterprise Priority is not available in the current roadmap data."
           icon={<WarningAmberOutlinedIcon />}
           onAction={() => navigate('/dashboard/company')}
           title="Priority Not Found"
@@ -160,11 +183,11 @@ const OrganizationalPriorityPage = () => {
 
   const updateForm = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
   const saveEdit = () => {
-    setLocalPriority((current) => ({
-      ...current,
+    saveEnterprisePriority({
+      ...priority,
       description: form.note,
       name: form.name,
-    }));
+    });
     setEditOpen(false);
   };
 
@@ -211,7 +234,7 @@ const OrganizationalPriorityPage = () => {
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
             <Box>
               <Typography variant="overline" color="primary">Executive Signal</Typography>
-              <Typography variant="h2">Organizational priority health and goal progress</Typography>
+              <Typography variant="h2">Enterprise Priority health and goal progress</Typography>
             </Box>
             <Chip label={`${objectiveAverage}% average objective progress`} color={meta.color} variant="outlined" />
           </Stack>
@@ -245,7 +268,7 @@ const OrganizationalPriorityPage = () => {
                   <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
                     <Chip label={objective.department} size="small" variant="outlined" />
                     <Chip label={objective.workplanTitle} size="small" variant="outlined" />
-                    {workplan && <Chip label={`Due ${workplan.due}`} size="small" variant="outlined" />}
+                    {workplan && <Chip label={`${workplan.objectives?.length || 0} department objectives`} size="small" variant="outlined" />}
                   </Stack>
                   <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, mb: 0.5 }}>
                     <Typography variant="caption">Progress</Typography>
@@ -320,4 +343,4 @@ const OrganizationalPriorityPage = () => {
   );
 };
 
-export default OrganizationalPriorityPage;
+export default EnterprisePriorityPage;

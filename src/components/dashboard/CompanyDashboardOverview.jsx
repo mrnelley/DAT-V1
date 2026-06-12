@@ -11,7 +11,7 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { priorities, q2Roadmap } from '../../data/mockData';
+import { q2Roadmap } from '../../data/mockData';
 import { getQuarterTransitionState } from '../../data/quarterlyRoadmap';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -110,13 +110,13 @@ const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quart
           <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
             <Chip label={q2Roadmap.quarter} color="primary" />
             <Chip label={q2Roadmap.theme} color="secondary" variant="outlined" />
-            <Chip label={`${prioritiesShown}/${totalPriorities} ${q2Roadmap.quarter} organizational priorities`} variant="outlined" />
+            <Chip label={`${prioritiesShown}/${totalPriorities} ${q2Roadmap.quarter} Enterprise Priorities`} variant="outlined" />
             <Chip label={quarterState.label} color={quarterState.mode === 'closing' ? 'warning' : quarterState.mode === 'setting' ? 'secondary' : 'default'} variant="outlined" />
           </Stack>
           <Typography variant="overline" color="primary">Executive Quarter Pulse</Typography>
-          <Typography variant="h2" sx={{ mt: 0.35 }}>Quarterly organizational priority health</Typography>
+          <Typography variant="h2" sx={{ mt: 0.35 }}>Quarterly Enterprise Priority health</Typography>
           <Typography variant="body1" sx={{ mt: 0.75, color: 'text.primary', maxWidth: 720 }}>
-            A concise ELT view of the quarter's organizational commitments, accountable owners, and KPI evidence.
+            A concise ELT view of the quarter&apos;s Enterprise Priorities, accountable owners, and KPI evidence.
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary', maxWidth: 720 }}>
             {quarterState.guidance}
@@ -152,7 +152,7 @@ const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quart
             <TrendingUpOutlinedIcon />
           </Stack>
           <Typography variant="body2" sx={{ mt: 0.25, color: 'primary.contrastText', opacity: 0.82 }}>
-            Average across {prioritiesShown} {q2Roadmap.quarter} organizational priorities
+            Average across {prioritiesShown} {q2Roadmap.quarter} Enterprise Priorities
           </Typography>
         </Box>
       </Box>
@@ -189,14 +189,14 @@ const PriorityWeeklyHeatMap = ({ priority }) => {
   );
 };
 
-const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) => (
+const EnterprisePriorityRegister = ({ priorities: priorityRows, onOpen }) => (
   <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
         <Typography variant="overline" color="primary">Quarterly Commitments</Typography>
-        <Typography variant="h2">Organizational priorities and KPIs</Typography>
+        <Typography variant="h2">Enterprise Priorities and KPIs</Typography>
       </Box>
-      <Chip icon={<TrackChangesOutlinedIcon />} label={`${priorityRows.length} organizational priorities`} color="primary" variant="outlined" />
+      <Chip icon={<TrackChangesOutlinedIcon />} label={`${priorityRows.length} Enterprise Priorities`} color="primary" variant="outlined" />
     </Stack>
 
     <Stack gap={0.85}>
@@ -209,7 +209,7 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
 
         return (
           <Box
-            aria-label={`Open organizational priority ${priority.name}`}
+            aria-label={`Open Enterprise Priority ${priority.name}`}
             key={priority.id}
             onClick={() => onOpen(priority)}
             onKeyDown={(event) => {
@@ -219,7 +219,7 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
             }}
             role="button"
             tabIndex={0}
-            title={`Open organizational priority ${priority.name}`}
+            title={`Open Enterprise Priority ${priority.name}`}
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.3fr) minmax(180px, 0.6fr) minmax(220px, 0.9fr) 120px' },
@@ -275,7 +275,7 @@ const OrganizationalPriorityRegister = ({ priorities: priorityRows, onOpen }) =>
         );
       }) : (
         <Typography variant="body2" color="text.secondary">
-          No quarterly organizational priorities have been defined yet.
+          No quarterly Enterprise Priorities have been defined yet.
         </Typography>
       )}
     </Stack>
@@ -303,7 +303,7 @@ const PillarPulseFlow = ({ amplitude, count, pillarName, status }) => {
 
   return (
     <Box
-      aria-label={`${pillarName}: ${count} aligned organizational ${count === 1 ? 'priority' : 'priorities'}, ${meta.label}`}
+      aria-label={`${pillarName}: ${count} aligned Enterprise ${count === 1 ? 'Priority' : 'Priorities'}, ${meta.label}`}
       role="img"
       sx={{ mt: 1, overflow: 'hidden' }}
     >
@@ -416,7 +416,7 @@ const PillarCoverage = ({ canManage, companyPriorities, onDeletePillar, onEditPi
       <Box>
         <Typography variant="overline" color="primary">Long-Term Strategic Context</Typography>
         <Typography variant="h2">Strategic plan alignment</Typography>
-        <Typography variant="body2" sx={{ mt: 0.35 }}>How this quarter's organizational priorities support the four-year strategic plan.</Typography>
+        <Typography variant="body2" sx={{ mt: 0.35 }}>How this quarter&apos;s Enterprise Priorities support the four-year strategic plan.</Typography>
       </Box>
       <Stack direction="row" gap={1} alignItems="center">
         <Chip icon={<AccountTreeOutlinedIcon />} label={strategicPlan.name} color="primary" variant="outlined" />
@@ -529,7 +529,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
             <Typography variant="caption" color="primary">Strategic Pillar {pillar?.order}</Typography>
             <Typography variant="h2">{pillar?.name}</Typography>
           </Box>
-          <Chip label={`${pillarPriorities.length} current organizational priorit${pillarPriorities.length === 1 ? 'y' : 'ies'}`} color="primary" variant="outlined" />
+          <Chip label={`${pillarPriorities.length} current Enterprise Priorit${pillarPriorities.length === 1 ? 'y' : 'ies'}`} color="primary" variant="outlined" />
         </Stack>
       </DialogTitle>
       <DialogContent>
@@ -552,8 +552,8 @@ const PillarDetailDialog = ({ detail, onClose }) => {
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
                 <Box>
-                  <Typography variant="h3">Aligned organizational priorities</Typography>
-                  <Typography variant="body2">{q2Roadmap.quarter} organizational priorities and their KPI evidence tied to this long-term pillar.</Typography>
+                  <Typography variant="h3">Aligned Enterprise Priorities</Typography>
+                  <Typography variant="body2">{q2Roadmap.quarter} Enterprise Priorities and their KPI evidence tied to this long-term pillar.</Typography>
                 </Box>
                 <Chip label={`${pillarPriorities.length} priorit${pillarPriorities.length === 1 ? 'y' : 'ies'}`} color="primary" variant="outlined" />
               </Stack>
@@ -583,7 +583,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
                     </Box>
                   );
                 }) : (
-                  <Typography variant="body2" color="text.secondary">No current organizational priorities are aligned to this pillar yet.</Typography>
+                  <Typography variant="body2" color="text.secondary">No current Enterprise Priorities are aligned to this pillar yet.</Typography>
                 )}
               </Stack>
             </Box>
@@ -600,12 +600,20 @@ const PillarDetailDialog = ({ detail, onClose }) => {
 const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { deleteStrategicPillar, saveStrategicPillar, strategicPlan } = useOperatingData();
+  const {
+    deleteStrategicPillar,
+    enterprisePriorities,
+    saveStrategicPillar,
+    strategicPlan,
+  } = useOperatingData();
   const canManagePillars = user.workingGroup === 'ELT';
   const [pillarDetail, setPillarDetail] = useState(null);
   const [pillarEditor, setPillarEditor] = useState(null);
   const [team, setTeam] = useState('All Teams');
-  const companyPriorities = useMemo(() => priorities.filter((priority) => priority.company), []);
+  const companyPriorities = useMemo(
+    () => enterprisePriorities.filter((priority) => priority.company),
+    [enterprisePriorities],
+  );
   const teamOptions = useMemo(() => getTeamOptions(companyPriorities), [companyPriorities]);
   const visiblePriorities = useMemo(
     () => companyPriorities.filter((priority) => priorityMatchesTeam(priority, team)),
@@ -636,7 +644,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
         onTeamChange={setTeam}
       />
 
-      <OrganizationalPriorityRegister
+      <EnterprisePriorityRegister
         priorities={sortedPriorities}
         onOpen={(priority) => navigate(`/dashboard/company/priorities/${priority.id}`)}
       />

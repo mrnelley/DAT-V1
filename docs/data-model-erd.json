@@ -307,6 +307,7 @@
         "leadId": "Profile.id|null",
         "initiativeId": "Initiative.id|null",
         "title": "string",
+        "planningYear": "integer|null",
         "scope": "string|null",
         "quarter": "string|null",
         "quarterlyInitiative": "string|null",
@@ -319,13 +320,12 @@
         "progress": "number",
         "startsOn": "date|null",
         "dueOn": "date|null",
-        "priorityLinks": "string[]",
         "createdAt": "datetime",
         "updatedAt": "datetime"
       },
       "relationships": {
         "initiative": "Initiative|null",
-        "priorities": "Priority[]",
+        "enterprisePriorities": "Priority[] via keyObjectives",
         "keyObjectives": "KeyObjective[]",
         "huddleReviews": "WorkplanHuddleReview[]",
         "assignments": "WorkObjectAssignment[]"
@@ -570,6 +570,7 @@
         "carriedFromEntryId": "WeeklyActionEntry.id|null",
         "priorityId": "Priority.id|null",
         "workplanId": "Workplan.id|null",
+        "keyObjectiveId": "KeyObjective.id|null",
         "stuckId": "Stuck.id|null",
         "title": "string",
         "alignmentType": "weeklyAlignmentType",
@@ -582,6 +583,7 @@
         "updatedAt": "datetime"
       },
       "relationships": {
+        "departmentObjective": "KeyObjective|null",
         "tasks": "WeeklyActionTask[]"
       }
     },
@@ -1146,6 +1148,7 @@
     { "from": "WeeklyActionEntry.carriedFromEntryId", "to": "WeeklyActionEntry.id", "cardinality": "self-reference" },
     { "from": "WeeklyActionEntry.priorityId", "to": "Priority.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionEntry.workplanId", "to": "Workplan.id", "cardinality": "many-to-one" },
+    { "from": "WeeklyActionEntry.keyObjectiveId", "to": "KeyObjective.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionEntry.stuckId", "to": "Stuck.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.organizationId", "to": "Organization.id", "cardinality": "many-to-one" },
     { "from": "WeeklyActionTask.entryId", "to": "WeeklyActionEntry.id", "cardinality": "many-to-one" },

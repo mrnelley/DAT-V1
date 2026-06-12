@@ -8,7 +8,10 @@ import { Box, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/ma
 import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { activeRoadmap } from '../../data/quarterlyRoadmap';
+import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
+import { decorateWorkplan } from '../../utils/workplans';
 import UserAvatar from '../shared/UserAvatar';
+import CurrentWeekPrioritiesSection, { getOwnedWeeklyPriorities } from './CurrentWeekPrioritiesSection';
 import PropertyManagementDashboard from './PropertyManagementDashboard';
 import ResidentServicesMap from './ResidentServicesMap';
 
@@ -20,8 +23,8 @@ const profiles = {
   },
   operations: {
     icon: ChecklistOutlinedIcon,
-    title: 'Operations Dashboard',
-    subtitle: 'Cross-functional operating priorities, blocked work, and organizational execution support.',
+    title: 'My Operating View',
+    subtitle: 'Owned commitments, assigned work, blockers, and organizational execution support.',
   },
   development: {
     icon: ApartmentOutlinedIcon,
@@ -102,8 +105,9 @@ const isQueuedTaskRelevantToUser = (task, user, departments = getLaneDepartments
   || departments.has(task.department)
 );
 
-const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user }) => {
+const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user, weeklyEntries }) => {
   const departments = getLaneDepartments(user);
+  const relevantWeekly = getOwnedWeeklyPriorities(weeklyEntries, user.id);
   const relevantWorkplans = departmentWorkplans.filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments));
   const relevantTasks = queuedTasks.filter((task) => isQueuedTaskRelevantToUser(task, user, departments));
   const relevantStucks = stucks.filter((stuck) => (
@@ -112,6 +116,7 @@ const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user }) => {
   ));
 
   return [
+    ['Weekly Priorities', relevantWeekly.length, 'Created in Weekly Tracker'],
     ['Department Workplans', relevantWorkplans.length, 'Created in Workplans'],
     ['Queued Tasks', relevantTasks.filter((task) => isOpenStatus(task.status)).length, 'Open one-off Task View items'],
     ['Open Stucks', relevantStucks.filter((stuck) => isOpenStatus(stuck.status)).length, 'Linked to this user'],
@@ -215,10 +220,11 @@ const EditableStatCard = ({ field, label, storageKey }) => {
   );
 };
 
-const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
+const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, user, workplans }) => {
   const departments = getLaneDepartments(user);
   const visibleWorkplans = workplans
     .filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments))
+    .map((workplan) => decorateWorkplan(workplan, enterprisePriorities))
     .sort((a, b) => (
       (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4)
       || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
@@ -231,7 +237,7 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
         <Box>
           <Typography variant="h3">Department Workplan Alignment</Typography>
-          <Typography variant="body2">{activeRoadmap.quarter} operating work tied to company objectives, strategic pillars, and due dates.</Typography>
+          <Typography variant="body2">Department Objectives tied to Enterprise Priorities, strategic pillars, and due dates.</Typography>
         </Box>
         <Chip label={`${visibleWorkplans.length} ${activeRoadmap.quarter} workplans`} color="primary" variant="outlined" />
       </Stack>
@@ -251,7 +257,7 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
                 <Chip label={`Due ${workplan.due}`} size="small" variant="outlined" />
               </Stack>
               <Typography variant="body1" color="text.primary" fontWeight={800}>{workplan.title}</Typography>
-              <Typography variant="body2">{workplan.outcome}</Typography>
+              <Typography variant="body2">{workplan.objectives.length} Department Objective{workplan.objectives.length === 1 ? '' : 's'}</Typography>
             </Box>
 
             <Stack direction="row" gap={1} alignItems="center">
@@ -265,8 +271,8 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Linked objective</Typography>
               <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 0.35 }}>
-                {(workplan.priorityLinks || []).length ? (
-                  workplan.priorityLinks.map((priority) => <Chip key={priority} label={priority} size="small" variant="outlined" />)
+                {workplan.enterprisePriorityIds.length ? (
+                  workplan.enterprisePriorityIds.map((priorityId) => <Chip key={priorityId} label={enterprisePriorities.find((priority) => priority.id === priorityId)?.name || 'Missing Enterprise Priority'} size="small" variant="outlined" />)
                 ) : (
                   <Chip label="No objective link" size="small" variant="outlined" />
                 )}
@@ -288,18 +294,21 @@ const DepartmentWorkplanAlignmentSection = ({ user, workplans }) => {
 };
 
 const FocusedDashboard = ({ user }) => {
-  const { departmentWorkplans, queuedTasks, stucks } = useOperatingData();
+  const { departmentWorkplans, enterprisePriorities, queuedTasks, stucks, weeklyPriorityEntriesByWeek } = useOperatingData();
+  const weeklyTrackerEntries = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
   const liveStats = buildLiveStats({
     departmentWorkplans,
     queuedTasks,
     stucks,
     user,
+    weeklyEntries: weeklyTrackerEntries,
   });
 
   if (user.dashboardFocus === 'property_management') {
     return (
       <Box sx={{ mb: 3 }}>
-        <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
+        <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
+        <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} user={user} workplans={departmentWorkplans} />
         <PropertyManagementDashboard user={user} />
       </Box>
     );
@@ -337,7 +346,8 @@ const FocusedDashboard = ({ user }) => {
         ))}
       </Box>
 
-      <DepartmentWorkplanAlignmentSection user={user} workplans={departmentWorkplans} />
+      <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
+      <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} user={user} workplans={departmentWorkplans} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
     </Box>
