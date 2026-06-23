@@ -77,7 +77,7 @@ const CurrentWeekPrioritiesSection = ({ entries, user }) => {
                   </Stack>
                   <Typography variant="body1" fontWeight={800} sx={{ mt: 1 }}>{priority.title}</Typography>
                   <Typography variant="body2" color="text.primary">
-                    Aligned to: {priority.alignedPriorityLabel || 'No alignment selected'}
+                    Aligned to: {priority.alignedPriorityLabel || 'Alignment required'}
                   </Typography>
                 </Box>
                 <Stack direction="row" gap={1} alignItems="center" sx={{ flexShrink: 0 }}>

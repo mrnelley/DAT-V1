@@ -156,6 +156,15 @@ const taskFixture = (overrides = {}) => {
   };
 };
 
+const enterprisePriorityFixture = (overrides = {}) => ({
+  company: true,
+  id: 'enterprise-change-business',
+  keyObjectives: [],
+  name: 'Change the Business Priority',
+  strategicPillarId: 'agility-capacity',
+  ...overrides,
+});
+
 const huddleFixture = (overrides = {}) => ({
   agenda: ['Review current signals', 'Discuss stucks and owner follow-up', 'Confirm next commitments'],
   date: '2026-06-09',
@@ -451,7 +460,10 @@ describe('clickable user actions', () => {
   });
 
   it('creates a weekly priority and Action Item from Weekly Tracker', async () => {
-    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11');
+    const enterprisePriority = enterprisePriorityFixture();
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11', {
+      enterprisePriorities: [enterprisePriority],
+    });
 
     await user.click(await screen.findByRole('button', { name: /set my weekly priority/i }));
 
@@ -459,6 +471,8 @@ describe('clickable user actions', () => {
     expect(within(dialog).getByRole('heading', { name: /set weekly priority/i })).to.exist;
 
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Publish operations support summary' } });
+    await user.click(within(dialog).getByLabelText(/enterprise priority/i));
+    await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^action item$/i }), { target: { value: 'Send summary to Tammie' } });
     await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
@@ -470,6 +484,7 @@ describe('clickable user actions', () => {
       const savedPriority = saved.weeklyPriorityEntriesByWeek[currentWeeklyReport.id]
         .find((entry) => entry.title === 'Publish operations support summary');
       expect(savedPriority.tasks.some((task) => task.title === 'Send summary to Tammie')).to.equal(true);
+      expect(savedPriority.priorityId).to.equal(enterprisePriority.id);
       expect(savedPriority.sourceType).to.equal('weekly_priority_entry');
       expect(window.localStorage.getItem('hdc_compass_weekly_tracker_entries')).to.equal(null);
     });
@@ -490,11 +505,15 @@ describe('clickable user actions', () => {
   });
 
   it('opens weekly priority detail by clicking the priority card', async () => {
-    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2');
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2', {
+      enterprisePriorities: [enterprisePriorityFixture()],
+    });
 
     await user.click(await screen.findByRole('button', { name: /set weekly priority 1 for sam jordan/i }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Review vendor onboarding' } });
+    await user.click(within(dialog).getByLabelText(/enterprise priority/i));
+    await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).to.equal(null));
 
@@ -504,20 +523,29 @@ describe('clickable user actions', () => {
     expect(screen.queryByText(/^Detail$/i)).to.equal(null);
   });
 
-  it('creates a weekly priority without requiring enterprise or workplan alignment', async () => {
-    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11');
+  it('requires enterprise or workplan alignment before saving a weekly priority', async () => {
+    const enterprisePriority = enterprisePriorityFixture();
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11', {
+      enterprisePriorities: [enterprisePriority],
+    });
 
     await user.click(await screen.findByRole('button', { name: /set my weekly priority/i }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Coordinate launch readiness' } });
+
+    const saveButton = within(dialog).getByRole('button', { name: /save weekly priority/i });
+    expect(saveButton.disabled).to.equal(true);
+
+    await user.click(within(dialog).getByLabelText(/enterprise priority/i));
+    await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
       const savedPriority = saved.weeklyPriorityEntriesByWeek[currentWeeklyReport.id]
         .find((entry) => entry.title === 'Coordinate launch readiness');
-      expect(savedPriority.alignmentType).to.equal('department');
-      expect(savedPriority.priorityId).to.equal(null);
+      expect(savedPriority.alignmentType).to.equal('enterprise');
+      expect(savedPriority.priorityId).to.equal(enterprisePriority.id);
       expect(savedPriority.workplanId).to.equal(null);
     });
   });
@@ -604,10 +632,14 @@ describe('clickable user actions', () => {
   });
 
   it('issues a stuck directly from an owned Weekly Tracker Action Item', async () => {
-    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11');
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u11', {
+      enterprisePriorities: [enterprisePriorityFixture()],
+    });
     await user.click(await screen.findByRole('button', { name: /set my weekly priority/i }));
     const priorityDialog = await screen.findByRole('dialog');
     fireEvent.change(within(priorityDialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Prepare weekly decision packet' } });
+    await user.click(within(priorityDialog).getByLabelText(/enterprise priority/i));
+    await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     fireEvent.change(within(priorityDialog).getByRole('textbox', { name: /^action item$/i }), { target: { value: 'Draft decision packet' } });
     await user.click(within(priorityDialog).getByRole('button', { name: /save weekly priority/i }));
 

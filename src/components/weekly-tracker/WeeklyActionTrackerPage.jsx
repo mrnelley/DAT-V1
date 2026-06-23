@@ -57,6 +57,20 @@ const rankMovement = (entry) => {
   return `Moved ${entry.previousRank > entry.rank ? 'up' : 'down'} from #${entry.previousRank}`;
 };
 
+const getAlignmentChipLabel = (entry) => {
+  if (!entry.alignedPriorityLabel) return 'Alignment required';
+  if (entry.alignmentType === 'both') return 'Enterprise Priority + objective aligned';
+  if (entry.alignmentType === 'enterprise') return 'Enterprise Priority aligned';
+  return 'Department Objective aligned';
+};
+
+const getAlignmentTypeLabel = (entry) => {
+  if (!entry.alignedPriorityLabel) return 'Missing required alignment';
+  if (entry.alignmentType === 'both') return 'Enterprise Priority and Department Objective';
+  if (entry.alignmentType === 'enterprise') return 'Enterprise Priority';
+  return 'Department Objective';
+};
+
 const buildTaskForm = (entry, user) => ({
   due: entry?.due || '2026-05-22',
   entryId: entry?.id || '',
@@ -133,6 +147,10 @@ const WeeklyActionTrackerPage = () => {
   const report = weekOptions.find((week) => week.id === selectedWeekId) || weekOptions[1];
   const entries = weeklyPriorityEntriesByWeek[selectedWeekId] || [];
   const setCurrentEntries = (updater) => setWeeklyPriorityEntriesForWeek(selectedWeekId, updater);
+  const hasAlignmentSourceOptions = enterprisePriorities.length > 0
+    || departmentWorkplans.some((workplan) => (workplan.objectives || []).length > 0);
+  const priorityHasRequiredAlignment = Boolean(priorityForm.objectiveId || priorityForm.priorityId);
+  const canSavePriority = Boolean(priorityDialogEntry && priorityForm.title.trim() && priorityHasRequiredAlignment);
   const rows = useMemo(() => users.map((participant) => {
     const participantEntries = entries
       .filter((entry) => entry.owner.id === participant.id)
@@ -235,6 +253,9 @@ const WeeklyActionTrackerPage = () => {
     const validatedPriority = linkedObjective && linkedPriority && linkedObjective.enterprisePriorityId !== linkedPriority.id
       ? null
       : linkedPriority;
+
+    if (!linkedObjective && !validatedPriority) return;
+
     const taskOwner = users.find((candidate) => candidate.id === priorityForm.firstTaskOwnerId) || user;
     const firstTask = priorityForm.firstTaskTitle.trim()
       ? [{
@@ -507,7 +528,7 @@ const WeeklyActionTrackerPage = () => {
                       <>
                         <Typography fontWeight={800} sx={{ mt: 1 }}>{entry.title}</Typography>
                         <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                          <Chip label={entry.alignmentType === 'both' ? 'Enterprise Priority + objective aligned' : entry.alignmentType === 'enterprise' ? 'Enterprise Priority aligned' : 'Department Objective aligned'} size="small" variant="outlined" />
+                          <Chip label={getAlignmentChipLabel(entry)} size="small" variant="outlined" color={entry.alignedPriorityLabel ? 'default' : 'warning'} />
                           {movement && <Chip icon={<ArrowForwardOutlinedIcon />} label={movement} size="small" color={movement === 'Same rank' ? 'default' : 'secondary'} variant="outlined" />}
                           {entry.carriedFromEntryId && <Chip label="Carried forward" size="small" color="warning" />}
                         </Stack>
@@ -624,13 +645,35 @@ const WeeklyActionTrackerPage = () => {
               fullWidth
             />
             <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
-            <TextField select label="Department Objective (optional)" value={priorityForm.objectiveId} onChange={updatePriorityForm('objectiveId')} fullWidth>
+            {!hasAlignmentSourceOptions && (
+              <Box sx={{ border: '1px solid', borderColor: 'warning.main', borderRadius: 1, bgcolor: 'warning.light', color: 'warning.contrastText', p: 1.25 }}>
+                <Typography variant="body2" fontWeight={700}>Alignment source required</Typography>
+                <Typography variant="body2">Create a Department Workplan objective or Enterprise Priority before adding Weekly Tracker priorities.</Typography>
+              </Box>
+            )}
+            <TextField
+              select
+              label="Department Objective / Workplan"
+              value={priorityForm.objectiveId}
+              onChange={updatePriorityForm('objectiveId')}
+              fullWidth
+              required={!priorityForm.priorityId}
+              helperText="Choose a Department Objective from a workplan, or choose an Enterprise Priority below."
+            >
               <MenuItem value="">No Department Objective link</MenuItem>
               {departmentWorkplans.flatMap((workplan) => (workplan.objectives || []).map((objective) => (
                 <MenuItem key={objective.id} value={objective.id}>{workplan.department} - {objective.title}</MenuItem>
               )))}
             </TextField>
-            <TextField select label="Enterprise Priority (optional)" value={priorityForm.priorityId} onChange={updatePriorityForm('priorityId')} fullWidth>
+            <TextField
+              select
+              label="Enterprise Priority"
+              value={priorityForm.priorityId}
+              onChange={updatePriorityForm('priorityId')}
+              fullWidth
+              required={!priorityForm.objectiveId}
+              helperText="Required when no Department Objective / Workplan is selected."
+            >
               <MenuItem value="">No Enterprise Priority link</MenuItem>
               {enterprisePriorities
                 .filter((priority) => {
@@ -675,7 +718,7 @@ const WeeklyActionTrackerPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closePriorityDialog}>Cancel</Button>
-          <Button variant="contained" onClick={saveWeeklyPriority} disabled={!priorityForm.title.trim()}>Save Weekly Priority</Button>
+          <Button variant="contained" onClick={saveWeeklyPriority} disabled={!canSavePriority}>Save Weekly Priority</Button>
         </DialogActions>
       </Dialog>
 
@@ -701,13 +744,7 @@ const WeeklyActionTrackerPage = () => {
                 <Box sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                   <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Alignment</Typography>
                   <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>{selectedEntry.alignedPriorityLabel || 'No alignment set'}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedEntry.alignmentType === 'both'
-                      ? 'Enterprise Priority and Department Objective'
-                      : selectedEntry.alignmentType === 'enterprise'
-                        ? 'Enterprise Priority'
-                        : 'Department Objective'}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{getAlignmentTypeLabel(selectedEntry)}</Typography>
                 </Box>
                 <Box sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                   <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Risk or support</Typography>
