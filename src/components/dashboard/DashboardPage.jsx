@@ -67,7 +67,7 @@ const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
   const teamOptions = company ? [] : user.teams;
-  const opensCalendarFirst = !company && user.id === 'u1';
+  const opensCalendarFirst = !company && ['u1', 'u19'].includes(user.id);
   const [team, setTeam] = useState(teamOptions[0] || 'All Teams');
   const [edit, setEdit] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(opensCalendarFirst);
@@ -76,6 +76,7 @@ const DashboardPage = ({ company = false }) => {
     addCalendarEvent,
     approveCalendarEvent,
     declineCalendarEvent,
+    events,
     isAdmin,
     organizationCalendarEvents,
     personalCalendarEvents,
@@ -121,6 +122,9 @@ const DashboardPage = ({ company = false }) => {
     onSendToOrg: sendToOrg,
     onUpdateCalendarEvent: updateCalendarEvent,
   };
+  const delegatedAdvocacyCalendarEvents = user.id === 'u19'
+    ? events.filter((event) => event.scope === 'personal' && event.owner?.id === 'u1')
+    : personalCalendarEvents;
 
   const renderWidget = (widgetId) => {
     if (widgetId === 'focus') {
@@ -252,7 +256,7 @@ const DashboardPage = ({ company = false }) => {
             <Box sx={{ width: '100%', flexShrink: 0, pl: { xs: 0, md: 1 } }}>
               <CalendarPanel
                 {...calendarProps}
-                events={personalCalendarEvents}
+                events={delegatedAdvocacyCalendarEvents}
                 scope="personal"
               />
             </Box>

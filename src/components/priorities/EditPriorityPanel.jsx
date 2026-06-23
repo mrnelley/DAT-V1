@@ -81,7 +81,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
   };
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ 'aria-label': 'Edit Enterprise Priority panel', sx: { width: { xs: '100%', sm: 560 }, bgcolor: 'background.paper' } }}>
+    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ 'aria-label': 'Edit Enterprise Priority panel', sx: { width: { xs: '100%', sm: 640 }, bgcolor: 'background.paper' } }}>
       <Box component={motion.div} initial={{ x: 560 }} animate={{ x: 0 }} transition={{ type: 'spring', stiffness: 280, damping: 26 }} sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Box>
@@ -106,7 +106,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
 
           <Stack gap={1.25}>
             {objectives.map((objective, index) => (
-              <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+              <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ mb: 1 }}>
                   <Typography variant="h4">Key Objective {index + 1}</Typography>
                   {objectives.length > 1 && (
@@ -130,10 +130,26 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                       {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                     </TextField>
                   </Stack>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
-                    <TextField label={`KPI - End of ${q2Roadmap.quarter}`} value={objective.kpi} onChange={(event) => updateObjective(objective.id, 'kpi', event.target.value)} required fullWidth />
-                    <TextField label="KPI Target" value={objective.target} onChange={(event) => updateObjective(objective.id, 'target', event.target.value)} required fullWidth />
-                  </Stack>
+                  <TextField
+                    label="KPI / Success Measure"
+                    value={objective.kpi}
+                    onChange={(event) => updateObjective(objective.id, 'kpi', event.target.value)}
+                    helperText="Describe what will be tracked manually for this objective."
+                    required
+                    fullWidth
+                    multiline
+                    minRows={2}
+                  />
+                  <TextField
+                    label="End Target / Desired Result"
+                    value={objective.target}
+                    onChange={(event) => updateObjective(objective.id, 'target', event.target.value)}
+                    helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                    required
+                    fullWidth
+                    multiline
+                    minRows={2}
+                  />
                 </Stack>
               </Box>
             ))}

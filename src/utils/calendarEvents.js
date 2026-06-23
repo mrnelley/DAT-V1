@@ -30,6 +30,7 @@ export const connectedWorkLabels = {
   initiative: 'Connected to Initiative',
   huddle: 'Connected to Huddle',
   stuck: 'Connected to Stuck',
+  touchpoint: 'Connected to Advocacy Touchpoint',
   native: 'Calendar event',
 };
 
@@ -95,7 +96,7 @@ export const formatRhythmLabel = (rhythm = 'once') => (
   rhythm === 'once' ? 'One-time' : rhythm.charAt(0).toUpperCase() + rhythm.slice(1)
 );
 
-export const createNativeCalendarEvent = (values, user, scope) => ({
+export const createNativeCalendarEvent = (values, user, scope, submittedBy = user) => ({
   id: `calendar-event-${Date.now()}`,
   title: values.title,
   date: values.date,
@@ -108,13 +109,13 @@ export const createNativeCalendarEvent = (values, user, scope) => ({
   orgSubmissionState: 'none',
   sourceStatus: normalizeSourceStatus(values.sourceStatus),
   owner: user,
-  submittedBy: user,
-  source: { type: 'native', id: null, label: 'Calendar' },
+  submittedBy,
+  source: values.source || { type: 'native', id: null, label: 'Calendar' },
   department: values.department || 'Unassigned',
   property: values.property || 'Portfolio',
   whyItMatters: values.whyItMatters || 'This date matters to the operating rhythm.',
   whoItImpacts: values.whoItImpacts || 'Team members connected to this work',
-  connectedWork: connectedWorkLabels.native,
+  connectedWork: values.connectedWork || connectedWorkLabels[values.source?.type] || connectedWorkLabels.native,
   supportNeeded: values.supportNeeded || 'No support needed yet.',
   outcomeExpected: values.outcomeExpected || 'A clear next step is completed by this date.',
 });

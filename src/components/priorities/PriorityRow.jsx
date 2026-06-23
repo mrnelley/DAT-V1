@@ -73,7 +73,7 @@ const PriorityRow = ({ currentUser, priority, depth = 0, expandedAll = false }) 
           <Chip label={`${objectives.length} Key Objective${objectives.length === 1 ? '' : 's'}`} size="small" variant="outlined" color="primary" />
           <Box>
             <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-              <Typography variant="caption">Objective KPI rollup</Typography>
+              <Typography variant="caption">Manual KPI progress</Typography>
               <Typography variant="caption">{rollupProgress}%</Typography>
             </Stack>
             <LinearProgress variant="determinate" value={rollupProgress} sx={{ '& .MuiLinearProgress-bar': { bgcolor: statusColorMap[rollupStatus] } }} />

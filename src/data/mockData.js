@@ -13,6 +13,18 @@ const userSeed = [
     teams: ['Executive Leadership', 'Advocacy', 'Board Relations'],
   },
   {
+    id: 'u19',
+    name: 'Nina',
+    initials: 'NI',
+    role: 'Advocacy Operations Coordinator',
+    workingGroup: 'Team Member',
+    organization: 'HDC MidAtlantic',
+    department: 'Executive Office',
+    dashboardFocus: 'advocacy',
+    teams: ['Executive Office', 'Advocacy'],
+    primaryDashboard: 'individual',
+  },
+  {
     id: 'u2',
     name: 'Sam Jordan',
     initials: 'SJ',
@@ -299,9 +311,154 @@ export const stucks = [];
 export const queuedTasks = [];
 export const notificationEvents = [];
 export const calendarEvents = [];
-export const advocacyContacts = [];
-export const advocacyTouchpoints = [];
-export const advocacyInitiatives = [];
-export const advocacyWorkplans = [];
+export const advocacyContacts = [
+  {
+    id: 'partner-lancaster-housing-alliance',
+    name: 'Lancaster Housing Alliance',
+    organizationName: 'Lancaster Housing Alliance',
+    circle: 'Coalition',
+    relationship: 'County housing coalition',
+    influence: 'High',
+    stage: 'Active Conversation',
+    lead: userById.u1,
+    support: [userById.u19, userById.u6],
+    lastTouchpoint: '2026-06-17',
+    nextStep: 'Send coalition debrief and confirm June convening role.',
+    targetCompletionDate: '2026-06-28',
+    profileSummary: 'Regional coalition partner focused on affordable housing production, preservation, and policy coordination.',
+    profileGoals: [
+      'Coordinate public-facing advocacy around county affordable housing tools.',
+      'Identify coalition testimony and meeting opportunities for Dana.',
+      'Keep HDC aligned with local partner messaging before public hearings.',
+    ],
+    contextHistory: 'HDC has used this relationship to stay connected to county-level housing priorities and coalition messaging.',
+    profileUrl: '#partner-lancaster-housing-alliance',
+  },
+  {
+    id: 'partner-city-housing-office',
+    name: 'City Housing Office',
+    organizationName: 'City Housing Office',
+    circle: 'Local Government',
+    relationship: 'Municipal policy partner',
+    influence: 'High',
+    stage: 'Cultivation',
+    lead: userById.u1,
+    support: [userById.u19, userById.u3],
+    lastTouchpoint: '2026-06-10',
+    nextStep: 'Draft briefing memo for follow-up on preservation pipeline barriers.',
+    targetCompletionDate: '2026-06-26',
+    profileSummary: 'Municipal partner connected to preservation policy, development approvals, and local funding conversations.',
+    profileGoals: [
+      'Maintain clear visibility into preservation pipeline needs.',
+      'Prepare Dana for timely local government follow-ups.',
+      'Document HDC asks and commitments before they move into Salesforce relationship records.',
+    ],
+    contextHistory: 'Current activity is focused on preservation barriers and how HDC can support local policy conversations.',
+    profileUrl: '#partner-city-housing-office',
+  },
+  {
+    id: 'partner-resident-voice-council',
+    name: 'Resident Voice Council',
+    organizationName: 'Resident Voice Council',
+    circle: 'Resident Voice',
+    relationship: 'Resident leadership partner',
+    influence: 'Medium',
+    stage: 'Active Conversation',
+    lead: userById.u1,
+    support: [userById.u19, userById.u7],
+    lastTouchpoint: '2026-06-03',
+    nextStep: 'Confirm residents who want to participate in the July listening session.',
+    targetCompletionDate: '2026-07-03',
+    profileSummary: 'Resident leadership partner that helps ground advocacy messages in lived experience.',
+    profileGoals: [
+      'Track resident participation opportunities tied to advocacy work.',
+      'Make sure next steps from listening sessions are visible to Dana and Resident Services.',
+      'Protect resident voice as a standing advocacy input.',
+    ],
+    contextHistory: 'Council conversations have shaped public messaging around resident experience and service needs.',
+    profileUrl: '#partner-resident-voice-council',
+  },
+];
+
+export const advocacyTouchpoints = [
+  {
+    id: 'touch-lha-20260617',
+    contactId: 'partner-lancaster-housing-alliance',
+    date: '2026-06-17',
+    type: 'Meeting',
+    note: 'Dana joined the coalition check-in and aligned on the public hearing message map.',
+    nextStep: 'Send coalition debrief and confirm June convening role.',
+    targetCompletionDate: '2026-06-28',
+    period: 'month',
+    status: 'active',
+    createdBy: userById.u19,
+    createdAt: '2026-06-17T15:10:00-04:00',
+    updatedBy: userById.u19,
+    updatedAt: '2026-06-17T15:10:00-04:00',
+  },
+  {
+    id: 'touch-city-20260610',
+    contactId: 'partner-city-housing-office',
+    date: '2026-06-10',
+    type: 'Call',
+    note: 'Discussed preservation pipeline barriers and local funding timing.',
+    nextStep: 'Draft briefing memo for follow-up on preservation pipeline barriers.',
+    targetCompletionDate: '2026-06-26',
+    period: 'month',
+    status: 'active',
+    createdBy: userById.u19,
+    createdAt: '2026-06-10T11:35:00-04:00',
+    updatedBy: userById.u19,
+    updatedAt: '2026-06-10T11:35:00-04:00',
+  },
+  {
+    id: 'touch-rvc-20260603',
+    contactId: 'partner-resident-voice-council',
+    date: '2026-06-03',
+    type: 'Listening Session',
+    note: 'Collected resident feedback themes for upcoming advocacy messaging.',
+    nextStep: 'Confirm residents who want to participate in the July listening session.',
+    targetCompletionDate: '2026-07-03',
+    period: 'month',
+    status: 'active',
+    createdBy: userById.u19,
+    createdAt: '2026-06-03T16:20:00-04:00',
+    updatedBy: userById.u19,
+    updatedAt: '2026-06-03T16:20:00-04:00',
+  },
+];
+
+export const advocacyInitiatives = [
+  {
+    id: 'ai-advocacy-activity-system',
+    title: 'Advocacy activity system refresh',
+    quarter: 'Q2 2026',
+    status: 'Steady',
+    target: 3,
+    current: 2,
+    owner: userById.u1,
+    strategicPlan: strategicPlan2030.name,
+    strategicPillarId: 'advocate-change',
+    strategicPillar: strategicPillarById['advocate-change'].name,
+    narrative: 'Move the 2023 moves-management spreadsheet workflow into a trackable advocacy activity layer while Salesforce remains the CRM.',
+  },
+];
+
+export const advocacyWorkplans = [
+  {
+    id: 'aw-partner-activity-rhythm',
+    title: 'Partner activity rhythm for advocacy follow-up',
+    department: 'Executive Office',
+    lead: userById.u1,
+    initiativeId: 'ai-advocacy-activity-system',
+    status: 'Steady',
+    due: '2026-06-30',
+    progress: 55,
+    strategicPlan: strategicPlan2030.name,
+    strategicPillarId: 'advocate-change',
+    strategicPillar: strategicPillarById['advocate-change'].name,
+    outcome: 'Dana and Nina can see partner activity, next steps, ownership, and calendar follow-up without using the old spreadsheet workflow.',
+  },
+];
 export const advocacyPriorities = [];
 export const departmentWorkplans = [];

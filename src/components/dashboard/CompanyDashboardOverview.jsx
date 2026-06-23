@@ -256,7 +256,7 @@ const EnterprisePriorityRegister = ({ priorities: priorityRows, onOpen }) => (
             </Stack>
 
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>KPI - End of {q2Roadmap.quarter}</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>KPI / Success Measure</Typography>
               {kpis.length ? kpis.slice(0, 3).map((kpi) => (
                 <Typography key={kpi.id || kpi.target} variant="body2" color="text.primary">{kpi.target || kpi.title}</Typography>
               )) : <Typography variant="body2" color="text.secondary">No KPI attached yet</Typography>}
@@ -574,7 +574,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
                           <Typography variant="body2">{priority.description}</Typography>
                         </Box>
                         <Box sx={{ minWidth: { md: 260 } }}>
-                          <Typography variant="caption" fontWeight={800}>KPI - End of {q2Roadmap.quarter}</Typography>
+                          <Typography variant="caption" fontWeight={800}>KPI / Success Measure</Typography>
                           {kpis.length ? kpis.slice(0, 3).map((kpi) => (
                             <Typography key={kpi.id || kpi.target} variant="body2">{kpi.target || kpi.title}</Typography>
                           )) : <Typography variant="body2" color="text.secondary">No KPI attached yet</Typography>}

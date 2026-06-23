@@ -92,6 +92,7 @@ const { cleanup, fireEvent, render, screen, waitFor, within } = await import('@t
 const { default: userEvent } = await import('@testing-library/user-event');
 const { AuthProvider } = await import('../src/hooks/useAuth.js');
 const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackContext.jsx');
+const { CalendarEventProvider } = await import('../src/context/CalendarEventContext.jsx');
 const { FeatureAccessProvider } = await import('../src/context/FeatureAccessContext.jsx');
 const { NotificationsProvider } = await import('../src/context/NotificationsContext.jsx');
 const { OperatingDataProvider } = await import('../src/context/OperatingDataContext.jsx');
@@ -227,7 +228,9 @@ const renderWithProviders = (ui, path = '/', userId = 'u1', operatingData = null
               <FeatureAccessProvider>
                 <NotificationsProvider>
                   <OperatingDataProvider>
-                    {ui}
+                    <CalendarEventProvider>
+                      {ui}
+                    </CalendarEventProvider>
                   </OperatingDataProvider>
                 </NotificationsProvider>
               </FeatureAccessProvider>
@@ -346,6 +349,34 @@ describe('clickable user actions', () => {
     expect(await screen.findByText('Dana live Weekly Tracker priority')).to.exist;
     expect(screen.queryByText(/individual priorities this week/i)).to.equal(null);
     expect(screen.queryByRole('button', { name: /add priority/i })).to.equal(null);
+  });
+
+  it('lets Nina create Dana advocacy touch reports with audit labels', async () => {
+    const { user } = renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u19');
+
+    expect(await screen.findByText(/signed in as nina: touch reports editable/i)).to.exist;
+    await user.click(screen.getAllByRole('button', { name: /log touch report/i })[0]);
+
+    fireEvent.change(await screen.findByLabelText(/touch report notes/i), { target: { value: 'Nina logged the post-hearing follow-up.' } });
+    fireEvent.change(screen.getByLabelText(/next step/i), { target: { value: 'Send updated talking points to Dana.' } });
+    const targetDate = screen.getByLabelText(/target completion date/i);
+    fireEvent.change(targetDate, { target: { value: '2026-06-30' } });
+
+    await user.click(screen.getByRole('button', { name: /save touch report/i }));
+
+    expect(await screen.findByText('Nina logged the post-hearing follow-up.')).to.exist;
+    expect(screen.getAllByText('Send updated talking points to Dana.').length).to.be.greaterThan(0);
+    expect(screen.getAllByText(/created by nina/i).length).to.be.greaterThan(0);
+    expect(screen.getAllByText(/last touched jun 23, 2026/i).length).to.be.greaterThan(0);
+  });
+
+  it('keeps Dana from editing advocacy touch reports directly', async () => {
+    renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
+
+    expect(await screen.findByText(/nina has exclusive touch-report crud/i)).to.exist;
+    const logButtons = screen.getAllByRole('button', { name: /log touch report/i });
+    expect(logButtons[0].disabled).to.equal(true);
+    expect(screen.queryByRole('button', { name: /edit touch report/i })).to.equal(null);
   });
 
   it('orders the side navigation and keeps Data Table admin-only', async () => {
@@ -666,8 +697,8 @@ describe('clickable user actions', () => {
     expect(screen.getByLabelText(/priority name/i)).to.exist;
     expect(screen.getByLabelText(/key objective/i)).to.exist;
     expect(screen.getByLabelText(/objective owner/i)).to.exist;
-    expect(screen.getByLabelText(/kpi - end of/i)).to.exist;
-    expect(screen.queryByText(/success measurement/i)).to.equal(null);
+    expect(screen.getByLabelText(/kpi \/ success measure/i)).to.exist;
+    expect(screen.getByLabelText(/end target \/ desired result/i)).to.exist;
     expect(screen.queryByLabelText(/^owner$/i)).to.equal(null);
   });
 
@@ -675,12 +706,12 @@ describe('clickable user actions', () => {
     const { user } = renderWithProviders(<PrioritiesPage />);
 
     await user.click(await screen.findByRole('button', { name: /add Enterprise Priority/i }));
-    await user.type(screen.getByLabelText(/Enterprise Priority name/i), 'Resident service readiness');
-    await user.type(screen.getByLabelText(/key objective/i), 'Publish service standards');
+    fireEvent.change(screen.getByLabelText(/Enterprise Priority name/i), { target: { value: 'Resident service readiness' } });
+    fireEvent.change(screen.getByLabelText(/key objective/i), { target: { value: 'Publish service standards' } });
     await user.click(screen.getByLabelText(/objective owner/i));
     await user.click(await screen.findByRole('option', { name: /dana hanchin/i }));
-    await user.type(screen.getByLabelText(/kpi - end of/i), 'Standards approved');
-    await user.type(screen.getByLabelText(/kpi target/i), 'Approved by June 30');
+    fireEvent.change(screen.getByLabelText(/kpi \/ success measure/i), { target: { value: 'Standards approved' } });
+    fireEvent.change(screen.getByLabelText(/end target \/ desired result/i), { target: { value: 'Approved by June 30' } });
     await user.click(screen.getByRole('button', { name: /^save$/i }));
 
     expect(await screen.findByText('Resident service readiness')).to.exist;
@@ -701,8 +732,8 @@ describe('clickable user actions', () => {
     const dialog = await screen.findByRole('dialog', { name: /add Enterprise Priority/i });
     fireEvent.change(within(dialog).getByLabelText(/priority name/i), { target: { value: 'Resident service readiness' } });
     fireEvent.change(within(dialog).getByLabelText(/key objective/i), { target: { value: 'Publish service standards' } });
-    fireEvent.change(within(dialog).getByLabelText(/kpi - end of/i), { target: { value: 'Standards approved' } });
-    fireEvent.change(within(dialog).getByLabelText(/kpi target/i), { target: { value: 'Approved by June 30' } });
+    fireEvent.change(within(dialog).getByLabelText(/kpi \/ success measure/i), { target: { value: 'Standards approved' } });
+    fireEvent.change(within(dialog).getByLabelText(/end target \/ desired result/i), { target: { value: 'Approved by June 30' } });
 
     expect(within(dialog).queryByLabelText(/^owner$/i)).to.equal(null);
     expect(within(dialog).queryByLabelText(/priority health/i)).to.equal(null);

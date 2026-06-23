@@ -118,7 +118,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
   const objectiveReady = form.title.trim() && form.ownerId && form.kpiTitle.trim() && form.kpiTarget.trim();
 
   return (
-    <Dialog aria-labelledby="roadmap-editor-dialog-title" open={editor.open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog aria-labelledby="roadmap-editor-dialog-title" open={editor.open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle id="roadmap-editor-dialog-title">
         {editor.mode === 'edit' ? 'Edit' : 'Add'} {editor.type === 'priority' ? 'Enterprise Priority' : editor.type === 'objective' ? 'Key Objective' : 'KPI'}
       </DialogTitle>
@@ -132,7 +132,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
               </Typography>
               <Stack gap={1.25}>
                 {form.objectiveDrafts.map((draft, index) => (
-                  <Box key={draft.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+                  <Box key={draft.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ mb: 1 }}>
                       <Typography variant="h3">Key Objective {index + 1}</Typography>
                       {form.objectiveDrafts.length > 1 && (
@@ -153,10 +153,26 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                           {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                         </TextField>
                       </Stack>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
-                        <TextField label={`KPI - End of ${q2Roadmap.quarter}`} value={draft.kpiTitle} onChange={updateObjectiveDraft(draft.id, 'kpiTitle')} fullWidth required />
-                        <TextField label="KPI Target" value={draft.kpiTarget} onChange={updateObjectiveDraft(draft.id, 'kpiTarget')} fullWidth required />
-                      </Stack>
+                      <TextField
+                        label="KPI / Success Measure"
+                        value={draft.kpiTitle}
+                        onChange={updateObjectiveDraft(draft.id, 'kpiTitle')}
+                        helperText="Describe what will be tracked manually for this objective."
+                        fullWidth
+                        required
+                        multiline
+                        minRows={2}
+                      />
+                      <TextField
+                        label="End Target / Desired Result"
+                        value={draft.kpiTarget}
+                        onChange={updateObjectiveDraft(draft.id, 'kpiTarget')}
+                        helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                        fullWidth
+                        required
+                        multiline
+                        minRows={2}
+                      />
                     </Stack>
                   </Box>
                 ))}
@@ -180,10 +196,26 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                 <TextField label="Department" value={form.department} onChange={update('department')} fullWidth />
                 <TextField label="Workplan Access Team" value={form.workplanAccess} onChange={update('workplanAccess')} fullWidth />
               </Stack>
-              <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                <TextField label={`KPI - End of ${q2Roadmap.quarter}`} value={form.kpiTitle} onChange={update('kpiTitle')} fullWidth required />
-                <TextField label="KPI Target" value={form.kpiTarget} onChange={update('kpiTarget')} fullWidth required />
-              </Stack>
+              <TextField
+                label="KPI / Success Measure"
+                value={form.kpiTitle}
+                onChange={update('kpiTitle')}
+                helperText="Describe what will be tracked manually for this objective."
+                fullWidth
+                required
+                multiline
+                minRows={2}
+              />
+              <TextField
+                label="End Target / Desired Result"
+                value={form.kpiTarget}
+                onChange={update('kpiTarget')}
+                helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                fullWidth
+                required
+                multiline
+                minRows={2}
+              />
               <TextField label="Workplan Title" value={form.workplanTitle} onChange={update('workplanTitle')} fullWidth />
               <TextField label="Workplan Summary" value={form.workplanSummary} onChange={update('workplanSummary')} fullWidth multiline minRows={2} />
               <TextField label="Notes" value={form.notes} onChange={update('notes')} fullWidth multiline minRows={2} />
@@ -192,9 +224,9 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
 
           {editor.type === 'kpi' && (
             <>
-              <TextField label="KPI" value={form.title} onChange={update('title')} fullWidth required />
-              <TextField label="Target" value={form.target} onChange={update('target')} fullWidth />
-              <TextField label="Current" value={form.currentLabel} onChange={update('currentLabel')} fullWidth />
+              <TextField label="KPI / Success Measure" value={form.title} onChange={update('title')} fullWidth required multiline minRows={2} />
+              <TextField label="End Target / Desired Result" value={form.target} onChange={update('target')} fullWidth multiline minRows={2} />
+              <TextField label="Current Progress Note" value={form.currentLabel} onChange={update('currentLabel')} fullWidth multiline minRows={2} />
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <TextField type="number" label="Progress" value={form.progress} onChange={update('progress')} fullWidth inputProps={{ min: 0, max: 100 }} />
                 <TextField select label="Status" value={form.status} onChange={update('status')} fullWidth>

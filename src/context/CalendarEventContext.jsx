@@ -12,8 +12,8 @@ export const CalendarEventProvider = ({ children }) => {
   const [events, setEvents] = useState(calendarEvents);
   const isAdmin = adminRoles.includes(user.role);
 
-  const addCalendarEvent = useCallback((values, scope) => {
-    const event = createNativeCalendarEvent(values, user, scope);
+  const addCalendarEvent = useCallback((values, scope, ownerOverride = null) => {
+    const event = createNativeCalendarEvent(values, ownerOverride || user, scope, user);
     setEvents((current) => [...current, event]);
     return event;
   }, [user]);

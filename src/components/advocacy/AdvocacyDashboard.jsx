@@ -4,36 +4,68 @@ import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutli
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import OutboundOutlinedIcon from '@mui/icons-material/OutboundOutlined';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { advocacyContacts, advocacyInitiatives, advocacyTouchpoints, advocacyWorkplans, strategicPillarById, strategicPlan2030, users } from '../../data/mockData';
+import {
+  advocacyContacts,
+  advocacyInitiatives,
+  advocacyTouchpoints,
+  advocacyWorkplans,
+  strategicPillarById,
+  strategicPlan2030,
+  users,
+} from '../../data/mockData';
 import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
-import UserAvatar from '../shared/UserAvatar';
 import CurrentWeekPrioritiesSection from '../dashboard/CurrentWeekPrioritiesSection';
+import UserAvatar from '../shared/UserAvatar';
 
 const periods = [
-  { value: 'day', label: 'DAY', title: 'Today', context: 'May 13, 2026' },
-  { value: 'week', label: 'WEEK', title: 'This week', context: 'Week of May 11, 2026' },
-  { value: 'month', label: 'MONTH', title: 'This month', context: 'May 2026' },
+  { value: 'day', label: 'DAY', title: 'Today', context: 'June 23, 2026' },
+  { value: 'week', label: 'WEEK', title: 'This week', context: 'Week of June 22, 2026' },
+  { value: 'month', label: 'MONTH', title: 'This month', context: 'June 2026' },
   { value: 'quarter', label: 'QUARTER', title: 'This quarter', context: 'Q2 2026' },
   { value: 'year', label: 'YEAR', title: 'This year', context: '2026' },
 ];
 
 const statusColor = {
-  'Steady': 'success',
-  'Watch': 'warning',
-  'Alert': 'error',
+  Steady: 'success',
+  Watch: 'warning',
+  Alert: 'error',
   Completed: 'success',
 };
 
 const statusTone = {
-  'Steady': 'success.main',
-  'Watch': 'warning.main',
-  'Alert': 'error.main',
+  Steady: 'success.main',
+  Watch: 'warning.main',
+  Alert: 'error.main',
   Completed: 'success.dark',
 };
 
@@ -42,7 +74,9 @@ const entityLabels = {
   initiative: 'Quarterly Initiative',
 };
 
-const currentOperatingDate = new Date('2026-05-13T12:00:00');
+const danaUser = users.find((candidate) => candidate.id === 'u1') || users[0];
+const ninaUser = users.find((candidate) => candidate.id === 'u19');
+const currentOperatingDate = new Date('2026-06-23T12:00:00');
 
 const cadenceTargets = {
   Coalition: 10,
@@ -74,7 +108,24 @@ const cadenceTone = {
 
 const safeDate = (dateString) => new Date(`${dateString}T12:00:00`);
 
+const formatDate = (dateString) => {
+  if (!dateString) return 'Not set';
+  return safeDate(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const formatAuditTimestamp = (dateString) => {
+  if (!dateString) return 'not recorded';
+  return new Date(dateString).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+};
+
 const daysSince = (dateString) => {
+  if (!dateString) return 999;
   const diff = currentOperatingDate.getTime() - safeDate(dateString).getTime();
   return Math.max(0, Math.floor(diff / 86400000));
 };
@@ -101,15 +152,39 @@ const assessCadence = (contact) => {
   };
 };
 
+const isActiveTouchpoint = (touchpoint) => touchpoint.status !== 'deleted';
+
+const touchpointIsInPeriod = (touchpoint, period) => {
+  const date = safeDate(touchpoint.date);
+  if (period === 'day') return touchpoint.date === '2026-06-23';
+  if (period === 'week') return date >= new Date('2026-06-22T00:00:00') && date <= new Date('2026-06-28T23:59:59');
+  if (period === 'month') return date.getFullYear() === 2026 && date.getMonth() === 5;
+  if (period === 'quarter') return date.getFullYear() === 2026 && date.getMonth() >= 3 && date.getMonth() <= 5;
+  return date.getFullYear() === 2026;
+};
+
+const sortTouchpoints = (items) => (
+  [...items].sort((a, b) => safeDate(b.date).getTime() - safeDate(a.date).getTime())
+);
+
+const latestTouchpointDate = (contact, touchpoints) => {
+  const activeDates = touchpoints
+    .filter((touchpoint) => touchpoint.contactId === contact.id && isActiveTouchpoint(touchpoint))
+    .map((touchpoint) => touchpoint.date)
+    .sort((a, b) => safeDate(b).getTime() - safeDate(a).getTime());
+
+  return activeDates[0] || contact.lastTouchpoint;
+};
+
 const emptyEntity = (type) => {
   if (type === 'workplan') {
     return {
       title: '',
       department: 'Executive Office',
-      leadId: users[0].id,
+      leadId: danaUser.id,
       initiativeId: '',
       status: 'Steady',
-      due: '2026-06-14',
+      due: '2026-06-30',
       progress: 50,
       strategicPillarId: 'advocate-change',
       outcome: '',
@@ -120,12 +195,55 @@ const emptyEntity = (type) => {
     title: '',
     quarter: 'Q2 2026',
     status: 'Steady',
-    target: 20,
+    target: 3,
     current: 0,
     strategicPillarId: 'advocate-change',
     narrative: '',
   };
 };
+
+const createFollowUpEventValues = (touchpoint, partner) => ({
+  title: `Advocacy follow-up: ${partner.name}`,
+  date: touchpoint.targetCompletionDate,
+  type: 'Touchpoint',
+  rhythm: 'once',
+  lifecycle: 'scheduled',
+  sourceStatus: 'watch',
+  department: 'Executive Office',
+  property: partner.name,
+  source: { type: 'touchpoint', id: touchpoint.id, label: partner.name },
+  whyItMatters: `Next step from ${partner.name}'s advocacy touch report.`,
+  whoItImpacts: 'Dana, Nina, and advocacy collaborators',
+  supportNeeded: touchpoint.nextStep,
+  outcomeExpected: touchpoint.nextStep,
+});
+
+const buildTeamsCardModel = (touchpoint, partner) => ({
+  type: 'AdaptiveCard',
+  version: '1.5',
+  body: [
+    {
+      type: 'TextBlock',
+      text: 'Advocacy touchpoint updated',
+      weight: 'Bolder',
+      size: 'Medium',
+    },
+    {
+      type: 'FactSet',
+      facts: [
+        { title: 'Partner', value: partner?.name || 'Partner not selected' },
+        { title: 'Touch date', value: formatDate(touchpoint?.date) },
+        { title: 'Next step', value: touchpoint?.nextStep || 'No next step recorded' },
+        { title: 'Target date', value: formatDate(touchpoint?.targetCompletionDate) },
+        { title: 'Changed by', value: touchpoint?.updatedBy?.name || touchpoint?.createdBy?.name || 'Unknown' },
+      ],
+    },
+  ],
+  actions: [
+    { type: 'Action.OpenUrl', title: 'Open Partner Profile', url: 'https://hdc-compass.example/advocacy/partners' },
+    { type: 'Action.OpenUrl', title: 'Open Dana Calendar', url: 'https://hdc-compass.example/dashboard/me?calendar=1' },
+  ],
+});
 
 const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiatives }) => {
   const [form, setForm] = useState(emptyEntity(type || 'workplan'));
@@ -133,7 +251,7 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
   useEffect(() => {
     if (!open || !type) return;
     const next = item
-      ? { ...item, leadId: item.lead?.id || users[0].id, ownerId: item.owner?.id || users[0].id }
+      ? { ...item, leadId: item.lead?.id || danaUser.id, ownerId: item.owner?.id || danaUser.id }
       : emptyEntity(type);
     setForm(next);
   }, [item, open, type]);
@@ -167,8 +285,8 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <FormControl fullWidth>
                   <InputLabel>Lead</InputLabel>
-                  <Select label="Lead" value={form.leadId || users[0].id} onChange={update('leadId')}>
-                    {users.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}
+                  <Select label="Lead" value={form.leadId || danaUser.id} onChange={update('leadId')}>
+                    {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name}</MenuItem>)}
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>
@@ -230,6 +348,75 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
   );
 };
 
+const TouchpointDialog = ({ contacts, initialContactId, item, onClose, onSave, open }) => {
+  const [form, setForm] = useState({
+    contactId: initialContactId || contacts[0]?.id || '',
+    date: '2026-06-23',
+    note: '',
+    nextStep: '',
+    targetCompletionDate: '2026-06-30',
+    type: 'Call',
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    setForm(item ? {
+      ...item,
+      contactId: item.contactId || initialContactId || contacts[0]?.id || '',
+    } : {
+      contactId: initialContactId || contacts[0]?.id || '',
+      date: '2026-06-23',
+      note: '',
+      nextStep: '',
+      targetCompletionDate: '2026-06-30',
+      type: 'Call',
+    });
+  }, [contacts, initialContactId, item, open]);
+
+  const update = (field) => (event) => {
+    setForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const submit = () => {
+    if (!form.contactId || !form.note?.trim() || !form.nextStep?.trim() || !form.targetCompletionDate) return;
+    onSave({
+      ...form,
+      note: form.note.trim(),
+      nextStep: form.nextStep.trim(),
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog aria-labelledby="touchpoint-log-dialog-title" open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle id="touchpoint-log-dialog-title">{item ? 'Edit Touch Report' : 'Log Touch Report'}</DialogTitle>
+      <DialogContent sx={{ pt: 1 }}>
+        <Stack gap={2} sx={{ mt: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel>Partner</InputLabel>
+            <Select label="Partner" value={form.contactId} onChange={update('contactId')}>
+              {contacts.map((contact) => (
+                <MenuItem key={contact.id} value={contact.id}>{contact.name} - {contact.circle}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
+            <TextField label="Touchpoint type" value={form.type} onChange={update('type')} fullWidth />
+            <TextField label="Touch date" type="date" value={form.date} onChange={update('date')} InputLabelProps={{ shrink: true }} fullWidth />
+            <TextField label="Target completion date" type="date" value={form.targetCompletionDate} onChange={update('targetCompletionDate')} InputLabelProps={{ shrink: true }} required fullWidth />
+          </Stack>
+          <TextField label="Touch report notes" value={form.note || ''} onChange={update('note')} multiline minRows={4} required />
+          <TextField label="Next step" value={form.nextStep || ''} onChange={update('nextStep')} multiline minRows={2} required />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={submit}>{item ? 'Save Changes' : 'Save Touch Report'}</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const CadenceChip = ({ assessment, size = 'small' }) => (
   <Chip
     label={assessment.label}
@@ -277,14 +464,14 @@ const CircleCard = ({ circle }) => {
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
         <Box>
           <Typography variant="body1" fontWeight={800}>{circle.name}</Typography>
-          <Typography variant="body2">{circle.contactCount} people in cadence</Typography>
+          <Typography variant="body2">{circle.contactCount} partners in cadence</Typography>
         </Box>
         <CadenceChip assessment={{ ...tone, state: circle.health }} />
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mt: 1.5 }}>
         <Box>
-          <Typography variant="caption">Touchpoints</Typography>
+          <Typography variant="caption">Touch reports</Typography>
           <Typography variant="h3" color="primary.main">{circle.touchpointCount}</Typography>
         </Box>
         <Box>
@@ -335,82 +522,336 @@ const FollowUpRow = ({ item }) => {
   );
 };
 
-const TouchpointLogDialog = ({ contacts, onClose, onSave, open, period }) => {
-  const [form, setForm] = useState({
-    contactId: contacts[0]?.id || '',
-    date: '2026-05-13',
-    note: '',
-    type: 'Call',
-  });
+const PartnerRegister = ({ canManage, contacts, onLog, onSelect, selectedPartnerId, touchpoints }) => (
+  <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5, mb: 3 }}>
+    <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
+      <Box>
+        <Typography variant="h3">Partner Register</Typography>
+        <Typography variant="body2">Master list view with profile links, last touch, next step, and assigned support.</Typography>
+      </Box>
+      <Chip label="Salesforce remains relationship CRM" color="primary" variant="outlined" />
+    </Stack>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(3, 1fr)' }, gap: 1.25 }}>
+      {contacts.map((contact) => {
+        const selected = contact.id === selectedPartnerId;
+        const lastTouched = latestTouchpointDate(contact, touchpoints);
+        return (
+          <Box
+            key={contact.id}
+            id={contact.profileUrl?.replace('#', '')}
+            sx={{
+              border: '1px solid',
+              borderColor: selected ? 'primary.main' : 'divider',
+              borderRadius: 1,
+              p: 1.25,
+              bgcolor: selected ? 'rgba(7, 44, 94, 0.04)' : 'background.paper',
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">
+              <Box>
+                <Typography variant="body1" fontWeight={800}>{contact.name}</Typography>
+                <Typography variant="body2">{contact.circle} - {contact.stage}</Typography>
+              </Box>
+              <Chip label={contact.influence} size="small" color={contact.influence === 'High' ? 'warning' : 'default'} variant="outlined" />
+            </Stack>
+            <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
+              <Chip label={`Last touched ${formatDate(lastTouched)}`} size="small" />
+              <Chip label={`Target ${formatDate(contact.targetCompletionDate)}`} size="small" variant="outlined" />
+            </Stack>
+            <Typography variant="body2" color="text.primary" sx={{ mt: 1 }}>{contact.nextStep}</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+              <Stack direction="row" gap={0.5} alignItems="center">
+                <UserAvatar user={contact.lead} size="sm" />
+                <Typography variant="caption">Lead: {contact.lead?.name}</Typography>
+              </Stack>
+              <Stack direction="row" gap={0.5}>
+                <Button size="small" variant={selected ? 'contained' : 'outlined'} onClick={() => onSelect(contact.id)}>Profile</Button>
+                {canManage && (
+                  <Button size="small" startIcon={<AddIcon />} onClick={() => onLog(contact.id)}>Touch</Button>
+                )}
+              </Stack>
+            </Stack>
+          </Box>
+        );
+      })}
+    </Box>
+  </Box>
+);
 
-  useEffect(() => {
-    if (!open) return;
-    setForm({
-      contactId: contacts[0]?.id || '',
-      date: '2026-05-13',
-      note: '',
-      type: 'Call',
-    });
-  }, [contacts, open]);
+const TouchReportCard = ({ canManage, contact, onDelete, onEdit, touchpoint }) => {
+  const deleted = touchpoint.status === 'deleted';
+  return (
+    <Box
+      sx={{
+        border: '1px solid',
+        borderColor: deleted ? 'error.light' : 'divider',
+        borderRadius: 1,
+        p: 1.25,
+        bgcolor: deleted ? 'rgba(176, 58, 52, 0.04)' : 'background.paper',
+      }}
+    >
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
+        <Box>
+          <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center">
+            <Typography variant="body1" fontWeight={800}>{touchpoint.type}</Typography>
+            <Chip label={formatDate(touchpoint.date)} size="small" color="primary" variant="outlined" />
+            {deleted && <Chip label="Deleted" size="small" color="error" />}
+          </Stack>
+          <Typography variant="body2">{contact?.name}</Typography>
+        </Box>
+        {canManage && !deleted && (
+          <Stack direction="row">
+            <Tooltip title="Edit touch report">
+              <IconButton size="small" aria-label={`Edit touch report for ${contact?.name}`} onClick={() => onEdit(touchpoint)}>
+                <EditOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete touch report">
+              <IconButton size="small" aria-label={`Delete touch report for ${contact?.name}`} onClick={() => onDelete(touchpoint.id)}>
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        )}
+      </Stack>
+      <Typography variant="body2" color="text.primary" sx={{ mt: 1 }}>{touchpoint.note}</Typography>
+      <Box sx={{ mt: 1, p: 1, borderRadius: 1, bgcolor: 'background.default' }}>
+        <Typography variant="caption" color="primary" fontWeight={800}>Next step</Typography>
+        <Typography variant="body2" color="text.primary">{touchpoint.nextStep}</Typography>
+        <Typography variant="caption">Target completion: {formatDate(touchpoint.targetCompletionDate)}</Typography>
+      </Box>
+      <Divider sx={{ my: 1 }} />
+      <Stack direction="row" gap={1} flexWrap="wrap">
+        <Chip label={`Created by ${touchpoint.createdBy?.name || 'Unknown'} - ${formatAuditTimestamp(touchpoint.createdAt)}`} size="small" variant="outlined" />
+        <Chip label={`Updated by ${touchpoint.updatedBy?.name || 'Unknown'} - ${formatAuditTimestamp(touchpoint.updatedAt)}`} size="small" variant="outlined" />
+        {touchpoint.deletedBy && (
+          <Chip label={`Deleted by ${touchpoint.deletedBy?.name || 'Unknown'} - ${formatAuditTimestamp(touchpoint.deletedAt)}`} size="small" color="error" variant="outlined" />
+        )}
+      </Stack>
+    </Box>
+  );
+};
 
-  const update = (field) => (event) => {
-    setForm((current) => ({ ...current, [field]: event.target.value }));
-  };
-
-  const submit = () => {
-    if (!form.contactId || !form.note.trim()) return;
-    onSave({
-      ...form,
-      id: `at-${Date.now()}`,
-      note: form.note.trim(),
-      period,
-    });
-    onClose();
-  };
+const TouchReportsPanel = ({ canManage, contacts, contactsById, onDelete, onEdit, onLog, selectedPartnerId, setSelectedPartnerId, touchpoints }) => {
+  const selectedTouchpoints = sortTouchpoints(touchpoints.filter((touchpoint) => touchpoint.contactId === selectedPartnerId));
+  const selectedContact = contactsById[selectedPartnerId];
 
   return (
-    <Dialog aria-labelledby="touchpoint-log-dialog-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle id="touchpoint-log-dialog-title">Log Touchpoint</DialogTitle>
-      <DialogContent sx={{ pt: 1 }}>
-        <Stack gap={2} sx={{ mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel>Person or Circle</InputLabel>
-            <Select label="Person or Circle" value={form.contactId} onChange={update('contactId')}>
-              {contacts.map((contact) => (
-                <MenuItem key={contact.id} value={contact.id}>{contact.name} - {contact.circle}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-            <TextField label="Touchpoint type" value={form.type} onChange={update('type')} fullWidth />
-            <TextField label="Date" type="date" value={form.date} onChange={update('date')} InputLabelProps={{ shrink: true }} fullWidth />
-          </Stack>
-          <TextField label="What happened?" value={form.note} onChange={update('note')} multiline minRows={3} required />
+    <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5, mb: 3 }}>
+      <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
+        <Box>
+          <Typography variant="h3">Touch Reports</Typography>
+          <Typography variant="body2">One report stream per partner, with next steps and target completion dates.</Typography>
+        </Box>
+        <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center">
+          <Chip
+            icon={<ManageAccountsOutlinedIcon />}
+            label={canManage ? 'Nina can manage touch reports' : 'Touch report CRUD is Nina only'}
+            color={canManage ? 'success' : 'default'}
+            variant={canManage ? 'filled' : 'outlined'}
+          />
+          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManage} onClick={() => onLog(selectedPartnerId)}>
+            Log Touch Report
+          </Button>
         </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={submit}>Save Touchpoint</Button>
-      </DialogActions>
-    </Dialog>
+      </Stack>
+
+      <Box sx={{ overflowX: 'auto', pb: 1 }}>
+        <ToggleButtonGroup
+          exclusive
+          value={selectedPartnerId}
+          aria-label="Touch report partner"
+          onChange={(_, value) => value && setSelectedPartnerId(value)}
+          size="small"
+          sx={{ minWidth: { xs: 640, md: 'auto' } }}
+        >
+          {contacts.map((contact) => (
+            <ToggleButton key={contact.id} value={contact.id}>{contact.name}</ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
+
+      <Stack gap={1} sx={{ mt: 1.5 }}>
+        {selectedTouchpoints.length ? selectedTouchpoints.map((touchpoint) => (
+          <TouchReportCard
+            key={touchpoint.id}
+            canManage={canManage}
+            contact={selectedContact}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            touchpoint={touchpoint}
+          />
+        )) : (
+          <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 1, p: 2, textAlign: 'center' }}>
+            <Typography variant="body1" fontWeight={800}>No touch reports yet</Typography>
+            <Typography variant="body2">The first report for this partner will start the activity history.</Typography>
+          </Box>
+        )}
+      </Stack>
+    </Box>
+  );
+};
+
+const PartnerProfilePanel = ({ contactsById, selectedPartnerId, touchpoints }) => {
+  const contact = contactsById[selectedPartnerId];
+  if (!contact) return null;
+  const activeTouchpoints = sortTouchpoints(touchpoints.filter((touchpoint) => (
+    touchpoint.contactId === contact.id && isActiveTouchpoint(touchpoint)
+  )));
+
+  return (
+    <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5, mb: 3 }}>
+      <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
+        <Box>
+          <Typography variant="h3">Partner Profile</Typography>
+          <Typography variant="body2">{contact.name} profile record for goals, context, and linked activity.</Typography>
+        </Box>
+        <Stack direction="row" gap={1} flexWrap="wrap">
+          <Chip label={contact.stage} color="primary" variant="outlined" />
+          <Chip label="Partner Profiles folder equivalent" variant="outlined" />
+        </Stack>
+      </Stack>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.1fr 0.9fr' }, gap: 1.5 }}>
+        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+          <Typography variant="body1" fontWeight={800}>Profile summary</Typography>
+          <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>{contact.profileSummary}</Typography>
+          <Divider sx={{ my: 1.25 }} />
+          <Typography variant="body1" fontWeight={800}>Goals</Typography>
+          <Stack gap={0.75} sx={{ mt: 0.75 }}>
+            {contact.profileGoals?.map((goal) => (
+              <Stack key={goal} direction="row" gap={1} alignItems="flex-start">
+                <CheckCircleOutlineOutlinedIcon color="success" fontSize="small" />
+                <Typography variant="body2" color="text.primary">{goal}</Typography>
+              </Stack>
+            ))}
+          </Stack>
+          <Divider sx={{ my: 1.25 }} />
+          <Typography variant="body1" fontWeight={800}>History</Typography>
+          <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>{contact.contextHistory}</Typography>
+        </Box>
+
+        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+          <Typography variant="body1" fontWeight={800}>Assigned stewardship</Typography>
+          <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 1 }}>
+            <UserAvatar user={contact.lead} size="sm" />
+            <Box>
+              <Typography variant="body2" fontWeight={700}>{contact.lead?.name}</Typography>
+              <Typography variant="caption">Lead</Typography>
+            </Box>
+          </Stack>
+          <Stack gap={0.75} sx={{ mt: 1 }}>
+            {contact.support?.map((supportUser) => (
+              <Stack key={supportUser.id} direction="row" gap={1} alignItems="center">
+                <UserAvatar user={supportUser} size="sm" />
+                <Typography variant="body2">{supportUser.name} support</Typography>
+              </Stack>
+            ))}
+          </Stack>
+          <Divider sx={{ my: 1.25 }} />
+          <Chip label={`Last touched ${formatDate(latestTouchpointDate(contact, touchpoints))}`} color="primary" />
+          <Typography variant="body2" color="text.primary" sx={{ mt: 1 }}>{contact.nextStep}</Typography>
+          <Divider sx={{ my: 1.25 }} />
+          <Typography variant="body1" fontWeight={800}>Recent activity</Typography>
+          <Stack gap={0.75} sx={{ mt: 0.75 }}>
+            {activeTouchpoints.slice(0, 3).map((touchpoint) => (
+              <Box key={touchpoint.id} sx={{ p: 1, borderRadius: 1, bgcolor: 'background.default' }}>
+                <Typography variant="caption" color="primary" fontWeight={800}>{formatDate(touchpoint.date)} - {touchpoint.type}</Typography>
+                <Typography variant="body2" color="text.primary">{touchpoint.nextStep}</Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+const TeamsAdaptiveCardPreview = ({ contactsById, touchpoints }) => {
+  const sample = sortTouchpoints(touchpoints.filter(isActiveTouchpoint))[0];
+  const partner = sample ? contactsById[sample.contactId] : null;
+  const card = buildTeamsCardModel(sample, partner);
+
+  return (
+    <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5, mb: 3 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
+        <Box>
+          <Typography variant="h3">Teams Adaptive Cards</Typography>
+          <Typography variant="body2">Touch report updates and due-date reminders can be posted into Teams from this payload shape.</Typography>
+        </Box>
+        <Button
+          href="/api/teams/advocacy-touchpoint-card"
+          target="_blank"
+          rel="noreferrer"
+          variant="outlined"
+          startIcon={<OutboundOutlinedIcon />}
+        >
+          View JSON
+        </Button>
+      </Stack>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '0.9fr 1.1fr' }, gap: 1.5 }}>
+        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+          <Box sx={{ bgcolor: '#f3f2f1', px: 1.25, py: 0.75 }}>
+            <Typography variant="caption" fontWeight={800}>Microsoft Teams card preview</Typography>
+          </Box>
+          <Box sx={{ p: 1.25 }}>
+            <Typography variant="body1" fontWeight={800}>Advocacy touchpoint updated</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Stack gap={0.75}>
+              <Typography variant="body2"><strong>Partner:</strong> {partner?.name || 'Partner not selected'}</Typography>
+              <Typography variant="body2"><strong>Touch date:</strong> {formatDate(sample?.date)}</Typography>
+              <Typography variant="body2"><strong>Next step:</strong> {sample?.nextStep || 'No next step recorded'}</Typography>
+              <Typography variant="body2"><strong>Target:</strong> {formatDate(sample?.targetCompletionDate)}</Typography>
+              <Typography variant="body2"><strong>Changed by:</strong> {sample?.updatedBy?.name || sample?.createdBy?.name || 'Unknown'}</Typography>
+            </Stack>
+            <Stack direction="row" gap={1} sx={{ mt: 1.25 }}>
+              <Button size="small" variant="contained">Open Profile</Button>
+              <Button size="small" variant="outlined">Open Calendar</Button>
+            </Stack>
+          </Box>
+        </Box>
+
+        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25, bgcolor: 'background.default' }}>
+          <Typography variant="caption" color="primary" fontWeight={800}>Adaptive Card JSON</Typography>
+          <Box
+            component="pre"
+            sx={{
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              fontFamily: 'Consolas, monospace',
+              fontSize: '0.76rem',
+              m: 0,
+              mt: 1,
+            }}
+          >
+            {JSON.stringify(card, null, 2)}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
 const AdvocacyDashboard = () => {
   const { user } = useAuth();
+  const { addCalendarEvent, updateCalendarEvent } = useCalendarEvents();
   const { weeklyPriorityEntriesByWeek } = useOperatingData();
   const [period, setPeriod] = useState('month');
   const [contacts, setContacts] = useState(advocacyContacts);
   const [touchpoints, setTouchpoints] = useState(advocacyTouchpoints);
   const [initiatives, setInitiatives] = useState(advocacyInitiatives);
   const [workplans, setWorkplans] = useState(advocacyWorkplans);
+  const [selectedPartnerId, setSelectedPartnerId] = useState(advocacyContacts[0]?.id || '');
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
-  const [touchpointDialogOpen, setTouchpointDialogOpen] = useState(false);
+  const [touchpointDialog, setTouchpointDialog] = useState({ open: false, item: null, contactId: null });
 
-  const periodIndex = periods.findIndex((item) => item.value === period);
-  const currentPeriod = periods[periodIndex] || periods[2];
+  const canManageTouchpoints = user.id === ninaUser?.id;
+  const currentPeriod = periods.find((item) => item.value === period) || periods[2];
+
   const visibleTouchpoints = touchpoints.filter((touchpoint) => (
-    periods.findIndex((item) => item.value === touchpoint.period) <= periodIndex
+    isActiveTouchpoint(touchpoint) && touchpointIsInPeriod(touchpoint, period)
   ));
 
   const contactsById = useMemo(() => (
@@ -426,6 +867,7 @@ const AdvocacyDashboard = () => {
   ).size;
 
   const currentWeeklyPriorities = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
+  const dashboardSubject = canManageTouchpoints ? danaUser : user;
   const cadenceAssessments = useMemo(() => (
     contacts.map((contact) => ({ contact, assessment: assessCadence(contact) }))
   ), [contacts]);
@@ -478,12 +920,75 @@ const AdvocacyDashboard = () => {
 
   const closeDialog = () => setDialog({ open: false, type: null, mode: 'create', item: null });
 
-  const logTouchpoint = (touchpoint) => {
-    setTouchpoints((current) => [touchpoint, ...current]);
+  const openTouchpointDialog = (contactId = selectedPartnerId, item = null) => {
+    if (!canManageTouchpoints) return;
+    setTouchpointDialog({ open: true, item, contactId: item?.contactId || contactId });
+  };
+
+  const closeTouchpointDialog = () => setTouchpointDialog({ open: false, item: null, contactId: null });
+
+  const updatePartnerFromTouchpoint = (touchpoint) => {
     setContacts((current) => current.map((contact) => (
       contact.id === touchpoint.contactId
-        ? { ...contact, lastTouchpoint: touchpoint.date, stage: contact.stage === 'New' ? 'Active Conversation' : contact.stage }
+        ? {
+          ...contact,
+          lastTouchpoint: touchpoint.date,
+          nextStep: touchpoint.nextStep,
+          targetCompletionDate: touchpoint.targetCompletionDate,
+          stage: contact.stage === 'New' ? 'Active Conversation' : contact.stage,
+        }
         : contact
+    )));
+  };
+
+  const saveTouchpoint = (form) => {
+    if (!canManageTouchpoints) return;
+
+    const now = new Date().toISOString();
+    const existing = form.id ? touchpoints.find((touchpoint) => touchpoint.id === form.id) : null;
+    const partner = contactsById[form.contactId];
+    let calendarEventId = existing?.calendarEventId || null;
+    const baseTouchpoint = {
+      ...existing,
+      ...form,
+      id: existing?.id || `touch-${Date.now()}`,
+      period,
+      status: 'active',
+      createdBy: existing?.createdBy || user,
+      createdAt: existing?.createdAt || now,
+      updatedBy: user,
+      updatedAt: now,
+      deletedBy: null,
+      deletedAt: null,
+    };
+
+    if (partner && baseTouchpoint.targetCompletionDate) {
+      const eventValues = createFollowUpEventValues(baseTouchpoint, partner);
+      if (calendarEventId) {
+        updateCalendarEvent(calendarEventId, eventValues);
+      } else {
+        const event = addCalendarEvent(eventValues, 'personal', danaUser);
+        calendarEventId = event.id;
+      }
+    }
+
+    const savedTouchpoint = { ...baseTouchpoint, calendarEventId };
+    setTouchpoints((current) => (
+      existing
+        ? current.map((touchpoint) => touchpoint.id === savedTouchpoint.id ? savedTouchpoint : touchpoint)
+        : [savedTouchpoint, ...current]
+    ));
+    updatePartnerFromTouchpoint(savedTouchpoint);
+    setSelectedPartnerId(savedTouchpoint.contactId);
+  };
+
+  const deleteTouchpoint = (touchpointId) => {
+    if (!canManageTouchpoints) return;
+    const now = new Date().toISOString();
+    setTouchpoints((current) => current.map((touchpoint) => (
+      touchpoint.id === touchpointId
+        ? { ...touchpoint, status: 'deleted', deletedBy: user, deletedAt: now, updatedBy: user, updatedAt: now }
+        : touchpoint
     )));
   };
 
@@ -493,7 +998,7 @@ const AdvocacyDashboard = () => {
       const next = {
         ...form,
         id: form.id || `aw-${Date.now()}`,
-        lead: users.find((user) => user.id === form.leadId) || users[0],
+        lead: users.find((candidate) => candidate.id === form.leadId) || danaUser,
         progress: Number(form.progress || 0),
         strategicPlan: strategicPlan2030.name,
         strategicPillarId: pillar.id,
@@ -507,7 +1012,7 @@ const AdvocacyDashboard = () => {
       const next = {
         ...form,
         id: form.id || `ai-${Date.now()}`,
-        owner: users[0],
+        owner: danaUser,
         current: Number(form.current || 0),
         target: Number(form.target || 0),
         strategicPlan: strategicPlan2030.name,
@@ -533,22 +1038,30 @@ const AdvocacyDashboard = () => {
     <Box sx={{ mb: 3 }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'center' }} gap={2} sx={{ mb: 2 }}>
         <Stack direction="row" gap={1.5} alignItems="center">
-          <UserAvatar user={users[0]} size="xl" />
+          <UserAvatar user={danaUser} size="xl" />
           <Box>
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
               Primary Advocate - Chief Executive Officer
             </Typography>
             <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Advocacy Command Center</Typography>
-            <Typography variant="body2">Advocacy command center - May 2026</Typography>
+            <Typography variant="body2">Advocacy activity layer for Dana's partner touchpoints - June 2026</Typography>
           </Box>
         </Stack>
 
-        <Box>
-          <Typography variant="caption" component="div" sx={{ mb: 0.5, textAlign: { xs: 'left', lg: 'right' } }}>Time scope</Typography>
-          <ToggleButtonGroup exclusive value={period} aria-label="Advocacy reporting period" onChange={(_, value) => value && setPeriod(value)} size="small">
-            {periods.map((item) => <ToggleButton key={item.value} value={item.value}>{item.label}</ToggleButton>)}
-          </ToggleButtonGroup>
-        </Box>
+        <Stack alignItems={{ xs: 'flex-start', lg: 'flex-end' }} gap={1}>
+          <Box>
+            <Typography variant="caption" component="div" sx={{ mb: 0.5, textAlign: { xs: 'left', lg: 'right' } }}>Time scope</Typography>
+            <ToggleButtonGroup exclusive value={period} aria-label="Advocacy reporting period" onChange={(_, value) => value && setPeriod(value)} size="small">
+              {periods.map((item) => <ToggleButton key={item.value} value={item.value}>{item.label}</ToggleButton>)}
+            </ToggleButtonGroup>
+          </Box>
+          <Chip
+            icon={<ManageAccountsOutlinedIcon />}
+            label={canManageTouchpoints ? 'Signed in as Nina: touch reports editable' : 'Nina has exclusive touch-report CRUD'}
+            color={canManageTouchpoints ? 'success' : 'default'}
+            variant={canManageTouchpoints ? 'filled' : 'outlined'}
+          />
+        </Stack>
       </Stack>
 
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', boxShadow: 1, p: { xs: 2, md: 3 }, mb: 3 }}>
@@ -557,34 +1070,59 @@ const AdvocacyDashboard = () => {
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
               {currentPeriod.title} - {currentPeriod.context}
             </Typography>
-            <Typography variant="h2" sx={{ mt: 0.5 }}>{visibleTouchpoints.length} touchpoints logged</Typography>
+            <Typography variant="h2" sx={{ mt: 0.5 }}>{visibleTouchpoints.length} touch reports logged</Typography>
           </Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setTouchpointDialogOpen(true)}>
-            Log Touchpoint
+          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManageTouchpoints} onClick={() => openTouchpointDialog()}>
+            Log Touch Report
           </Button>
         </Stack>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
           <SummaryMetric
             icon={<CalendarMonthOutlinedIcon fontSize="small" />}
-            label="Scheduled"
+            label="Scheduled next steps"
             value={scheduledContacts.length}
             helper={scheduledContacts.length ? `${scheduledContacts.length} next actions queued` : 'Nothing scheduled'}
           />
           <SummaryMetric
             icon={<CheckCircleOutlineOutlinedIcon fontSize="small" />}
-            label="Completed"
+            label="Completed activity"
             value={visibleTouchpoints.length}
-            helper={visibleTouchpoints.length ? `${touchpointCircleCount} circles touched` : 'No logs yet'}
+            helper={visibleTouchpoints.length ? `${touchpointCircleCount} circles touched` : 'No reports yet'}
           />
           <SummaryMetric
             icon={<WarningAmberOutlinedIcon fontSize="small" />}
-            label="Overdue contacts"
+            label="Overdue partners"
             value={overdueContacts.length}
             helper={overdueContacts.length ? 'Review required follow-ups' : 'All cadences healthy'}
           />
         </Box>
       </Box>
+
+      <PartnerRegister
+        canManage={canManageTouchpoints}
+        contacts={contacts}
+        onLog={(contactId) => openTouchpointDialog(contactId)}
+        onSelect={setSelectedPartnerId}
+        selectedPartnerId={selectedPartnerId}
+        touchpoints={touchpoints}
+      />
+
+      <TouchReportsPanel
+        canManage={canManageTouchpoints}
+        contacts={contacts}
+        contactsById={contactsById}
+        onDelete={deleteTouchpoint}
+        onEdit={(item) => openTouchpointDialog(item.contactId, item)}
+        onLog={(contactId) => openTouchpointDialog(contactId)}
+        selectedPartnerId={selectedPartnerId}
+        setSelectedPartnerId={setSelectedPartnerId}
+        touchpoints={touchpoints}
+      />
+
+      <PartnerProfilePanel contactsById={contactsById} selectedPartnerId={selectedPartnerId} touchpoints={touchpoints} />
+
+      <TeamsAdaptiveCardPreview contactsById={contactsById} touchpoints={touchpoints} />
 
       <Box sx={{ mb: 3 }}>
         <Stack direction="row" gap={1} alignItems="center">
@@ -604,7 +1142,7 @@ const AdvocacyDashboard = () => {
           <Stack direction="row" gap={1} alignItems="center">
             <TrendingUpIcon sx={{ color: 'secondary.dark' }} />
             <Box>
-              <Typography variant="h3">Top contacts requiring follow-up</Typography>
+              <Typography variant="h3">Top partners requiring follow-up</Typography>
               <Typography variant="body2">Sorted by cadence risk, then the nearest required touchpoint.</Typography>
             </Box>
           </Stack>
@@ -624,7 +1162,7 @@ const AdvocacyDashboard = () => {
           >
             <CadenceChip assessment={{ ...cadenceTone.healthy, state: 'healthy' }} />
             <Typography variant="body1" fontWeight={800} color="success.dark" sx={{ mt: 1 }}>All cadences healthy</Typography>
-            <Typography variant="body2">Every contact has been touched within their target window.</Typography>
+            <Typography variant="body2">Every partner has been touched within their target window.</Typography>
           </Box>
         ) : (
           <Stack gap={1}>
@@ -633,7 +1171,7 @@ const AdvocacyDashboard = () => {
         )}
       </Box>
 
-      <CurrentWeekPrioritiesSection entries={currentWeeklyPriorities} user={user} />
+      <CurrentWeekPrioritiesSection entries={currentWeeklyPriorities} user={dashboardSubject} />
 
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
@@ -660,7 +1198,7 @@ const AdvocacyDashboard = () => {
                       <Tooltip title="Delete workplan"><IconButton size="small" aria-label={`Delete workplan ${workplan.title}`} onClick={() => deleteEntity('workplan', workplan.id)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip>
                     </Stack>
                   </Stack>
-                  <Typography variant="body2">{workplan.department} - due {workplan.due}</Typography>
+                  <Typography variant="body2">{workplan.department} - due {formatDate(workplan.due)}</Typography>
                   <Stack direction="row" gap={1} alignItems="center" sx={{ my: 1 }}>
                     <UserAvatar user={workplan.lead} size="sm" />
                     <Chip label={workplan.status} color={statusColor[workplan.status]} size="small" />
@@ -716,12 +1254,13 @@ const AdvocacyDashboard = () => {
         open={dialog.open}
         type={dialog.type}
       />
-      <TouchpointLogDialog
+      <TouchpointDialog
         contacts={contacts}
-        onClose={() => setTouchpointDialogOpen(false)}
-        onSave={logTouchpoint}
-        open={touchpointDialogOpen}
-        period={period}
+        initialContactId={touchpointDialog.contactId || selectedPartnerId}
+        item={touchpointDialog.item}
+        onClose={closeTouchpointDialog}
+        onSave={saveTouchpoint}
+        open={touchpointDialog.open}
       />
     </Box>
   );
