@@ -54,7 +54,8 @@ export const FeatureAccessProvider = ({ children }) => {
   }, [overrides, saveOverrides]);
 
   const resetUserFeatures = useCallback((userId) => {
-    const { [userId]: _removed, ...nextOverrides } = overrides;
+    const nextOverrides = { ...overrides };
+    delete nextOverrides[userId];
     saveOverrides(nextOverrides);
   }, [overrides, saveOverrides]);
 

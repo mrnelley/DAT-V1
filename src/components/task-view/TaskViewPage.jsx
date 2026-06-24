@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
@@ -71,6 +72,7 @@ const canViewTask = (item, user) => (
 
 const TaskViewPage = () => {
   const { user } = useAuth();
+  const { isFeatureEnabled } = useFeatureAccess();
   const { addNotification } = useNotifications();
   const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, reorderQueuedTasks, updateQueuedTask } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -84,6 +86,7 @@ const TaskViewPage = () => {
   const [stuckTask, setStuckTask] = useState(null);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverTaskId, setDragOverTaskId] = useState(null);
+  const canUseStuckActions = isFeatureEnabled('stuckActions', user);
   const queueInputRef = useRef(null);
   const visibleItems = queuedTasks.filter((item) => {
     if (!canViewTask(item, user)) return false;
@@ -251,14 +254,14 @@ const TaskViewPage = () => {
       >
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Box>
-          <Typography variant="h1">Task View</Typography>
+          <Typography variant="h1">Day-to-Day Tasks</Typography>
           <Typography variant="body2" color="text.secondary">
-            Work standalone queued tasks, assignments, and optional department workplan links.
+            Log and work standalone tasks that are not tied to change-the-business priorities or department workplans.
           </Typography>
         </Box>
       </Stack>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Weekly commitments and their Action Items live in the Weekly Tracker. Use Task View to queue and manage standalone tasks that do not belong under a weekly priority.
+        Weekly commitments and their Action Items live in the Weekly Tracker. Use Day-to-Day Tasks for one-off work that should be logged without being confused with change-motivated work.
       </Alert>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ xs: 'stretch', lg: 'center' }} sx={{ mb: 2 }}>
         <ToggleButtonGroup
@@ -343,7 +346,7 @@ const TaskViewPage = () => {
           const done = normalizeStatus(item.status) === 'complete';
           const completing = completingTaskIds.includes(item.id);
           const canManage = canManageTask(item, user);
-          const canIssueStuck = item.owner?.id === user.id;
+          const canIssueStuck = canUseStuckActions && item.owner?.id === user.id;
           return (
             <ListItem
               key={item.id}
@@ -449,7 +452,7 @@ const TaskViewPage = () => {
                   </IconButton>
                 </span>
               </Tooltip>
-              <Tooltip title={canIssueStuck ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
+              <Tooltip title={!canUseStuckActions ? 'Stuck actions are off for your account' : canIssueStuck ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
                 <span>
                   <IconButton disabled={!canIssueStuck} aria-label={`Issue a stuck for task ${item.description}`} onClick={() => setStuckTask(item)}>
                     <WarningAmberOutlinedIcon />

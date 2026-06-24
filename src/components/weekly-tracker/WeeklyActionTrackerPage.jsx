@@ -1,6 +1,7 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DragIndicatorOutlinedIcon from '@mui/icons-material/DragIndicatorOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
@@ -11,6 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { users } from '../../data/mockData';
 import { currentWeeklyReport, weeklyTrackerWeekOptions } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
@@ -37,6 +39,37 @@ const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled',
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
 const baseReport = currentWeeklyReport;
 const weekOptions = weeklyTrackerWeekOptions;
+const weeklyParticipantOrderStoragePrefix = 'hdc_compass_weekly_tracker_participant_order';
+const preferredLeadershipOrder = ['u1', 'u8', 'u2', 'u3', 'u6', 'u4', 'u17', 'u5'];
+
+const defaultParticipantOrderFor = (userId) => {
+  const preferred = preferredLeadershipOrder
+    .map((id) => users.find((candidate) => candidate.id === id))
+    .filter(Boolean);
+  const preferredIds = new Set(preferred.map((participant) => participant.id));
+  const remainingOlt = users.filter((participant) => (
+    participant.workingGroup === 'OLT' && !preferredIds.has(participant.id)
+  )).sort((a, b) => a.name.localeCompare(b.name));
+  const remainingStaff = users.filter((participant) => (
+    !['ELT', 'OLT'].includes(participant.workingGroup) && !preferredIds.has(participant.id)
+  )).sort((a, b) => a.name.localeCompare(b.name));
+  const defaultOrder = [...preferred, ...remainingOlt, ...remainingStaff].map((participant) => participant.id);
+
+  return [userId, ...defaultOrder.filter((id) => id !== userId)];
+};
+
+const readParticipantOrder = (userId) => {
+  const fallback = defaultParticipantOrderFor(userId);
+  if (typeof window === 'undefined') return fallback;
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(`${weeklyParticipantOrderStoragePrefix}_${userId}`));
+    if (!Array.isArray(parsed)) return fallback;
+    return [...parsed.filter((id) => users.some((participant) => participant.id === id)), ...fallback.filter((id) => !parsed.includes(id))];
+  } catch {
+    return fallback;
+  }
+};
 
 const formatDateTime = (value) => new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
@@ -122,6 +155,7 @@ const canManageWeeklyEntry = (entry, user) => (
 
 const WeeklyActionTrackerPage = () => {
   const { user } = useAuth();
+  const { isFeatureEnabled } = useFeatureAccess();
   const { addNotification } = useNotifications();
   const {
     addStuck,
@@ -144,11 +178,16 @@ const WeeklyActionTrackerPage = () => {
   const [taskForm, setTaskForm] = useState(buildTaskForm(null, user));
   const [taskDialogEntry, setTaskDialogEntry] = useState(null);
   const [stuckTask, setStuckTask] = useState(null);
+  const [participantOrderIds, setParticipantOrderIds] = useState(() => readParticipantOrder(user.id));
+  const [draggedParticipantId, setDraggedParticipantId] = useState(null);
+  const [dragOverParticipantId, setDragOverParticipantId] = useState(null);
+  const canUseStuckActions = isFeatureEnabled('stuckActions', user);
   const report = weekOptions.find((week) => week.id === selectedWeekId) || weekOptions[1];
   const entries = weeklyPriorityEntriesByWeek[selectedWeekId] || [];
   const setCurrentEntries = (updater) => setWeeklyPriorityEntriesForWeek(selectedWeekId, updater);
-  const hasAlignmentSourceOptions = enterprisePriorities.length > 0
-    || departmentWorkplans.some((workplan) => (workplan.objectives || []).length > 0);
+  const hasEnterprisePriorityOptions = enterprisePriorities.length > 0;
+  const hasDepartmentObjectiveOptions = departmentWorkplans.some((workplan) => (workplan.objectives || []).length > 0);
+  const hasAlignmentSourceOptions = hasEnterprisePriorityOptions || hasDepartmentObjectiveOptions;
   const priorityHasRequiredAlignment = Boolean(priorityForm.objectiveId || priorityForm.priorityId);
   const canSavePriority = Boolean(priorityDialogEntry && priorityForm.title.trim() && priorityHasRequiredAlignment);
   const rows = useMemo(() => users.map((participant) => {
@@ -186,13 +225,46 @@ const WeeklyActionTrackerPage = () => {
     const scopedRows = scope === 'mine'
       ? rows.filter((row) => row.participant.id === user.id || row.entries.some((entry) => entry?.tasks?.some((task) => task.owner.id === user.id)))
       : rows;
+    const orderIndex = new Map(participantOrderIds.map((id, index) => [id, index]));
 
     return [...scopedRows].sort((a, b) => {
-      if (a.participant.id === user.id) return -1;
-      if (b.participant.id === user.id) return 1;
-      return 0;
+      const aIndex = orderIndex.get(a.participant.id) ?? Number.MAX_SAFE_INTEGER;
+      const bIndex = orderIndex.get(b.participant.id) ?? Number.MAX_SAFE_INTEGER;
+      if (aIndex !== bIndex) return aIndex - bIndex;
+      return a.participant.name.localeCompare(b.participant.name);
     });
-  }, [rows, scope, user.id]);
+  }, [participantOrderIds, rows, scope, user.id]);
+
+  useEffect(() => {
+    setParticipantOrderIds(readParticipantOrder(user.id));
+  }, [user.id]);
+
+  const saveParticipantOrder = (nextOrder) => {
+    setParticipantOrderIds(nextOrder);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`${weeklyParticipantOrderStoragePrefix}_${user.id}`, JSON.stringify(nextOrder));
+    }
+  };
+
+  const moveParticipantRow = (participantId, direction) => {
+    const currentOrder = participantOrderIds.filter((id) => rows.some((row) => row.participant.id === id));
+    const index = currentOrder.indexOf(participantId);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= currentOrder.length) return;
+    const nextOrder = [...currentOrder];
+    const [moved] = nextOrder.splice(index, 1);
+    nextOrder.splice(nextIndex, 0, moved);
+    saveParticipantOrder(nextOrder);
+  };
+
+  const moveDraggedParticipantBefore = (targetParticipantId) => {
+    if (!draggedParticipantId || draggedParticipantId === targetParticipantId) return;
+    const currentOrder = participantOrderIds.filter((id) => rows.some((row) => row.participant.id === id));
+    const nextOrder = [...currentOrder];
+    nextOrder.splice(nextOrder.indexOf(draggedParticipantId), 1);
+    nextOrder.splice(nextOrder.indexOf(targetParticipantId), 0, draggedParticipantId);
+    saveParticipantOrder(nextOrder);
+  };
 
   useEffect(() => {
     const entryParam = searchParams.get('entry');
@@ -462,9 +534,66 @@ const WeeklyActionTrackerPage = () => {
 
       <Stack gap={1.5}>
         {visibleRows.map(({ entries: rowEntries, participant }) => (
-          <Box data-testid={`weekly-participant-${participant.id}`} key={participant.id} sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} gap={1.5} sx={{ p: 1.5, bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Stack direction="row" gap={1} alignItems="center" sx={{ minWidth: { md: 260 } }}>
+          <Box
+            data-testid={`weekly-participant-${participant.id}`}
+            key={participant.id}
+            onDragEnter={() => {
+              setDragOverParticipantId(participant.id);
+              moveDraggedParticipantBefore(participant.id);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => {
+              setDraggedParticipantId(null);
+              setDragOverParticipantId(null);
+            }}
+            sx={{
+              bgcolor: participant.id === user.id ? 'rgba(7, 44, 94, 0.06)' : 'background.paper',
+              border: '1px solid',
+              borderColor: participant.id === user.id ? 'primary.main' : 'divider',
+              borderTopWidth: dragOverParticipantId === participant.id && draggedParticipantId !== participant.id ? 3 : 1,
+              borderRadius: 1,
+              boxShadow: participant.id === user.id ? '0 8px 20px rgba(7, 44, 94, 0.12)' : 'none',
+              overflow: 'hidden',
+            }}
+          >
+            <Stack direction={{ xs: 'column', md: 'row' }} gap={1.5} sx={{ p: 1.5, bgcolor: participant.id === user.id ? 'rgba(7, 44, 94, 0.08)' : 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Stack direction="row" gap={1} alignItems="center" sx={{ minWidth: { md: 300 } }}>
+                <Tooltip title="Drag to reorder rows. Use arrow keys while focused to move this row.">
+                  <Box
+                    aria-label={`Reorder weekly tracker row for ${participant.name}`}
+                    draggable
+                    onDragEnd={() => {
+                      setDraggedParticipantId(null);
+                      setDragOverParticipantId(null);
+                    }}
+                    onDragStart={(event) => {
+                      setDraggedParticipantId(participant.id);
+                      event.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        moveParticipantRow(participant.id, -1);
+                      }
+                      if (event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        moveParticipantRow(participant.id, 1);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    sx={{
+                      color: participant.id === user.id ? 'primary.main' : 'text.secondary',
+                      cursor: 'grab',
+                      display: 'grid',
+                      placeItems: 'center',
+                      '&:active': { cursor: 'grabbing', transform: 'scale(1.12)' },
+                      '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+                    }}
+                  >
+                    <DragIndicatorOutlinedIcon fontSize="small" />
+                  </Box>
+                </Tooltip>
                 <UserAvatar user={participant} size="md" />
                 <Box>
                   <Typography fontWeight={800}>{participant.name}</Typography>
@@ -472,6 +601,7 @@ const WeeklyActionTrackerPage = () => {
                 </Box>
               </Stack>
               <Stack direction="row" gap={1} flexWrap="wrap">
+                {participant.id === user.id && <Chip label="You" color="primary" size="small" />}
                 <Chip label={participant.workingGroup} size="small" variant="outlined" />
                 <Chip label={participant.role} size="small" variant="outlined" />
               </Stack>
@@ -501,9 +631,10 @@ const WeeklyActionTrackerPage = () => {
                     title={entry.title ? `Open weekly priority detail for ${entry.title}` : `Set weekly priority ${entry.rank} for ${participant.name}`}
                     sx={{
                       p: 1.5,
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      border: cardCanOpen ? '1px solid' : '0 solid',
+                      borderColor: cardCanOpen ? 'divider' : 'transparent',
                       borderRadius: 1,
+                      bgcolor: cardCanOpen ? 'background.paper' : 'background.default',
                       cursor: cardCanOpen ? 'pointer' : 'default',
                       minHeight: 260,
                       transition: 'border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
@@ -568,11 +699,6 @@ const WeeklyActionTrackerPage = () => {
                               <TaskAltOutlinedIcon fontSize="small" color={normalizeTaskStatus(task.status) === 'complete' ? 'success' : 'disabled'} />
                               <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Typography variant="body2">{task.title}</Typography>
-                                <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 0.5 }}>
-                                  <Chip label={task.owner.name} size="small" variant="outlined" />
-                                  <Chip label={normalizeTaskStatus(task.status).replace('_', ' ')} size="small" />
-                                  <Chip label={`Due ${task.due}`} size="small" variant="outlined" />
-                                </Stack>
                               </Box>
                               <TextField select size="small" value={normalizeTaskStatus(task.status)} onClick={(event) => event.stopPropagation()} onChange={(event) => updateTaskStatus(entry.id, task.id, event.target.value)} sx={{ width: 128 }}>
                                 {taskStatuses.map((status) => <MenuItem key={status} value={status}>{status.replace('_', ' ')}</MenuItem>)}
@@ -592,11 +718,11 @@ const WeeklyActionTrackerPage = () => {
                                   </IconButton>
                                 </span>
                               </Tooltip>
-                              <Tooltip title={task.owner.id === user.id ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
+                              <Tooltip title={!canUseStuckActions ? 'Stuck actions are off for your account' : task.owner.id === user.id ? 'Issue a Stuck' : 'Only the assigned owner can issue a stuck'}>
                                 <span>
                                   <IconButton
                                     size="small"
-                                    disabled={task.owner.id !== user.id}
+                                    disabled={!canUseStuckActions || task.owner.id !== user.id}
                                     aria-label={`Issue a stuck for action item ${task.title}`}
                                     onClick={(event) => {
                                       event.stopPropagation();
@@ -660,7 +786,7 @@ const WeeklyActionTrackerPage = () => {
               required={!priorityForm.priorityId}
               helperText="Choose a Department Objective from a workplan, or choose an Enterprise Priority below."
             >
-              <MenuItem value="">No Department Objective link</MenuItem>
+              <MenuItem value="">{hasAlignmentSourceOptions ? 'Select Department Objective / Workplan' : 'Department Objective unavailable'}</MenuItem>
               {departmentWorkplans.flatMap((workplan) => (workplan.objectives || []).map((objective) => (
                 <MenuItem key={objective.id} value={objective.id}>{workplan.department} - {objective.title}</MenuItem>
               )))}
@@ -674,7 +800,7 @@ const WeeklyActionTrackerPage = () => {
               required={!priorityForm.objectiveId}
               helperText="Required when no Department Objective / Workplan is selected."
             >
-              <MenuItem value="">No Enterprise Priority link</MenuItem>
+              <MenuItem value="">{hasAlignmentSourceOptions ? 'Select Enterprise Priority' : 'Enterprise Priority unavailable'}</MenuItem>
               {enterprisePriorities
                 .filter((priority) => {
                   const linked = findWorkplanObjective(departmentWorkplans, priorityForm.objectiveId);

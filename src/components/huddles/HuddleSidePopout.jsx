@@ -36,7 +36,7 @@ const HuddleSidePopout = ({ onClose, onInteract, open, navOpen }) => {
       component={motion.aside}
       initial={{ x: -260 }}
       animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      transition={{ type: 'tween', duration: 0.18, ease: 'easeOut' }}
       onFocus={onInteract}
       onKeyDown={onInteract}
       onMouseMove={onInteract}

@@ -100,6 +100,7 @@ const { default: theme } = await import('../src/theme/index.js');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: CurrentWeekPrioritiesSection } = await import('../src/components/dashboard/CurrentWeekPrioritiesSection.jsx');
 const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
+const { default: FeatureRolloutPage } = await import('../src/components/admin/FeatureRolloutPage.jsx');
 const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
@@ -269,7 +270,7 @@ describe('clickable user actions', () => {
     window.localStorage.clear();
   });
 
-  it('provides an inline one-off task input in Task View', async () => {
+  it('provides an inline one-off task input in Day-to-Day Tasks', async () => {
     renderWithProviders(<TaskViewPage />);
 
     expect(await screen.findByRole('textbox', { name: /add a task to my queue/i })).to.exist;
@@ -354,15 +355,15 @@ describe('clickable user actions', () => {
   it('lets Nina create Dana advocacy touch reports with audit labels', async () => {
     const { user } = renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u19');
 
-    expect(await screen.findByText(/signed in as nina: touch reports editable/i)).to.exist;
-    await user.click(screen.getAllByRole('button', { name: /log touch report/i })[0]);
+    expect(await screen.findByText(/signed in as nina: delegated touch-report access/i)).to.exist;
+    fireEvent.click(screen.getAllByRole('button', { name: /log touch report/i })[0]);
 
     fireEvent.change(await screen.findByLabelText(/touch report notes/i), { target: { value: 'Nina logged the post-hearing follow-up.' } });
     fireEvent.change(screen.getByLabelText(/next step/i), { target: { value: 'Send updated talking points to Dana.' } });
     const targetDate = screen.getByLabelText(/target completion date/i);
     fireEvent.change(targetDate, { target: { value: '2026-06-30' } });
 
-    await user.click(screen.getByRole('button', { name: /save touch report/i }));
+    fireEvent.click(screen.getByRole('button', { name: /save touch report/i }));
 
     expect(await screen.findByText('Nina logged the post-hearing follow-up.')).to.exist;
     expect(screen.getAllByText('Send updated talking points to Dana.').length).to.be.greaterThan(0);
@@ -370,13 +371,13 @@ describe('clickable user actions', () => {
     expect(screen.getAllByText(/last touched jun 23, 2026/i).length).to.be.greaterThan(0);
   });
 
-  it('keeps Dana from editing advocacy touch reports directly', async () => {
+  it('lets Dana edit her advocacy touch reports directly', async () => {
     renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
 
-    expect(await screen.findByText(/nina has exclusive touch-report crud/i)).to.exist;
+    expect(await screen.findByText(/dana can manage her advocacy records/i)).to.exist;
     const logButtons = screen.getAllByRole('button', { name: /log touch report/i });
-    expect(logButtons[0].disabled).to.equal(true);
-    expect(screen.queryByRole('button', { name: /edit touch report/i })).to.equal(null);
+    expect(logButtons[0].disabled).to.equal(false);
+    expect(screen.getAllByRole('button', { name: /edit touch report/i }).length).to.be.greaterThan(0);
   });
 
   it('orders the side navigation and keeps Data Table admin-only', async () => {
@@ -388,7 +389,7 @@ describe('clickable user actions', () => {
     const enterprisePriorities = screen.getByText('Enterprise Priorities');
     const departmentWorkplans = screen.getByText('Department Workplans');
     const weeklyTracker = screen.getByText('Weekly Tracker');
-    const taskView = screen.getByText('Task View');
+    const taskView = screen.getByText('Day-to-Day Tasks');
 
     expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
@@ -404,7 +405,7 @@ describe('clickable user actions', () => {
     expect(await screen.findByText('Data Table')).to.exist;
   });
 
-  it('creates and persists a visible one-off task from Task View', async () => {
+  it('creates and persists a visible one-off task from Day-to-Day Tasks', async () => {
     const existingTask = taskFixture({ description: 'Existing queue task', id: 'task-existing', queueOrder: 0 });
     const { user } = renderWithProviders(<TaskViewPage />, '/task-view', 'u1', {
       queuedTasksByOwner: { u1: [existingTask] },
@@ -505,7 +506,7 @@ describe('clickable user actions', () => {
     await user.click(within(dialog).getByLabelText(/enterprise priority/i));
     await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^action item$/i }), { target: { value: 'Send summary to Tammie' } });
-    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
     expect(await screen.findByText(/publish operations support summary/i)).to.exist;
     expect(await screen.findByText(/send summary to tammie/i)).to.exist;
@@ -545,7 +546,7 @@ describe('clickable user actions', () => {
     fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Review vendor onboarding' } });
     await user.click(within(dialog).getByLabelText(/enterprise priority/i));
     await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
-    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).to.equal(null));
 
     await user.click(await screen.findByRole('button', { name: /open weekly priority detail for review vendor onboarding/i }));
@@ -569,7 +570,7 @@ describe('clickable user actions', () => {
 
     await user.click(within(dialog).getByLabelText(/enterprise priority/i));
     await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
-    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
@@ -595,8 +596,8 @@ describe('clickable user actions', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByDisplayValue('2026 FINANCE WORKPLAN')).to.exist;
     expect(within(dialog).getByDisplayValue('Sam Jordan')).to.exist;
-    await user.type(within(dialog).getByRole('textbox', { name: /department objective/i }), 'Reduce accounts receivable');
-    await user.click(within(dialog).getByRole('button', { name: /save department workplan/i }));
+    fireEvent.change(within(dialog).getByRole('textbox', { name: /department objective/i }), { target: { value: 'Reduce accounts receivable' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: /save department workplan/i }));
 
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
@@ -649,7 +650,7 @@ describe('clickable user actions', () => {
     await user.click(await screen.findByRole('option', { name: /finance - reduce accounts receivable/i }));
     await user.click(within(dialog).getByLabelText(/enterprise priority/i));
     await user.click(await screen.findByRole('option', { name: /financial resilience/i }));
-    await user.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
 
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
@@ -672,11 +673,14 @@ describe('clickable user actions', () => {
     await user.click(within(priorityDialog).getByLabelText(/enterprise priority/i));
     await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
     fireEvent.change(within(priorityDialog).getByRole('textbox', { name: /^action item$/i }), { target: { value: 'Draft decision packet' } });
-    await user.click(within(priorityDialog).getByRole('button', { name: /save weekly priority/i }));
+    fireEvent.click(within(priorityDialog).getByRole('button', { name: /save weekly priority/i }));
 
-    await user.click(await screen.findByRole('button', { name: /issue a stuck for action item draft decision packet/i }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).to.equal(null);
+    });
+    fireEvent.click(await screen.findByRole('button', { name: /issue a stuck for action item draft decision packet/i }));
     const dialog = await screen.findByRole('dialog');
-    await user.type(within(dialog).getByLabelText(/stuck description/i), 'Weekly Action Item needs a decision');
+    fireEvent.change(within(dialog).getByLabelText(/stuck description/i), { target: { value: 'Weekly Action Item needs a decision' } });
     await user.click(within(dialog).getByLabelText(/need help from/i));
     await user.click(await screen.findByRole('option', { name: /sam jordan - finance/i }));
     await user.click(within(dialog).getByRole('button', { name: /^issue stuck$/i }));
@@ -764,7 +768,7 @@ describe('clickable user actions', () => {
     await user.click(await screen.findByRole('button', { name: /issue a stuck/i }));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByLabelText(/task i am stuck on/i));
-    await user.click(await screen.findByRole('option', { name: /send final q2 priority draft to elt - task view/i }));
+    await user.click(await screen.findByRole('option', { name: /send final q2 priority draft to elt - day-to-day tasks/i }));
     await user.type(within(dialog).getByLabelText(/stuck description/i), 'Need a decision before this can move');
     await user.click(within(dialog).getByLabelText(/need help from/i));
     await user.click(await screen.findByRole('option', { name: /sam jordan - finance/i }));
@@ -1037,6 +1041,41 @@ describe('clickable user actions', () => {
     await user.click(await screen.findByRole('button', { name: /^stucks$/i }));
 
     expect(await screen.findByRole('heading', { name: /manage stucks/i })).to.exist;
+  });
+
+  it('lets huddle members add agenda items inline', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/huddles/:id" element={<HuddlesPage />} />
+      </Routes>,
+      '/huddles/daily-ops',
+      'u1',
+      { huddles: [huddleFixture()] },
+    );
+
+    fireEvent.change(await screen.findByLabelText(/add agenda item/i), { target: { value: 'Confirm advocacy follow-up owner' } });
+    fireEvent.click(screen.getByRole('button', { name: /^add$/i }));
+
+    expect(await screen.findByText('Confirm advocacy follow-up owner')).to.exist;
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const huddle = saved.huddles.find((item) => item.id === 'daily-ops');
+      expect(huddle.items.some((item) => item.title === 'Confirm advocacy follow-up owner' && item.createdBy.id === 'u1')).to.equal(true);
+    });
+  });
+
+  it('lets admins toggle component access and see property governance controls', async () => {
+    renderWithProviders(<FeatureRolloutPage />, '/admin/features', 'u0');
+
+    expect(await screen.findByRole('heading', { name: /rollout controls/i })).to.exist;
+    expect(screen.getByRole('heading', { name: /property governance assignments/i })).to.exist;
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /disable stuck actions for dana hanchin/i }));
+
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_feature_rollout'));
+      expect(saved.u1.stuckActions).to.equal(false);
+    });
   });
 
   it('schedules a huddle with selected members', async () => {

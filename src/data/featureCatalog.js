@@ -46,9 +46,15 @@ export const featureCatalog = [
   },
   {
     category: 'Operating Rhythm',
-    description: 'Views for assigned follow-through work, due dates, visibility, and queued tasks.',
+    description: 'Component-level controls for issuing stucks from weekly priorities and day-to-day tasks.',
+    key: 'stuckActions',
+    label: 'Stuck Actions',
+  },
+  {
+    category: 'Operating Rhythm',
+    description: 'One-off day-to-day work, due dates, visibility, and queued tasks.',
     key: 'taskView',
-    label: 'Task View',
+    label: 'Day-to-Day Tasks',
   },
   {
     category: 'Operating Rhythm',
@@ -109,6 +115,12 @@ export const featureCatalog = [
     description: 'Per-user functionality rollout switches.',
     key: 'featureRollout',
     label: 'Feature Rollout',
+  },
+  {
+    category: 'Administration',
+    description: 'Property-level governance assignment controls for managers and resident services leads.',
+    key: 'propertyGovernance',
+    label: 'Property Governance',
   },
   {
     category: 'Guidance',

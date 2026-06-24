@@ -320,7 +320,7 @@ const ExportsPage = () => {
     {
       description: 'Task owner, due date, status, visibility, and pillar.',
       filename: 'compass-task-view.csv',
-      label: 'Task View',
+      label: 'Day-to-Day Tasks',
       rows: queuedTasks.map((item) => ({
         due: item.due,
         owner: item.owner.name,

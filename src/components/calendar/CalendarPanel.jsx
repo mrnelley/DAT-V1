@@ -83,6 +83,7 @@ const CalendarEventPill = ({ compact = false, event, onClick }) => {
 
 const CalendarPanel = ({
   isAdmin = false,
+  canCreateEvent = true,
   onApprove,
   onCreateCalendarEvent,
   onDecline,
@@ -146,7 +147,9 @@ const CalendarPanel = ({
             <ToggleButton value="calendar" aria-label="Calendar view"><CalendarMonthIcon fontSize="small" /></ToggleButton>
             <ToggleButton value="upcoming" aria-label="Upcoming view"><ViewAgendaOutlinedIcon fontSize="small" /></ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} title="Add calendar event" onClick={() => setFormOpen(true)}>Add Event</Button>
+          {canCreateEvent && (
+            <Button variant="contained" startIcon={<AddIcon />} title="Add calendar event" onClick={() => setFormOpen(true)}>Add Event</Button>
+          )}
         </Stack>
       </Stack>
 

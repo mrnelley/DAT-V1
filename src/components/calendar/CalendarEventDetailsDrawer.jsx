@@ -38,6 +38,7 @@ const CalendarEventDetailsDrawer = ({
   const sourceStatus = event.sourceStatus ? sourceStatuses[event.sourceStatus] : null;
   const connectedLabel = connectedWorkLabels[event.source?.type] || event.connectedWork;
   const pending = event.reviewState === 'pending';
+  const lockedForViewer = Boolean(event.lockedByAdmin && !isAdmin);
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ 'aria-label': `Calendar event details for ${event.title}`, sx: { width: { xs: '100%', sm: 430 }, bgcolor: 'background.paper' } }}>
@@ -67,6 +68,7 @@ const CalendarEventDetailsDrawer = ({
             <Select
               label="Type"
               value={event.type}
+              disabled={lockedForViewer}
               onChange={(changeEvent) => onUpdate(event.id, { type: changeEvent.target.value })}
             >
               {calendarEventTypes.map((type) => (
@@ -80,6 +82,7 @@ const CalendarEventDetailsDrawer = ({
             <Select
               label="Rhythm"
               value={event.rhythm}
+              disabled={lockedForViewer}
               onChange={(changeEvent) => onUpdate(event.id, { rhythm: changeEvent.target.value })}
             >
               {calendarRhythms.map((rhythm) => (
@@ -93,6 +96,7 @@ const CalendarEventDetailsDrawer = ({
             <Select
               label="Lifecycle"
               value={event.lifecycle}
+              disabled={lockedForViewer}
               onChange={(changeEvent) => onUpdate(event.id, { lifecycle: changeEvent.target.value })}
             >
               {Object.entries(calendarLifecycles).map(([value, item]) => (
@@ -104,6 +108,7 @@ const CalendarEventDetailsDrawer = ({
           <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
             <Typography variant="caption">{connectedLabel}</Typography>
             <Typography variant="body1" fontWeight={700}>{event.source?.label || event.connectedWork}</Typography>
+            {lockedForViewer && <Typography variant="caption" display="block">Admin-controlled date</Typography>}
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>

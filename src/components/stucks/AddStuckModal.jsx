@@ -45,7 +45,7 @@ const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user 
           <TextField select label="Task I am stuck on" value={form.sourceId} onChange={update('sourceId')} fullWidth required>
             {tasks.map((task) => (
               <MenuItem key={task.id} value={task.id}>
-                {task.description || task.title} - {task.sourceType === 'weekly_action_item' ? 'Weekly Action Item' : 'Task View'}
+                {task.description || task.title} - {task.sourceType === 'weekly_action_item' ? 'Weekly Action Item' : 'Day-to-Day Tasks'}
               </MenuItem>
             ))}
           </TextField>

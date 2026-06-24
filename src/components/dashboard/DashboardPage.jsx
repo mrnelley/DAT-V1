@@ -75,6 +75,7 @@ const DashboardPage = ({ company = false }) => {
   const {
     addCalendarEvent,
     approveCalendarEvent,
+    canCreateOrganizationCalendarEvent,
     declineCalendarEvent,
     events,
     isAdmin,
@@ -154,6 +155,7 @@ const DashboardPage = ({ company = false }) => {
           {...calendarProps}
           events={organizationCalendarEvents}
           isAdmin={isAdmin}
+          canCreateEvent={canCreateOrganizationCalendarEvent}
           scope="organization"
         />
       );
@@ -239,6 +241,7 @@ const DashboardPage = ({ company = false }) => {
         <CompanyDashboardOverview
           calendarEvents={organizationCalendarEvents}
           calendarProps={calendarProps}
+          canCreateOrganizationCalendarEvent={canCreateOrganizationCalendarEvent}
           isAdmin={isAdmin}
           onMetricClick={setSelectedMetric}
         />

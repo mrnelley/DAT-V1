@@ -36,7 +36,7 @@ export const topNavMenus = [
 
 export const quickAddItems = [
   { featureKey: 'weeklyTracker', label: 'Weekly Priority', path: '/weekly-tracker?new=priority' },
-  { featureKey: 'taskView', label: 'Queued Task', path: '/task-view?new=queue' },
+  { featureKey: 'taskView', label: 'Day-to-Day Task', path: '/task-view?new=queue' },
   { featureKey: 'priorities', label: 'Enterprise Priority', path: '/priorities?new=1' },
   { featureKey: 'stucks', label: 'Stuck', path: '/stucks?new=1' },
   { featureKey: 'workplans', label: 'Workplan', path: '/workplans?new=1' },

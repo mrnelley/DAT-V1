@@ -11,7 +11,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 import { getPrimaryDashboardPath } from '../../utils/dashboardRouting';
 
-const demoNames = ['Dana', 'Nina', 'Sam', 'Shar', 'Ann', 'Kim', 'Chris', 'Jaime', 'Angie', 'Michele', 'Meg', 'Tammie', 'Michael'];
+const demoNames = ['Dana', 'Nina', 'Admin', 'Sam', 'Shar', 'Ann', 'Kim', 'Chris', 'Jaime', 'Angie', 'Michele', 'Meg', 'Tammie', 'Michael'];
 
 const LoginPage = () => {
   const { isAuthenticated, primaryDashboardPath, signInByName } = useAuth();

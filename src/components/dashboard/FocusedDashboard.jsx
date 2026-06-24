@@ -118,7 +118,7 @@ const buildLiveStats = ({ departmentWorkplans, queuedTasks, stucks, user, weekly
   return [
     ['Weekly Priorities', relevantWeekly.length, 'Created in Weekly Tracker'],
     ['Department Workplans', relevantWorkplans.length, 'Created in Workplans'],
-    ['Queued Tasks', relevantTasks.filter((task) => isOpenStatus(task.status)).length, 'Open one-off Task View items'],
+    ['Day-to-Day Tasks', relevantTasks.filter((task) => isOpenStatus(task.status)).length, 'Open one-off task items'],
     ['Open Stucks', relevantStucks.filter((stuck) => isOpenStatus(stuck.status)).length, 'Linked to this user'],
   ];
 };

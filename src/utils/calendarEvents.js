@@ -1,4 +1,15 @@
-export const calendarEventTypes = ['Touchpoint', 'Checkpoint', 'Milestone', 'Commitment'];
+export const calendarEventTypes = [
+  'Touchpoint',
+  'Checkpoint',
+  'Milestone',
+  'Commitment',
+  'Conference',
+  'Celebration',
+  'Holiday',
+  'HR Training',
+  'Pulse Survey',
+  'New Hire',
+];
 
 export const calendarRhythms = ['once', 'weekly', 'monthly', 'quarterly', 'annual', 'custom'];
 
@@ -31,6 +42,7 @@ export const connectedWorkLabels = {
   huddle: 'Connected to Huddle',
   stuck: 'Connected to Stuck',
   touchpoint: 'Connected to Advocacy Touchpoint',
+  preassigned_org_date: 'Admin preassigned organization date',
   native: 'Calendar event',
 };
 
@@ -105,7 +117,7 @@ export const createNativeCalendarEvent = (values, user, scope, submittedBy = use
   rhythm: values.rhythm || 'once',
   lifecycle: values.lifecycle || 'scheduled',
   scope,
-  reviewState: scope === 'organization' ? 'approved' : 'private',
+  reviewState: values.reviewState || (scope === 'organization' ? 'approved' : 'private'),
   orgSubmissionState: 'none',
   sourceStatus: normalizeSourceStatus(values.sourceStatus),
   owner: user,

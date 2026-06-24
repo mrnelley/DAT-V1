@@ -12,7 +12,6 @@ const AppShell = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [huddlesOpen, setHuddlesOpen] = useState(false);
   const huddleIdleTimer = useRef(null);
-  const drawerWidth = navOpen ? 240 : 64;
 
   const closeHuddles = useCallback(() => {
     setHuddlesOpen(false);

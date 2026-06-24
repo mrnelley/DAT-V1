@@ -5,12 +5,16 @@ import { createNativeCalendarEvent } from '../utils/calendarEvents';
 
 const CalendarEventContext = createContext(null);
 
-const adminRoles = ['Administrator', 'CEO', 'ELT'];
+const adminRoles = ['Administrator'];
+const organizationCalendarContributorGroups = ['ELT', 'OLT'];
+const organizationCalendarContributorRoles = ['Administrator', 'CEO'];
 
 export const CalendarEventProvider = ({ children }) => {
   const { user } = useAuth();
   const [events, setEvents] = useState(calendarEvents);
   const isAdmin = adminRoles.includes(user.role);
+  const canCreateOrganizationCalendarEvent = organizationCalendarContributorRoles.includes(user.role)
+    || organizationCalendarContributorGroups.includes(user.workingGroup);
 
   const addCalendarEvent = useCallback((values, scope, ownerOverride = null) => {
     const event = createNativeCalendarEvent(values, ownerOverride || user, scope, user);
@@ -120,13 +124,14 @@ export const CalendarEventProvider = ({ children }) => {
       approveCalendarEvent,
       declineCalendarEvent,
       events,
+      canCreateOrganizationCalendarEvent,
       isAdmin,
       organizationCalendarEvents,
       personalCalendarEvents,
       sendToOrg,
       updateCalendarEvent,
     };
-  }, [addCalendarEvent, approveCalendarEvent, declineCalendarEvent, events, isAdmin, sendToOrg, updateCalendarEvent, user.id]);
+  }, [addCalendarEvent, approveCalendarEvent, canCreateOrganizationCalendarEvent, declineCalendarEvent, events, isAdmin, sendToOrg, updateCalendarEvent, user.id]);
 
   return (
     <CalendarEventContext.Provider value={value}>

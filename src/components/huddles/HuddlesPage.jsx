@@ -4,6 +4,7 @@ import { Box, Button, Chip, List, ListItem, ListItemButton, ListItemIcon, ListIt
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { useAuth } from '../../hooks/useAuth';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import HuddleHeader from './HuddleHeader';
@@ -36,15 +37,35 @@ const HuddleDirectory = ({ huddles }) => {
 
 const HuddlesPage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const { getHuddle, huddles, updateHuddle } = useOperatingData();
   const [tab, setTab] = useState(0);
   const [metric, setMetric] = useState(null);
+  const [agendaDraft, setAgendaDraft] = useState('');
 
   if (!id) return <HuddleDirectory huddles={huddles} />;
 
   const huddle = getHuddle(id);
   if (!huddle) return <HuddleDirectory huddles={huddles} />;
   const agendaItems = [...(huddle.agenda || []), ...(huddle.items || []).map((item) => item.title)];
+  const userIsHuddleMember = huddle.memberIds.includes(user.id);
+
+  const addAgendaItem = () => {
+    const title = agendaDraft.trim();
+    if (!title || !userIsHuddleMember) return;
+    updateHuddle(huddle.id, {
+      items: [
+        ...(huddle.items || []),
+        {
+          createdAt: new Date().toISOString(),
+          createdBy: user,
+          id: `huddle-agenda-${Date.now()}`,
+          title,
+        },
+      ],
+    });
+    setAgendaDraft('');
+  };
 
   return (
     <PageWrapper>
@@ -56,14 +77,34 @@ const HuddlesPage = () => {
             <Tab label="Description" />
           </Tabs>
           {tab === 0 ? (
-            <List>
-              {agendaItems.map((item) => (
-                <ListItem key={item}>
-                  <ListItemIcon><FiberManualRecordIcon color="secondary" fontSize="small" /></ListItemIcon>
-                  <ListItemText primary={item} />
-                </ListItem>
-              ))}
-            </List>
+            <>
+              {userIsHuddleMember && (
+                <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} sx={{ mb: 1.5 }}>
+                  <TextField
+                    fullWidth
+                    label="Add agenda item"
+                    value={agendaDraft}
+                    onChange={(event) => setAgendaDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' || event.shiftKey) return;
+                      event.preventDefault();
+                      addAgendaItem();
+                    }}
+                  />
+                  <Button variant="contained" startIcon={<AddOutlinedIcon />} onClick={addAgendaItem} disabled={!agendaDraft.trim()}>
+                    Add
+                  </Button>
+                </Stack>
+              )}
+              <List>
+                {agendaItems.map((item) => (
+                  <ListItem key={item}>
+                    <ListItemIcon><FiberManualRecordIcon color="secondary" fontSize="small" /></ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </>
           ) : <Typography variant="body2">{huddle.description}</Typography>}
           <MonthlyTargets onMetricClick={setMetric} />
           <Typography variant="h4" sx={{ mb: 1 }}>Private Notes</Typography>

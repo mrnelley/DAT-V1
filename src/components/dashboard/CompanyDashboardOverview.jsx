@@ -597,7 +597,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
   );
 };
 
-const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) => {
+const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrganizationCalendarEvent, isAdmin }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const {
@@ -663,6 +663,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, isAdmin }) =>
       <Box sx={{ minWidth: 0 }}>
         <CalendarPanel
           {...calendarProps}
+          canCreateEvent={canCreateOrganizationCalendarEvent}
           events={calendarEvents}
           isAdmin={isAdmin}
           scope="organization"

@@ -87,7 +87,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetUserProfile = () => {
-    const { [userId]: _removed, ...nextOverrides } = profileOverrides;
+    const nextOverrides = { ...profileOverrides };
+    delete nextOverrides[userId];
     saveProfileOverrides(nextOverrides);
   };
 

@@ -647,7 +647,7 @@ const TouchReportsPanel = ({ canManage, contacts, contactsById, onDelete, onEdit
         <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center">
           <Chip
             icon={<ManageAccountsOutlinedIcon />}
-            label={canManage ? 'Nina can manage touch reports' : 'Touch report CRUD is Nina only'}
+            label={canManage ? 'Touch reports editable' : 'Touch report CRUD is Dana/Nina only'}
             color={canManage ? 'success' : 'default'}
             variant={canManage ? 'filled' : 'outlined'}
           />
@@ -847,7 +847,8 @@ const AdvocacyDashboard = () => {
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
   const [touchpointDialog, setTouchpointDialog] = useState({ open: false, item: null, contactId: null });
 
-  const canManageTouchpoints = user.id === ninaUser?.id;
+  const canManageTouchpoints = user.id === danaUser.id || user.id === ninaUser?.id;
+  const isDelegatedAdvocacyOperator = user.id === ninaUser?.id;
   const currentPeriod = periods.find((item) => item.value === period) || periods[2];
 
   const visibleTouchpoints = touchpoints.filter((touchpoint) => (
@@ -867,7 +868,7 @@ const AdvocacyDashboard = () => {
   ).size;
 
   const currentWeeklyPriorities = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
-  const dashboardSubject = canManageTouchpoints ? danaUser : user;
+  const dashboardSubject = isDelegatedAdvocacyOperator ? danaUser : user;
   const cadenceAssessments = useMemo(() => (
     contacts.map((contact) => ({ contact, assessment: assessCadence(contact) }))
   ), [contacts]);
@@ -1057,7 +1058,7 @@ const AdvocacyDashboard = () => {
           </Box>
           <Chip
             icon={<ManageAccountsOutlinedIcon />}
-            label={canManageTouchpoints ? 'Signed in as Nina: touch reports editable' : 'Nina has exclusive touch-report CRUD'}
+            label={isDelegatedAdvocacyOperator ? 'Signed in as Nina: delegated touch-report access' : canManageTouchpoints ? 'Dana can manage her advocacy records' : 'Dana and Nina manage touch reports'}
             color={canManageTouchpoints ? 'success' : 'default'}
             variant={canManageTouchpoints ? 'filled' : 'outlined'}
           />
