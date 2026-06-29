@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useAuth } from '../../hooks/useAuth';
-import { buildWeeklyTrackerGoalsCard } from '../../utils/weeklyTrackerGoalsCard';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import HuddleHeader from './HuddleHeader';
@@ -45,6 +44,8 @@ const HuddlesPage = () => {
   const [metric, setMetric] = useState(null);
   const [agendaDraft, setAgendaDraft] = useState('');
   const [cardDispatch, setCardDispatch] = useState(null);
+  const [cardDispatchError, setCardDispatchError] = useState('');
+  const [cardDispatchSending, setCardDispatchSending] = useState(false);
 
   if (!id) return <HuddleDirectory huddles={huddles} />;
 
@@ -72,37 +73,66 @@ const HuddlesPage = () => {
     setAgendaDraft('');
   };
 
-  const sendWeeklyGoalsCard = () => {
+  const sendWeeklyGoalsCard = async () => {
     if (!huddle.weeklyTrackerPrompt) return;
     const recipientEmail = huddle.weeklyTrackerPrompt.recipientEmail || 'pkelley@hdcweb.org';
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const dispatch = {
-      card: buildWeeklyTrackerGoalsCard({
-        baseUrl,
-        huddleId: huddle.id,
-        huddleName: huddle.name,
+    const cardEndpoint = huddle.weeklyTrackerPrompt.cardEndpoint || '/api/teams/weekly-tracker-goals-card';
+    setCardDispatchError('');
+    setCardDispatchSending(true);
+
+    try {
+      const response = await fetch(cardEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          huddleId: huddle.id,
+          huddleName: huddle.name,
+          recipientEmail,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || `Teams card send failed with status ${response.status}.`);
+      }
+
+      const dispatch = {
+        card: payload.card,
+        deliveryMode: payload.delivery?.mode || 'teams_webhook_sent',
+        id: `teams-card-${Date.now()}`,
         recipientEmail,
-      }),
-      id: `teams-card-${Date.now()}`,
-      recipientEmail,
-      sentAt: new Date().toISOString(),
-      sentBy: user,
-      type: 'weekly_tracker_goals_card',
-    };
-    updateHuddle(huddle.id, {
-      teamsCardDispatches: [dispatch, ...(huddle.teamsCardDispatches || [])],
-    });
-    setCardDispatch(dispatch);
+        sentAt: new Date().toISOString(),
+        sentBy: user,
+        teamsStatus: payload.delivery?.teamsStatus || null,
+        type: 'weekly_tracker_goals_card',
+      };
+      updateHuddle(huddle.id, {
+        teamsCardDispatches: [dispatch, ...(huddle.teamsCardDispatches || [])],
+      });
+      setCardDispatch(dispatch);
+    } catch (error) {
+      setCardDispatchError(error.message);
+    } finally {
+      setCardDispatchSending(false);
+    }
   };
 
   return (
     <PageWrapper>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 1fr' }, gap: 3 }}>
         <Box>
-          <HuddleHeader huddle={huddle} onSendWeeklyGoalsCard={sendWeeklyGoalsCard} />
+          <HuddleHeader
+            huddle={huddle}
+            onSendWeeklyGoalsCard={sendWeeklyGoalsCard}
+            weeklyGoalsCardSending={cardDispatchSending}
+          />
+          {cardDispatchError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {cardDispatchError}
+            </Alert>
+          )}
           {latestWeeklyGoalsDispatch && (
             <Alert icon={<NotificationsActiveOutlinedIcon />} severity="info" sx={{ mb: 2 }}>
-              Teams adaptive card queued for {latestWeeklyGoalsDispatch.recipientEmail}: input your Weekly Tracker goals.
+              Teams adaptive card sent to the channel for {latestWeeklyGoalsDispatch.recipientEmail}: input your Weekly Tracker goals.
             </Alert>
           )}
           <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>

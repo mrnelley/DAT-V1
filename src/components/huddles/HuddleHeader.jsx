@@ -10,7 +10,7 @@ import { Button, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 
-const HuddleHeader = ({ huddle, onSendWeeklyGoalsCard }) => {
+const HuddleHeader = ({ huddle, onSendWeeklyGoalsCard, weeklyGoalsCardSending = false }) => {
   const navigate = useNavigate();
   const { unavailable } = useActionFeedback();
 
@@ -30,8 +30,9 @@ const HuddleHeader = ({ huddle, onSendWeeklyGoalsCard }) => {
             variant="outlined"
             startIcon={<SendOutlinedIcon />}
             onClick={onSendWeeklyGoalsCard}
+            disabled={weeklyGoalsCardSending}
           >
-            Send Weekly Goals Card
+            {weeklyGoalsCardSending ? 'Sending...' : 'Send Weekly Goals Card'}
           </Button>
         )}
         <Button variant="contained" color="error" startIcon={<WarningAmberOutlinedIcon />} onClick={() => navigate('/stucks')}>Stucks</Button>
