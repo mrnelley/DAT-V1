@@ -73,6 +73,8 @@ const statusDistribution = (card) => scorecardStatusOptions.map((status) => ({
   value: card.metrics.filter((metric) => metric.status === status).length,
 }));
 
+const metricValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
+
 const StatusDistributionChart = ({ card }) => {
   const data = statusDistribution(card);
   const total = Math.max(1, data.reduce((sum, item) => sum + item.value, 0));
@@ -159,12 +161,21 @@ const ExecutiveScorecardCard = ({ card, onOpen }) => {
           {card.metrics.slice(0, 4).map((metric) => {
             const metricMeta = statusMeta[metric.status] || statusMeta['No Data'];
             return (
-              <Box key={metric.id} sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', pb: 0.75 }}>
+              <Box key={metric.id} sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 1, alignItems: 'start', borderBottom: '1px solid', borderColor: 'divider', pb: 0.85 }}>
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="body2" noWrap title={metric.kpi}>{metric.kpi}</Typography>
                   <Typography variant="caption">{metric.dept} | Target {metric.target}</Typography>
+                  <Typography variant="caption" display="block" sx={{ mt: 0.45, color: 'text.primary', fontWeight: 700 }}>
+                    Q1: {metricValue(metric.q1)}
+                  </Typography>
+                  <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
+                    Q2: Apr {metricValue(metric.april)} | May {metricValue(metric.may)} | Jun {metricValue(metric.june)} | Total {metricValue(metric.q2)}
+                  </Typography>
                 </Box>
-                <Typography variant="body2" fontWeight={800} color={metricMeta.tone}>{metric.progress || metric.q2 || metric.q1 || '-'}</Typography>
+                <Box sx={{ bgcolor: metricMeta.soft, borderRadius: 1, minWidth: 74, px: 0.8, py: 0.65, textAlign: 'right' }}>
+                  <Typography variant="caption" display="block" sx={{ color: metricMeta.tone, fontWeight: 800 }}>Progress</Typography>
+                  <Typography variant="body2" fontWeight={800} color={metricMeta.tone}>{metricValue(metric.progress)}</Typography>
+                </Box>
               </Box>
             );
           })}
@@ -243,9 +254,6 @@ const ExecutivePulsePage = () => {
                   <Chip label={`${scorecardSummary.offTrack} off track`} color="error" variant="outlined" />
                 </Stack>
                 <Typography variant="h1">Executive Pulse</Typography>
-                <Typography variant="body1" sx={{ mt: 0.75, maxWidth: 760 }}>
-                  Board-level annual scorecard view for mission, customer experience, advocacy, talent, operations, and financial resilience.
-                </Typography>
               </Box>
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} sx={{ minWidth: { lg: 460 } }}>
                 <TextField label="Period" value={scorecard.period} onChange={(event) => updateRootField('period', event.target.value)} fullWidth size="small" />
