@@ -1,10 +1,12 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import { Box, Button, Chip, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import { Alert, Box, Button, Chip, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useAuth } from '../../hooks/useAuth';
+import { buildWeeklyTrackerGoalsCard } from '../../utils/weeklyTrackerGoalsCard';
 import KpiDetailModal from '../shared/KpiDetailModal';
 import PageWrapper from '../layout/PageWrapper';
 import HuddleHeader from './HuddleHeader';
@@ -42,6 +44,7 @@ const HuddlesPage = () => {
   const [tab, setTab] = useState(0);
   const [metric, setMetric] = useState(null);
   const [agendaDraft, setAgendaDraft] = useState('');
+  const [cardDispatch, setCardDispatch] = useState(null);
 
   if (!id) return <HuddleDirectory huddles={huddles} />;
 
@@ -49,6 +52,8 @@ const HuddlesPage = () => {
   if (!huddle) return <HuddleDirectory huddles={huddles} />;
   const agendaItems = [...(huddle.agenda || []), ...(huddle.items || []).map((item) => item.title)];
   const userIsHuddleMember = huddle.memberIds.includes(user.id);
+  const latestWeeklyGoalsDispatch = cardDispatch || (huddle.teamsCardDispatches || [])
+    .find((dispatch) => dispatch.type === 'weekly_tracker_goals_card');
 
   const addAgendaItem = () => {
     const title = agendaDraft.trim();
@@ -67,11 +72,39 @@ const HuddlesPage = () => {
     setAgendaDraft('');
   };
 
+  const sendWeeklyGoalsCard = () => {
+    if (!huddle.weeklyTrackerPrompt) return;
+    const recipientEmail = huddle.weeklyTrackerPrompt.recipientEmail || 'pkelley@hdcweb.org';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const dispatch = {
+      card: buildWeeklyTrackerGoalsCard({
+        baseUrl,
+        huddleId: huddle.id,
+        huddleName: huddle.name,
+        recipientEmail,
+      }),
+      id: `teams-card-${Date.now()}`,
+      recipientEmail,
+      sentAt: new Date().toISOString(),
+      sentBy: user,
+      type: 'weekly_tracker_goals_card',
+    };
+    updateHuddle(huddle.id, {
+      teamsCardDispatches: [dispatch, ...(huddle.teamsCardDispatches || [])],
+    });
+    setCardDispatch(dispatch);
+  };
+
   return (
     <PageWrapper>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 1fr' }, gap: 3 }}>
         <Box>
-          <HuddleHeader huddle={huddle} />
+          <HuddleHeader huddle={huddle} onSendWeeklyGoalsCard={sendWeeklyGoalsCard} />
+          {latestWeeklyGoalsDispatch && (
+            <Alert icon={<NotificationsActiveOutlinedIcon />} severity="info" sx={{ mb: 2 }}>
+              Teams adaptive card queued for {latestWeeklyGoalsDispatch.recipientEmail}: input your Weekly Tracker goals.
+            </Alert>
+          )}
           <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>
             <Tab label="Agenda" />
             <Tab label="Description" />

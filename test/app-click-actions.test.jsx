@@ -1069,6 +1069,29 @@ describe('clickable user actions', () => {
     expect(await screen.findByRole('heading', { name: /manage stucks/i })).to.exist;
   });
 
+  it('seeds the Monday huddle and queues the weekly goals Teams card', async () => {
+    const { user } = renderWithProviders(
+      <Routes>
+        <Route path="/huddles/:id" element={<HuddlesPage />} />
+      </Routes>,
+      '/huddles/monday-weekly-tracker-huddle',
+      'u11',
+    );
+
+    expect(await screen.findByText('Monday Morning Weekly Tracker Huddle')).to.exist;
+    await user.click(screen.getByRole('button', { name: /send weekly goals card/i }));
+
+    expect(await screen.findByText(/teams adaptive card queued for pkelley@hdcweb.org/i)).to.exist;
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
+      const huddle = saved.huddles.find((item) => item.id === 'monday-weekly-tracker-huddle');
+      const dispatch = huddle.teamsCardDispatches[0];
+      expect(dispatch.recipientEmail).to.equal('pkelley@hdcweb.org');
+      expect(dispatch.card.body.some((block) => block.text === 'Input your Weekly Tracker goals')).to.equal(true);
+      expect(dispatch.card.actions.some((action) => action.title === 'Submit Goals')).to.equal(true);
+    });
+  });
+
   it('lets huddle members add agenda items inline', async () => {
     renderWithProviders(
       <Routes>

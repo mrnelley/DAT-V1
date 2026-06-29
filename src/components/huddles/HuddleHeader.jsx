@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import PrintIcon from '@mui/icons-material/Print';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VideoCallOutlinedIcon from '@mui/icons-material/VideoCallOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
@@ -9,7 +10,7 @@ import { Button, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 
-const HuddleHeader = ({ huddle }) => {
+const HuddleHeader = ({ huddle, onSendWeeklyGoalsCard }) => {
   const navigate = useNavigate();
   const { unavailable } = useActionFeedback();
 
@@ -24,6 +25,15 @@ const HuddleHeader = ({ huddle }) => {
         <Tooltip title="Huddle schedule"><IconButton aria-label="Open huddle calendar" onClick={() => navigate(`/huddles/${huddle.id}/settings`)}><CalendarMonthIcon /></IconButton></Tooltip>
         <Tooltip title="Huddle settings"><IconButton aria-label="Open huddle settings" onClick={() => navigate(`/huddles/${huddle.id}/settings`)}><SettingsIcon /></IconButton></Tooltip>
         <Tooltip title="Add huddle item"><IconButton aria-label="Add huddle item" onClick={() => navigate(`/huddles/${huddle.id}/items/new`)}><AddIcon /></IconButton></Tooltip>
+        {huddle.weeklyTrackerPrompt && (
+          <Button
+            variant="outlined"
+            startIcon={<SendOutlinedIcon />}
+            onClick={onSendWeeklyGoalsCard}
+          >
+            Send Weekly Goals Card
+          </Button>
+        )}
         <Button variant="contained" color="error" startIcon={<WarningAmberOutlinedIcon />} onClick={() => navigate('/stucks')}>Stucks</Button>
         <Button
           variant="contained"

@@ -318,7 +318,30 @@ export const financeWeeklyPriorities = [];
 export const weeklyTrackerParticipants = [];
 export const weeklyActionReports = [];
 export const weeklyActionEntries = [];
-export const huddles = [];
+export const huddles = [
+  {
+    agenda: [
+      'Review Weekly Tracker goals for the current week',
+      'Confirm alignment to Enterprise Priorities or Department Workplans',
+      'Name decisions, support needs, and stucks that need attention',
+    ],
+    date: '2026-06-29',
+    description: 'Standard Monday morning huddle for setting the weekly operating rhythm and prompting Weekly Tracker goal entry.',
+    id: 'monday-weekly-tracker-huddle',
+    items: [],
+    memberIds: ['u11', 'u8', 'u2'],
+    name: 'Monday Morning Weekly Tracker Huddle',
+    ownerId: 'u11',
+    recurrence: 'Weekly',
+    teamsCardDispatches: [],
+    teamsLink: '',
+    weeklyTrackerPrompt: {
+      cardEndpoint: '/api/teams/weekly-tracker-goals-card',
+      recipientEmail: 'pkelley@hdcweb.org',
+    },
+    when: 'today',
+  },
+];
 export const stucks = [];
 export const queuedTasks = [];
 export const notificationEvents = [];

@@ -75,6 +75,12 @@ const buildInitialState = () => ({
   weeklyPriorityEntriesByWeek: {},
 });
 
+const mergeSeededHuddles = (currentHuddles = []) => {
+  const existingIds = new Set(currentHuddles.map((huddle) => huddle.id));
+  const missingSeededHuddles = buildInitialState().huddles.filter((huddle) => !existingIds.has(huddle.id));
+  return [...missingSeededHuddles, ...currentHuddles];
+};
+
 const readState = () => {
   if (typeof window === 'undefined') return buildInitialState();
 
@@ -92,6 +98,7 @@ const readState = () => {
       ...parsed,
       departmentWorkplans: normalizedWorkplans,
       enterprisePriorities,
+      huddles: mergeSeededHuddles(parsed.huddles || []),
       organizationalPriorities: undefined,
       version: stateVersion,
       weeklyActionItems: hasCanonicalWeeklyPriorities ? parsed.weeklyActionItems || [] : [],
