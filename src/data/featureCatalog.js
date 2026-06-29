@@ -21,6 +21,12 @@ export const featureCatalog = [
     label: 'Company Dashboard',
   },
   {
+    category: 'Base',
+    description: 'Board-level annual scorecard pulse across mission, risk, strategy, finance, and capacity.',
+    key: 'executivePulse',
+    label: 'Executive Pulse',
+  },
+  {
     category: 'Accountability',
     description: 'Quarterly priorities, status signals, objectives, and KPI links.',
     key: 'priorities',

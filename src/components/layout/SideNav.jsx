@@ -18,6 +18,7 @@ import UserAvatar from '../shared/UserAvatar';
 
 const dashboardItems = [
   { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+  { featureKey: 'executivePulse', label: 'Executive Pulse', path: '/dashboard/executive-pulse' },
   { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
   { featureKey: 'priorities', label: 'Enterprise Priorities', path: '/priorities' },
   { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },

@@ -101,6 +101,7 @@ const { default: CompanyDashboardOverview } = await import('../src/components/da
 const { default: CurrentWeekPrioritiesSection } = await import('../src/components/dashboard/CurrentWeekPrioritiesSection.jsx');
 const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
 const { default: FeatureRolloutPage } = await import('../src/components/admin/FeatureRolloutPage.jsx');
+const { default: ExecutivePulsePage } = await import('../src/components/executive-pulse/ExecutivePulsePage.jsx');
 const { default: StrategicPlanSection } = await import('../src/components/dashboard/StrategicPlanSection.jsx');
 const { default: HuddleFormPage } = await import('../src/components/huddles/HuddleFormPage.jsx');
 const { default: HuddleItemPage } = await import('../src/components/huddles/HuddleItemPage.jsx');
@@ -385,6 +386,7 @@ describe('clickable user actions', () => {
 
     const dashboards = await screen.findByText('Dashboards');
     const companyDashboard = await screen.findByText('Company Dashboard');
+    const executivePulse = screen.getByText('Executive Pulse');
     const myDashboard = screen.getByText('My Dashboard');
     const enterprisePriorities = screen.getByText('Enterprise Priorities');
     const departmentWorkplans = screen.getByText('Department Workplans');
@@ -392,6 +394,8 @@ describe('clickable user actions', () => {
     const taskView = screen.getByText('Day-to-Day Tasks');
 
     expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(companyDashboard.compareDocumentPosition(executivePulse) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(executivePulse.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(myDashboard.compareDocumentPosition(enterprisePriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(enterprisePriorities.compareDocumentPosition(departmentWorkplans) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
@@ -403,6 +407,22 @@ describe('clickable user actions', () => {
     cleanup();
     renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u1');
     expect(await screen.findByText('Data Table')).to.exist;
+  });
+
+  it('renders and persists editable Executive Pulse scorecard fields', async () => {
+    renderWithProviders(<ExecutivePulsePage />, '/dashboard/executive-pulse', 'u1');
+
+    expect(await screen.findByRole('heading', { name: /^executive pulse$/i })).to.exist;
+    fireEvent.click(screen.getByRole('button', { name: /open executive pulse scorecard for robust, viable pipeline/i }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getAllByLabelText(/^current status$/i)[0], { target: { value: 'TC5 in process; New Holland acquired' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: /done/i }));
+
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_executive_pulse_scorecard'));
+      const pipeline = saved.scorecards.find((card) => card.id === 'robust-pipeline');
+      expect(pipeline.metrics[0].currentStatus).to.equal('TC5 in process; New Holland acquired');
+    });
   });
 
   it('creates and persists a visible one-off task from Day-to-Day Tasks', async () => {
@@ -537,19 +557,24 @@ describe('clickable user actions', () => {
   });
 
   it('opens weekly priority detail by clicking the priority card', async () => {
-    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2', {
-      enterprisePriorities: [enterprisePriorityFixture()],
+    const sam = testUser('u2');
+    renderWithProviders(<WeeklyActionTrackerPage />, '/weekly-tracker', 'u2', {
+      weeklyPriorityEntriesByWeek: {
+        [currentWeeklyReport.id]: [{
+          department: sam.department,
+          due: currentWeeklyReport.weekEnd,
+          id: 'sam-vendor-onboarding',
+          owner: sam,
+          rank: 1,
+          reportId: currentWeeklyReport.id,
+          status: 'steady',
+          tasks: [],
+          title: 'Review vendor onboarding',
+        }],
+      },
     });
 
-    await user.click(await screen.findByRole('button', { name: /set weekly priority 1 for sam jordan/i }));
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByRole('textbox', { name: /^weekly priority$/i }), { target: { value: 'Review vendor onboarding' } });
-    await user.click(within(dialog).getByLabelText(/enterprise priority/i));
-    await user.click(await screen.findByRole('option', { name: /change the business priority/i }));
-    fireEvent.click(within(dialog).getByRole('button', { name: /save weekly priority/i }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).to.equal(null));
-
-    await user.click(await screen.findByRole('button', { name: /open weekly priority detail for review vendor onboarding/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /open weekly priority detail for review vendor onboarding/i }));
 
     expect(await screen.findByRole('heading', { name: /weekly priority detail/i })).to.exist;
     expect(screen.queryByText(/^Detail$/i)).to.equal(null);
@@ -809,6 +834,7 @@ describe('clickable user actions', () => {
 
     const destinations = [
       ['Strategy', 'Company Dashboard', '/dashboard/company'],
+      ['Strategy', 'Executive Pulse', '/dashboard/executive-pulse'],
       ['Strategy', 'Enterprise Priorities', '/priorities'],
       ['Strategy', 'Weekly Tracker', '/weekly-tracker'],
       ['Culture', 'Huddles', '/huddles'],

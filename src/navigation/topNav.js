@@ -3,6 +3,7 @@ export const topNavMenus = [
     label: 'Strategy',
     items: [
       { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+      { featureKey: 'executivePulse', label: 'Executive Pulse', path: '/dashboard/executive-pulse' },
       { featureKey: 'priorities', label: 'Enterprise Priorities', path: '/priorities' },
       { featureKey: 'weeklyTracker', label: 'Weekly Tracker', path: '/weekly-tracker' },
     ],

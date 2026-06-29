@@ -5,6 +5,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import LoginPage from './components/auth/LoginPage';
 import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
 import DashboardPage from './components/dashboard/DashboardPage';
+import ExecutivePulsePage from './components/executive-pulse/ExecutivePulsePage';
 import HuddlesPage from './components/huddles/HuddlesPage';
 import HuddleFormPage from './components/huddles/HuddleFormPage';
 import HuddleItemPage from './components/huddles/HuddleItemPage';
@@ -44,6 +45,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
         <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
         <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><EnterprisePriorityPage /></FeatureGate>} />
+        <Route path="/dashboard/executive-pulse" element={<FeatureGate featureKey="executivePulse"><ExecutivePulsePage /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
         <Route path="/workplans" element={<FeatureGate featureKey="workplans"><WorkplansPage /></FeatureGate>} />
