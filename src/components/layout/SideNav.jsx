@@ -5,7 +5,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import TableViewOutlinedIcon from '@mui/icons-material/TableViewOutlined';
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
+import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Collapse, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery } from '@mui/material';
@@ -17,15 +19,14 @@ import { useAuth } from '../../hooks/useAuth';
 import UserAvatar from '../shared/UserAvatar';
 
 const dashboardItems = [
-  { featureKey: 'companyDashboard', label: 'Company Dashboard', path: '/dashboard/company' },
+  { featureKey: 'companyDashboard', label: 'Organization Dashboard', path: '/dashboard/organization' },
   { featureKey: 'executivePulse', label: 'Executive Pulse', path: '/dashboard/executive-pulse' },
   { featureKey: 'myDashboard', label: 'My Dashboard', path: '/dashboard/me' },
-  { featureKey: 'priorities', label: 'Enterprise Priorities', path: '/priorities' },
-  { featureKey: 'dataTable', label: 'Data Table', path: '/metrics/table' },
 ];
 
 const navSections = [
   [
+    { featureKey: 'priorities', icon: TrackChangesOutlinedIcon, label: 'Enterprise Priorities', path: '/priorities' },
     { featureKey: 'workplans', icon: FactCheckOutlinedIcon, label: 'Department Workplans', path: '/workplans' },
   ],
   [
@@ -36,6 +37,7 @@ const navSections = [
   ],
   [
     { featureKey: 'metrics', icon: BarChartIcon, label: 'Metrics', path: '/metrics' },
+    { featureKey: 'dataTable', icon: TableViewOutlinedIcon, label: 'Data Table', path: '/metrics/table' },
     { icon: SchoolOutlinedIcon, label: 'Learn', path: '/learn' },
   ],
 ];

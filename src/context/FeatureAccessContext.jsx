@@ -7,6 +7,7 @@ const FeatureAccessContext = createContext(null);
 const storageKey = 'hdc_compass_feature_rollout';
 const adminGroups = ['ELT'];
 const adminRoles = ['Administrator', 'CEO'];
+const defaultOffFeatureKeys = ['taskView'];
 
 const readStoredOverrides = () => {
   if (typeof window === 'undefined') return {};
@@ -22,6 +23,7 @@ const userCanAdminister = (user) => adminRoles.includes(user.role) || adminGroup
 
 const defaultEnabledFor = (featureKey, user) => {
   if (baseFeatureKeys.includes(featureKey)) return true;
+  if (defaultOffFeatureKeys.includes(featureKey)) return false;
   if (featureCatalogByKey[featureKey]?.category === 'Administration') return userCanAdminister(user);
   return true;
 };

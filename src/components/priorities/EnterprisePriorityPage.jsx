@@ -160,10 +160,10 @@ const EnterprisePriorityPage = () => {
     return (
       <PageWrapper>
         <EmptyState
-          actionLabel="Back to Company Dashboard"
+          actionLabel="Back to Organization Dashboard"
           body="That Enterprise Priority is not available in the current roadmap data."
           icon={<WarningAmberOutlinedIcon />}
-          onAction={() => navigate('/dashboard/company')}
+          onAction={() => navigate('/dashboard/organization')}
           title="Priority Not Found"
         />
       </PageWrapper>
@@ -196,8 +196,8 @@ const EnterprisePriorityPage = () => {
       <Stack gap={2}>
         <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={2}>
           <Box>
-            <Button startIcon={<ArrowBackOutlinedIcon />} onClick={() => navigate('/dashboard/company')} sx={{ mb: 1 }}>
-              Company Dashboard
+            <Button startIcon={<ArrowBackOutlinedIcon />} onClick={() => navigate('/dashboard/organization')} sx={{ mb: 1 }}>
+              Organization Dashboard
             </Button>
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
               <Chip label={q2Roadmap.quarter} color="primary" />

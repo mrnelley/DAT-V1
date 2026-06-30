@@ -1,13 +1,16 @@
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { executivePulseSeed, scorecardStatusOptions } from '../../data/executivePulseSeed';
 import PageWrapper from '../layout/PageWrapper';
 
-const storageKey = 'hdc_compass_executive_pulse_scorecard';
+const storageKey = 'hdc_compass_executive_pulse_scorecard_v2';
 
 const statusMeta = {
   'On Track': { color: 'success', fill: '#006e5c', soft: 'rgba(0, 110, 92, 0.09)', tone: 'success.main' },
@@ -74,6 +77,49 @@ const statusDistribution = (card) => scorecardStatusOptions.map((status) => ({
 }));
 
 const metricValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
+
+const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+
+const downloadCsv = (filename, rows) => {
+  if (!rows.length || typeof document === 'undefined') return;
+
+  const headers = Object.keys(rows[0]);
+  const csv = [
+    headers.map(csvEscape).join(','),
+    ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(',')),
+  ].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const flattenScorecardRows = (scorecard) => scorecard.scorecards.flatMap((card) => (
+  card.metrics.map((metric) => ({
+    april: metric.april,
+    card: card.title,
+    currentStatus: metric.currentStatus,
+    dept: metric.dept,
+    june: metric.june,
+    kpi: metric.kpi,
+    may: metric.may,
+    orgPriority: card.orgPriority,
+    period: scorecard.period,
+    preparedFor: scorecard.preparedFor,
+    progress: metric.progress,
+    q1: metric.q1,
+    q2: metric.q2,
+    signal: metric.status,
+    strategicGoal: card.strategicGoal,
+    target: metric.target,
+  }))
+));
 
 const StatusDistributionChart = ({ card }) => {
   const data = statusDistribution(card);
@@ -240,24 +286,70 @@ const ExecutivePulsePage = () => {
     }),
   }));
 
+  const addMetric = () => updateScorecard((current) => ({
+    ...current,
+    scorecards: current.scorecards.map((card) => {
+      if (card.id !== selectedCardId) return card;
+      return {
+        ...card,
+        metrics: [
+          ...card.metrics,
+          {
+            april: '',
+            currentStatus: '',
+            dept: '',
+            id: `${card.id}-metric-${Date.now()}`,
+            june: '',
+            kpi: '',
+            may: '',
+            progress: '',
+            q1: '',
+            q2: '',
+            status: 'No Data',
+            target: '',
+          },
+        ],
+      };
+    }),
+  }));
+
+  const exportScorecard = () => downloadCsv('executive-pulse-board-report.csv', flattenScorecardRows(scorecard));
+
   return (
     <PageWrapper>
-      <Stack gap={2}>
+      <Stack
+        gap={2}
+        sx={{
+          '@media print': {
+            '.executive-pulse-actions': { display: 'none' },
+            '.MuiDialog-root': { display: 'none' },
+            bgcolor: '#ffffff',
+            color: '#000000',
+          },
+        }}
+      >
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
           <Box sx={{ borderLeft: '8px solid', borderColor: 'primary.main', p: { xs: 1.5, md: 2.25 } }}>
             <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'flex-start' }} gap={2}>
               <Box sx={{ maxWidth: 840 }}>
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
                   <Chip icon={<InsightsOutlinedIcon />} label="Executive Pulse" color="primary" />
+                  <Chip label="Board report" color="secondary" variant="outlined" />
                   <Chip label={`${scorecardSummary.onTrack} on track`} color="success" variant="outlined" />
                   <Chip label={`${scorecardSummary.attention} watch`} color="warning" variant="outlined" />
                   <Chip label={`${scorecardSummary.offTrack} off track`} color="error" variant="outlined" />
                 </Stack>
                 <Typography variant="h1">Executive Pulse</Typography>
               </Box>
-              <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} sx={{ minWidth: { lg: 460 } }}>
-                <TextField label="Period" value={scorecard.period} onChange={(event) => updateRootField('period', event.target.value)} fullWidth size="small" />
-                <TextField label="Prepared for" value={scorecard.preparedFor} onChange={(event) => updateRootField('preparedFor', event.target.value)} fullWidth size="small" />
+              <Stack gap={1} className="executive-pulse-actions" sx={{ minWidth: { lg: 460 } }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
+                  <TextField label="Period" value={scorecard.period} onChange={(event) => updateRootField('period', event.target.value)} fullWidth size="small" />
+                  <TextField label="Prepared for" value={scorecard.preparedFor} onChange={(event) => updateRootField('preparedFor', event.target.value)} fullWidth size="small" />
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="flex-end">
+                  <Button startIcon={<PrintOutlinedIcon />} variant="outlined" onClick={() => window.print()}>Print / Save PDF</Button>
+                  <Button startIcon={<DownloadOutlinedIcon />} variant="contained" onClick={exportScorecard}>Export CSV</Button>
+                </Stack>
               </Stack>
             </Stack>
             <TextField
@@ -301,12 +393,15 @@ const ExecutivePulsePage = () => {
         {selectedCard && (
           <>
             <DialogTitle>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <TrackChangesOutlinedIcon color="primary" />
+              <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" gap={1}>
                 <Box>
-                  <Typography variant="h2">Edit {selectedCard.title}</Typography>
-                  <Typography variant="body2">Every scorecard field is editable for demonstration.</Typography>
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    <TrackChangesOutlinedIcon color="primary" />
+                    <Typography variant="h2">Edit {selectedCard.title}</Typography>
+                  </Stack>
+                  <Typography variant="body2">Add KPI rows, status notes, quarterly values, and board-ready context.</Typography>
                 </Box>
+                <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={addMetric}>Add KPI Row</Button>
               </Stack>
             </DialogTitle>
             <DialogContent dividers>

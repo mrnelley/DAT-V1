@@ -646,7 +646,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrga
 
       <EnterprisePriorityRegister
         priorities={sortedPriorities}
-        onOpen={(priority) => navigate(`/dashboard/company/priorities/${priority.id}`)}
+        onOpen={(priority) => navigate(`/dashboard/organization/priorities/${priority.id}`)}
       />
       <PillarCoverage
         canManage={canManagePillars}

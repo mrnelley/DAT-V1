@@ -1,4 +1,4 @@
-import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
@@ -13,6 +13,8 @@ const buildForm = (user, huddle) => ({
   name: huddle?.name || '',
   recurrence: huddle?.recurrence || 'Weekly',
   teamsLink: huddle?.teamsLink || '',
+  weeklyTrackerPromptEnabled: Boolean(huddle?.weeklyTrackerPrompt),
+  weeklyTrackerPromptRecipient: huddle?.weeklyTrackerPrompt?.recipientEmail || 'pkelley@hdcweb.org',
 });
 
 const HuddleFormPage = () => {
@@ -29,15 +31,31 @@ const HuddleFormPage = () => {
 
   const save = () => {
     if (!form.name.trim() || !form.memberIds.length) return;
+    const huddleValues = {
+      date: form.date,
+      description: form.description,
+      memberIds: form.memberIds,
+      name: form.name,
+      recurrence: form.recurrence,
+      teamsLink: form.teamsLink,
+      teamsCardDispatches: existing?.teamsCardDispatches || [],
+      weeklyTrackerPrompt: form.weeklyTrackerPromptEnabled
+        ? {
+          cardEndpoint: '/api/teams/weekly-tracker-goals-card',
+          recipientEmail: form.weeklyTrackerPromptRecipient || 'pkelley@hdcweb.org',
+        }
+        : null,
+    };
+
     if (existing) {
-      updateHuddle(existing.id, form);
+      updateHuddle(existing.id, huddleValues);
       navigate(`/huddles/${existing.id}`);
       return;
     }
 
     const huddleId = `huddle-${Date.now()}`;
     addHuddle({
-      ...form,
+      ...huddleValues,
       agenda: ['Review current signals', 'Discuss stucks and owner follow-up', 'Confirm next commitments'],
       id: huddleId,
       items: [],
@@ -70,6 +88,22 @@ const HuddleFormPage = () => {
           </TextField>
           <TextField label="Description" value={form.description} onChange={update('description')} multiline minRows={3} />
           <TextField label="Teams meeting link (optional)" value={form.teamsLink} onChange={update('teamsLink')} />
+          <FormControlLabel
+            control={(
+              <Checkbox
+                checked={form.weeklyTrackerPromptEnabled}
+                onChange={(event) => setForm((current) => ({ ...current, weeklyTrackerPromptEnabled: event.target.checked }))}
+              />
+            )}
+            label="Enable Weekly Tracker Teams prompt"
+          />
+          {form.weeklyTrackerPromptEnabled && (
+            <TextField
+              label="Prompt recipient"
+              value={form.weeklyTrackerPromptRecipient}
+              onChange={update('weeklyTrackerPromptRecipient')}
+            />
+          )}
           <Stack direction="row" gap={1}>
             <Button onClick={() => navigate(existing ? `/huddles/${existing.id}` : '/huddles')}>Cancel</Button>
             <Button variant="contained" onClick={save} disabled={!form.name.trim() || !form.memberIds.length}>Save Huddle</Button>

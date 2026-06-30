@@ -18,7 +18,7 @@ export const featureCatalog = [
     category: 'Base',
     description: 'Organization-wide executive and operating priority readout.',
     key: 'companyDashboard',
-    label: 'Company Dashboard',
+    label: 'Organization Dashboard',
   },
   {
     category: 'Base',

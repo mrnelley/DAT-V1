@@ -192,7 +192,7 @@ const DashboardPage = ({ company = false }) => {
 
   const firstName = user.name.split(' ')[0];
   const dashboardTitle = company
-    ? 'Company Dashboard'
+    ? 'Organization Dashboard'
     : user.workingGroup === 'ELT'
       ? `${firstName}'s Executive View`
       : user.workingGroup === 'OLT'
@@ -204,7 +204,7 @@ const DashboardPage = ({ company = false }) => {
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 3 }}>
         <Box>
           <Typography variant="h1">{dashboardTitle}</Typography>
-          <Typography variant="body2">{company ? 'Company-wide accountability view' : `${user.department} operating view`}</Typography>
+          <Typography variant="body2">{company ? 'Organization-wide accountability view' : `${user.department} operating view`}</Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">
           {!company && (

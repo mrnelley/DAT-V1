@@ -26,6 +26,33 @@ const definitionSections = [
   { field: 'not', icon: BlockOutlinedIcon, label: 'What it is not' },
 ];
 
+const dashboardLevels = [
+  {
+    level: 'Board',
+    surface: 'Executive Pulse',
+    purpose: 'Board-reporting signal: mission, finance, strategy, organizational capacity, and risk at annual scorecard level.',
+    not: 'Not a productivity tracker or a place to manage departmental follow-through.',
+  },
+  {
+    level: 'ELT',
+    surface: 'Organization Dashboard and Executive Views',
+    purpose: 'Enterprise signal: which Enterprise Priorities need decisions, resources, intervention, or cross-functional alignment.',
+    not: 'Not a detailed task queue for every operating team.',
+  },
+  {
+    level: 'OLT',
+    surface: 'Department Workplans, Huddles, Weekly Tracker',
+    purpose: 'Operating translation: turn ELT priorities into department objectives, weekly commitments, stucks, and huddle follow-through.',
+    not: 'Not a duplicate of routine job responsibilities.',
+  },
+  {
+    level: 'Individual',
+    surface: 'My Dashboard and Weekly Tracker',
+    purpose: 'Personal accountability: log the weekly change-the-business commitments that advance an Enterprise Priority or Department Workplan.',
+    not: 'Not a catch-all task list unless Day-to-Day Tasks is intentionally enabled.',
+  },
+];
+
 const normalize = (value) => value.toLowerCase().trim();
 
 const matchesQuery = (term, query) => {
@@ -206,6 +233,31 @@ const LearnPage = () => {
                   <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
                 </ListItemButton>
               </List>
+
+              <Box sx={{ mt: 3, mb: 2 }}>
+                <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1.25 }}>
+                  <AccountTreeOutlinedIcon sx={{ color: 'background.accent' }} />
+                  <Typography variant="h2" sx={{ color: '#ffffff' }}>Dashboard Levels</Typography>
+                </Stack>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' }, gap: 1.25 }}>
+                  {dashboardLevels.map((item) => (
+                    <Box
+                      key={item.level}
+                      sx={{
+                        border: '1px solid rgba(239,220,156,0.32)',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'background.accent',
+                        p: 1.5,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: 'background.accent', fontWeight: 800, textTransform: 'uppercase' }}>{item.level}</Typography>
+                      <Typography variant="h3" sx={{ color: '#ffffff', mt: 0.35 }}>{item.surface}</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.74)', mt: 0.75 }}>{item.purpose}</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.58)', mt: 0.75 }}>{item.not}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
             </Stack>
           ) : (
             <>

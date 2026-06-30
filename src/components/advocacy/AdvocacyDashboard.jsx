@@ -202,6 +202,17 @@ const emptyEntity = (type) => {
   };
 };
 
+const emptyPartner = () => ({
+  circle: 'Coalition',
+  influence: 'Medium',
+  name: '',
+  nextStep: '',
+  profileSummary: '',
+  relationship: '',
+  stage: 'Cultivation',
+  targetCompletionDate: '2026-06-30',
+});
+
 const createFollowUpEventValues = (touchpoint, partner) => ({
   title: `Advocacy follow-up: ${partner.name}`,
   date: touchpoint.targetCompletionDate,
@@ -417,6 +428,53 @@ const TouchpointDialog = ({ contacts, initialContactId, item, onClose, onSave, o
   );
 };
 
+const PartnerDialog = ({ item, onClose, onSave, open }) => {
+  const [form, setForm] = useState(emptyPartner);
+
+  useEffect(() => {
+    if (!open) return;
+    setForm(item || emptyPartner());
+  }, [item, open]);
+
+  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+  const submit = () => {
+    if (!form.name.trim()) return;
+    onSave(form);
+    onClose();
+  };
+
+  return (
+    <Dialog aria-labelledby="partner-dialog-title" open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle id="partner-dialog-title">{item ? 'Edit Partner Profile' : 'Add Partner Profile'}</DialogTitle>
+      <DialogContent sx={{ pt: 1 }}>
+        <Stack gap={2} sx={{ mt: 1 }}>
+          <TextField label="Partner name" value={form.name} onChange={update('name')} required fullWidth />
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+            <TextField label="Circle" value={form.circle} onChange={update('circle')} fullWidth />
+            <FormControl fullWidth>
+              <InputLabel>Influence</InputLabel>
+              <Select label="Influence" value={form.influence} onChange={update('influence')}>
+                {['High', 'Medium', 'Low'].map((value) => <MenuItem key={value} value={value}>{value}</MenuItem>)}
+              </Select>
+            </FormControl>
+          </Stack>
+          <TextField label="Relationship" value={form.relationship} onChange={update('relationship')} fullWidth />
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+            <TextField label="Stage" value={form.stage} onChange={update('stage')} fullWidth />
+            <TextField label="Target completion date" type="date" value={form.targetCompletionDate} onChange={update('targetCompletionDate')} InputLabelProps={{ shrink: true }} fullWidth />
+          </Stack>
+          <TextField label="Next step" value={form.nextStep} onChange={update('nextStep')} multiline minRows={2} fullWidth />
+          <TextField label="Profile summary" value={form.profileSummary} onChange={update('profileSummary')} multiline minRows={3} fullWidth />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={submit} disabled={!form.name.trim()}>Save Partner</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const CadenceChip = ({ assessment, size = 'small' }) => (
   <Chip
     label={assessment.label}
@@ -522,17 +580,20 @@ const FollowUpRow = ({ item }) => {
   );
 };
 
-const PartnerRegister = ({ canManage, contacts, onLog, onSelect, selectedPartnerId, touchpoints }) => (
+const PartnerRegister = ({ canManage, contacts, onAdd, onLog, onSelect, selectedPartnerId, touchpoints }) => (
   <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider', p: 1.5, mb: 3 }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
         <Typography variant="h3">Partner Register</Typography>
         <Typography variant="body2">Master list view with profile links, last touch, next step, and assigned support.</Typography>
       </Box>
-      <Chip label="Salesforce remains relationship CRM" color="primary" variant="outlined" />
+      <Stack direction="row" gap={1} flexWrap="wrap">
+        <Chip label="Salesforce remains relationship CRM" color="primary" variant="outlined" />
+        {canManage && <Button startIcon={<AddIcon />} variant="contained" onClick={onAdd}>Add Partner</Button>}
+      </Stack>
     </Stack>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(3, 1fr)' }, gap: 1.25 }}>
-      {contacts.map((contact) => {
+      {contacts.length ? contacts.map((contact) => {
         const selected = contact.id === selectedPartnerId;
         const lastTouched = latestTouchpointDate(contact, touchpoints);
         return (
@@ -574,7 +635,13 @@ const PartnerRegister = ({ canManage, contacts, onLog, onSelect, selectedPartner
             </Stack>
           </Box>
         );
-      })}
+      }) : (
+        <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 1, gridColumn: '1 / -1', p: 2.5, textAlign: 'center' }}>
+          <Typography variant="body1" fontWeight={800}>No partners have been added yet</Typography>
+          <Typography variant="body2" sx={{ mt: 0.5 }}>Create the first partner profile before logging advocacy touch reports.</Typography>
+          {canManage && <Button startIcon={<AddIcon />} variant="contained" onClick={onAdd} sx={{ mt: 1.5 }}>Add Partner</Button>}
+        </Box>
+      )}
     </Box>
   </Box>
 );
@@ -651,7 +718,7 @@ const TouchReportsPanel = ({ canManage, contacts, contactsById, onDelete, onEdit
             color={canManage ? 'success' : 'default'}
             variant={canManage ? 'filled' : 'outlined'}
           />
-          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManage} onClick={() => onLog(selectedPartnerId)}>
+          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManage || !selectedPartnerId} onClick={() => onLog(selectedPartnerId)}>
             Log Touch Report
           </Button>
         </Stack>
@@ -845,6 +912,7 @@ const AdvocacyDashboard = () => {
   const [workplans, setWorkplans] = useState(advocacyWorkplans);
   const [selectedPartnerId, setSelectedPartnerId] = useState(advocacyContacts[0]?.id || '');
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
+  const [partnerDialog, setPartnerDialog] = useState({ open: false, item: null });
   const [touchpointDialog, setTouchpointDialog] = useState({ open: false, item: null, contactId: null });
 
   const canManageTouchpoints = user.id === danaUser.id || user.id === ninaUser?.id;
@@ -920,6 +988,7 @@ const AdvocacyDashboard = () => {
   };
 
   const closeDialog = () => setDialog({ open: false, type: null, mode: 'create', item: null });
+  const closePartnerDialog = () => setPartnerDialog({ open: false, item: null });
 
   const openTouchpointDialog = (contactId = selectedPartnerId, item = null) => {
     if (!canManageTouchpoints) return;
@@ -940,6 +1009,31 @@ const AdvocacyDashboard = () => {
         }
         : contact
     )));
+  };
+
+  const savePartner = (form) => {
+    if (!canManageTouchpoints) return;
+    const partnerId = form.id || `partner-${Date.now()}`;
+    const partner = {
+      ...form,
+      contextHistory: '',
+      id: partnerId,
+      lastTouchpoint: form.lastTouchpoint || '',
+      lead: danaUser,
+      organizationName: form.name,
+      profileGoals: [],
+      profileSummary: form.profileSummary || '',
+      profileUrl: `#${partnerId}`,
+      support: [ninaUser].filter(Boolean),
+    };
+
+    setContacts((current) => {
+      const nextContacts = form.id
+        ? current.map((contact) => (contact.id === form.id ? partner : contact))
+        : [partner, ...current];
+      return nextContacts;
+    });
+    setSelectedPartnerId(partner.id);
   };
 
   const saveTouchpoint = (form) => {
@@ -1073,7 +1167,7 @@ const AdvocacyDashboard = () => {
             </Typography>
             <Typography variant="h2" sx={{ mt: 0.5 }}>{visibleTouchpoints.length} touch reports logged</Typography>
           </Box>
-          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManageTouchpoints} onClick={() => openTouchpointDialog()}>
+          <Button variant="contained" startIcon={<AddIcon />} disabled={!canManageTouchpoints || !contacts.length} onClick={() => openTouchpointDialog()}>
             Log Touch Report
           </Button>
         </Stack>
@@ -1103,6 +1197,7 @@ const AdvocacyDashboard = () => {
       <PartnerRegister
         canManage={canManageTouchpoints}
         contacts={contacts}
+        onAdd={() => setPartnerDialog({ open: true, item: null })}
         onLog={(contactId) => openTouchpointDialog(contactId)}
         onSelect={setSelectedPartnerId}
         selectedPartnerId={selectedPartnerId}
@@ -1254,6 +1349,12 @@ const AdvocacyDashboard = () => {
         onSave={saveEntity}
         open={dialog.open}
         type={dialog.type}
+      />
+      <PartnerDialog
+        item={partnerDialog.item}
+        onClose={closePartnerDialog}
+        onSave={savePartner}
+        open={partnerDialog.open}
       />
       <TouchpointDialog
         contacts={contacts}

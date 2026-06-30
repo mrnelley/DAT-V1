@@ -19,11 +19,11 @@ const FilterPanel = ({ open }) => {
               {['All Hands on Deck', 'Leadership', 'Operations', 'Resident Services'].map((team) => <MenuItem key={team} value={team}>{team}</MenuItem>)}
             </Select>
           </FormControl>
-          <Autocomplete multiple freeSolo options={['Q2', 'Company', 'Compliance']} renderInput={(params) => <TextField {...params} label="Filter Tags" />} />
+          <Autocomplete multiple freeSolo options={['Q2', 'Enterprise', 'Compliance']} renderInput={(params) => <TextField {...params} label="Filter Tags" />} />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
           <Checkbox />
-          <Box sx={{ flex: 1 }}>Company Priority</Box>
+          <Box sx={{ flex: 1 }}>Enterprise Priority</Box>
           <Button startIcon={<CloseOutlinedIcon />} onClick={() => unavailable('filter state is not persisted outside this prototype panel.')}>Clear Filter</Button>
         </Box>
       </Box>

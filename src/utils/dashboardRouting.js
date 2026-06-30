@@ -1,5 +1,5 @@
 const dashboardPaths = {
-  company: '/dashboard/company',
+  company: '/dashboard/organization',
   individual: '/dashboard/me',
 };
 

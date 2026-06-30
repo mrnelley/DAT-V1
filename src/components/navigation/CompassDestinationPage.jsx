@@ -446,8 +446,8 @@ const pageActions = {
   adminFeatures: [{ label: 'Review Users', path: '/admin/users' }, { label: 'View Permissions', path: '/admin/permissions' }],
   adminTeams: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Users', path: '/admin/users' }],
   adminUsers: [{ label: 'Open Profile', path: '/profile' }, { label: 'View Permissions', path: '/admin/permissions' }],
-  executiveSummary: [{ label: 'Company Dashboard', path: '/dashboard/company' }, { label: 'Enterprise Priorities', path: '/priorities' }],
-  exports: [{ featureKey: 'dataTable', label: 'Open Data Table', path: '/metrics/table' }, { label: 'Company Dashboard', path: '/dashboard/company' }],
+  executiveSummary: [{ label: 'Organization Dashboard', path: '/dashboard/organization' }, { label: 'Enterprise Priorities', path: '/priorities' }],
+  exports: [{ featureKey: 'dataTable', label: 'Open Data Table', path: '/metrics/table' }, { label: 'Organization Dashboard', path: '/dashboard/organization' }],
   teamHealth: [{ label: 'Open Huddles', path: '/huddles' }, { label: 'Review Stucks', path: '/stucks' }],
 };
 

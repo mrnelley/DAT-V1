@@ -284,7 +284,7 @@ describe('clickable user actions', () => {
     const { user } = renderLoginFlow();
 
     await user.click(await screen.findByText('Dana'));
-    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/company');
+    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/organization');
 
     cleanup();
     const next = renderLoginFlow();
@@ -357,6 +357,11 @@ describe('clickable user actions', () => {
     const { user } = renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u19');
 
     expect(await screen.findByText(/signed in as nina: delegated touch-report access/i)).to.exist;
+    await user.click(screen.getAllByRole('button', { name: /add partner/i })[0]);
+    await user.type(await screen.findByLabelText(/partner name/i), 'Lancaster Housing Alliance');
+    await user.click(screen.getByRole('button', { name: /save partner/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /add partner profile/i })).to.equal(null));
+
     fireEvent.click(screen.getAllByRole('button', { name: /log touch report/i })[0]);
 
     fireEvent.change(await screen.findByLabelText(/touch report notes/i), { target: { value: 'Nina logged the post-hearing follow-up.' } });
@@ -373,39 +378,49 @@ describe('clickable user actions', () => {
   });
 
   it('lets Dana edit her advocacy touch reports directly', async () => {
-    renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
+    const { user } = renderWithProviders(<AdvocacyDashboard />, '/dashboard/me', 'u1');
 
     expect(await screen.findByText(/dana can manage her advocacy records/i)).to.exist;
+    await user.click(screen.getAllByRole('button', { name: /add partner/i })[0]);
+    await user.type(await screen.findByLabelText(/partner name/i), 'City Housing Office');
+    await user.click(screen.getByRole('button', { name: /save partner/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /add partner profile/i })).to.equal(null));
+
     const logButtons = screen.getAllByRole('button', { name: /log touch report/i });
     expect(logButtons[0].disabled).to.equal(false);
+    fireEvent.click(logButtons[0]);
+    fireEvent.change(await screen.findByLabelText(/touch report notes/i), { target: { value: 'Dana logged a partner follow-up.' } });
+    fireEvent.change(screen.getByLabelText(/next step/i), { target: { value: 'Schedule the next policy conversation.' } });
+    fireEvent.click(screen.getByRole('button', { name: /save touch report/i }));
+
+    expect(await screen.findByText('Dana logged a partner follow-up.')).to.exist;
     expect(screen.getAllByRole('button', { name: /edit touch report/i }).length).to.be.greaterThan(0);
   });
 
   it('orders the side navigation and keeps Data Table admin-only', async () => {
-    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u11');
+    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/organization', 'u11');
 
     const dashboards = await screen.findByText('Dashboards');
-    const companyDashboard = await screen.findByText('Company Dashboard');
+    const organizationDashboard = await screen.findByText('Organization Dashboard');
     const executivePulse = screen.getByText('Executive Pulse');
     const myDashboard = screen.getByText('My Dashboard');
     const enterprisePriorities = screen.getByText('Enterprise Priorities');
     const departmentWorkplans = screen.getByText('Department Workplans');
     const weeklyTracker = screen.getByText('Weekly Tracker');
-    const taskView = screen.getByText('Day-to-Day Tasks');
 
-    expect(dashboards.compareDocumentPosition(companyDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(companyDashboard.compareDocumentPosition(executivePulse) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(dashboards.compareDocumentPosition(organizationDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(organizationDashboard.compareDocumentPosition(executivePulse) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(executivePulse.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(companyDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(organizationDashboard.compareDocumentPosition(myDashboard) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(myDashboard.compareDocumentPosition(enterprisePriorities) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(enterprisePriorities.compareDocumentPosition(departmentWorkplans) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
     expect(departmentWorkplans.compareDocumentPosition(weeklyTracker) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
-    expect(weeklyTracker.compareDocumentPosition(taskView) & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    expect(screen.queryByText('Day-to-Day Tasks')).to.equal(null);
     expect(screen.queryByText('Notifications')).to.equal(null);
     expect(screen.queryByText('Data Table')).to.equal(null);
 
     cleanup();
-    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/company', 'u1');
+    renderWithProviders(<SideNav open mobileOpen={false} onHuddlesClick={() => {}} onMobileClose={() => {}} />, '/dashboard/organization', 'u1');
     expect(await screen.findByText('Data Table')).to.exist;
   });
 
@@ -413,14 +428,14 @@ describe('clickable user actions', () => {
     renderWithProviders(<ExecutivePulsePage />, '/dashboard/executive-pulse', 'u1');
 
     expect(await screen.findByRole('heading', { name: /^executive pulse$/i })).to.exist;
-    fireEvent.click(screen.getByRole('button', { name: /open executive pulse scorecard for robust, viable pipeline/i }));
+    fireEvent.click(screen.getByRole('button', { name: /open executive pulse scorecard for mission and impact/i }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getAllByLabelText(/^current status$/i)[0], { target: { value: 'TC5 in process; New Holland acquired' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /done/i }));
 
     await waitFor(() => {
-      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_executive_pulse_scorecard'));
-      const pipeline = saved.scorecards.find((card) => card.id === 'robust-pipeline');
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_executive_pulse_scorecard_v2'));
+      const pipeline = saved.scorecards.find((card) => card.id === 'mission-impact');
       expect(pipeline.metrics[0].currentStatus).to.equal('TC5 in process; New Holland acquired');
     });
   });
@@ -833,7 +848,7 @@ describe('clickable user actions', () => {
     );
 
     const destinations = [
-      ['Strategy', 'Company Dashboard', '/dashboard/company'],
+      ['Strategy', 'Organization Dashboard', '/dashboard/organization'],
       ['Strategy', 'Executive Pulse', '/dashboard/executive-pulse'],
       ['Strategy', 'Enterprise Priorities', '/priorities'],
       ['Strategy', 'Weekly Tracker', '/weekly-tracker'],
@@ -856,7 +871,7 @@ describe('clickable user actions', () => {
     }
   });
 
-  it('pins quarterly Enterprise Priority health on the company dashboard', async () => {
+  it('pins quarterly Enterprise Priority health on the organization dashboard', async () => {
     renderWithProviders(
       <CompanyDashboardOverview
         calendarEvents={[]}
@@ -870,7 +885,7 @@ describe('clickable user actions', () => {
         isAdmin
         onMetricClick={() => {}}
       />,
-      '/dashboard/company',
+      '/dashboard/organization',
     );
 
     expect(await screen.findByText(/executive quarter pulse/i)).to.exist;
@@ -882,7 +897,7 @@ describe('clickable user actions', () => {
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
   });
 
-  it('reads company dashboard priorities from the canonical operating store', async () => {
+  it('reads organization dashboard priorities from the canonical operating store', async () => {
     const dana = testUser('u1');
     const priority = {
       children: [],
@@ -916,7 +931,7 @@ describe('clickable user actions', () => {
         }}
         isAdmin
       />,
-      '/dashboard/company',
+      '/dashboard/organization',
       'u1',
       { enterprisePriorities: [priority] },
     );
@@ -925,7 +940,7 @@ describe('clickable user actions', () => {
     expect(screen.getByText(/1\/1 q2 2026 Enterprise Priorities/i)).to.exist;
   });
 
-  it('shows the blank company priority state without hiding pillar coverage', async () => {
+  it('shows the blank enterprise priority state without hiding pillar coverage', async () => {
     renderWithProviders(
       <>
         <CompanyDashboardOverview
@@ -941,7 +956,7 @@ describe('clickable user actions', () => {
         />
         <LocationProbe />
       </>,
-      '/dashboard/company',
+      '/dashboard/organization',
     );
 
     expect(await screen.findByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
@@ -963,7 +978,7 @@ describe('clickable user actions', () => {
         }}
         isAdmin
       />,
-      '/dashboard/company',
+      '/dashboard/organization',
     );
 
     expect(await screen.findByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
@@ -983,7 +998,7 @@ describe('clickable user actions', () => {
         }}
         isAdmin
       />,
-      '/dashboard/company',
+      '/dashboard/organization',
     );
 
     const pillarCards = await screen.findAllByRole('button', { name: /open pillar detail/i });
@@ -999,9 +1014,9 @@ describe('clickable user actions', () => {
   it('shows a not-found state for an unavailable Enterprise Priority page', async () => {
     renderWithProviders(
       <Routes>
-        <Route path="/dashboard/company/priorities/:priorityId" element={<EnterprisePriorityPage />} />
+        <Route path="/dashboard/organization/priorities/:priorityId" element={<EnterprisePriorityPage />} />
       </Routes>,
-      '/dashboard/company/priorities/q2-operational-efficiency',
+      '/dashboard/organization/priorities/q2-operational-efficiency',
     );
 
     expect(await screen.findByRole('heading', { name: /priority not found/i })).to.exist;
@@ -1049,7 +1064,7 @@ describe('clickable user actions', () => {
 
     expect(await screen.findByRole('heading', { name: /^signal$/i })).to.exist;
     expect(screen.queryByRole('listbox')).to.equal(null);
-    expect(screen.getByText(/company dashboard signal/i)).to.exist;
+    expect(screen.getByText(/organization dashboard signal/i)).to.exist;
     expect(screen.getByText(/same word, different source and use/i)).to.exist;
   });
 
@@ -1069,7 +1084,7 @@ describe('clickable user actions', () => {
     expect(await screen.findByRole('heading', { name: /manage stucks/i })).to.exist;
   });
 
-  it('seeds the Monday huddle and sends the weekly goals Teams card', async () => {
+  it('creates a Weekly Tracker huddle and sends the weekly goals Teams card', async () => {
     const previousFetch = global.fetch;
     global.fetch = async () => ({
       ok: true,
@@ -1089,11 +1104,16 @@ describe('clickable user actions', () => {
     try {
       const { user } = renderWithProviders(
         <Routes>
+          <Route path="/huddles/new" element={<HuddleFormPage />} />
           <Route path="/huddles/:id" element={<HuddlesPage />} />
         </Routes>,
-        '/huddles/monday-weekly-tracker-huddle',
+        '/huddles/new',
         'u11',
       );
+
+      await user.type(await screen.findByLabelText(/huddle name/i), 'Monday Morning Weekly Tracker Huddle');
+      await user.click(screen.getByRole('checkbox', { name: /enable weekly tracker teams prompt/i }));
+      await user.click(screen.getByRole('button', { name: /save huddle/i }));
 
       expect(await screen.findByText('Monday Morning Weekly Tracker Huddle')).to.exist;
       await user.click(screen.getByRole('button', { name: /send weekly goals card/i }));
@@ -1101,7 +1121,7 @@ describe('clickable user actions', () => {
       expect(await screen.findByText(/teams adaptive card sent to the channel for pkelley@hdcweb.org/i)).to.exist;
       await waitFor(() => {
         const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
-        const huddle = saved.huddles.find((item) => item.id === 'monday-weekly-tracker-huddle');
+        const huddle = saved.huddles.find((item) => item.name === 'Monday Morning Weekly Tracker Huddle');
         const dispatch = huddle.teamsCardDispatches[0];
         expect(dispatch.recipientEmail).to.equal('pkelley@hdcweb.org');
         expect(dispatch.deliveryMode).to.equal('teams_webhook_sent');
@@ -1229,3 +1249,4 @@ describe('clickable user actions', () => {
     });
   });
 });
+

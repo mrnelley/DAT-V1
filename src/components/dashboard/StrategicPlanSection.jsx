@@ -628,7 +628,7 @@ const StrategicPlanSection = () => {
             <Typography variant="h3">Departmental Workplan Alignment</Typography>
             <Typography variant="body2">Every visible workplan carries a strategic pillar, quarter, lead, and linked priority set.</Typography>
           </Box>
-          <Chip label="Company-wide view" color="primary" variant="outlined" />
+          <Chip label="Organization-wide view" color="primary" variant="outlined" />
         </Stack>
 
         <Stack gap={1}>

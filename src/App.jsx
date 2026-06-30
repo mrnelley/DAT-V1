@@ -43,8 +43,10 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate to={primaryDashboardPath} replace />} />
         <Route path="/dashboard/me" element={<FeatureGate featureKey="myDashboard"><DashboardPage /></FeatureGate>} />
-        <Route path="/dashboard/company" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
-        <Route path="/dashboard/company/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><EnterprisePriorityPage /></FeatureGate>} />
+        <Route path="/dashboard/company" element={<Navigate to="/dashboard/organization" replace />} />
+        <Route path="/dashboard/company/priorities/:priorityId" element={<Navigate to={location.pathname.replace('/dashboard/company', '/dashboard/organization')} replace />} />
+        <Route path="/dashboard/organization" element={<FeatureGate featureKey="companyDashboard"><DashboardPage company /></FeatureGate>} />
+        <Route path="/dashboard/organization/priorities/:priorityId" element={<FeatureGate featureKey="companyDashboard"><EnterprisePriorityPage /></FeatureGate>} />
         <Route path="/dashboard/executive-pulse" element={<FeatureGate featureKey="executivePulse"><ExecutivePulsePage /></FeatureGate>} />
         <Route path="/curb-appeal/:submissionId" element={<CurbAppealSubmissionPage />} />
         <Route path="/priorities" element={<FeatureGate featureKey="priorities"><PrioritiesPage /></FeatureGate>} />
