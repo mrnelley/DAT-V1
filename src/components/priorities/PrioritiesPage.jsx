@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { q2Roadmap } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EditPriorityPanel from './EditPriorityPanel';
@@ -47,7 +48,7 @@ const PrioritiesPage = () => {
         </Stack>
       </Stack>
       <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
-        <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
+        <Chip label={`${q2Roadmap.quarter}: ${q2Roadmap.start} -> ${q2Roadmap.end}`} color="primary" variant="outlined" />
       </Stack>
       <FilterPanel open={filtersOpen} />
       <Box>

@@ -84,12 +84,19 @@ const normalizeObjective = (objective, workplan, index, enterprisePriorities) =>
     due: objective.due || workplan.due || '',
     enterprisePriorityId: objective.enterprisePriorityId || objective.enterprisePriorityIds?.[0] || priorityIdsFromNames[0] || null,
     id: objective.id || `${workplan.id || 'workplan'}-objective-${index + 1}`,
+    kpi: objective.kpi || objective.keyPerformanceIndicator || '',
+    lastUpdated: objective.lastUpdated || objective.lastUpdateDate || '',
+    orgPriority: objective.orgPriority || workplan.orgPriority || '',
     owner,
     ownerId: owner.id,
     progress: clampProgress(objective.progress ?? workplan.progress),
+    projectPlanComplete: objective.projectPlanComplete || '',
+    projectPlanUrl: objective.projectPlanUrl || objective.projectPlan || '',
+    startDate: objective.startDate || objective.start || '',
     status: objective.status || workplan.status || 'Steady',
     strategicPillarId,
     title: objective.title || workplan.title || 'Department objective',
+    yearEndTarget: objective.yearEndTarget || objective.target || objective.kpiYearEndTarget || '',
   };
 };
 

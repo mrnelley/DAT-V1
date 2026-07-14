@@ -770,7 +770,7 @@ describe('clickable user actions', () => {
   it('creates an Enterprise Priority from owned Key Objectives and rolls up its signal', async () => {
     const { user } = renderWithProviders(<StrategicPlanSection />, '/metrics', 'u1');
 
-    await user.click((await screen.findAllByRole('button', { name: /open .* q2 2026 roadmap/i }))[0]);
+    await user.click((await screen.findAllByRole('button', { name: /open .* q3 2026 roadmap/i }))[0]);
     await user.click(await screen.findByRole('button', { name: /add Enterprise Priority/i }));
 
     const dialog = await screen.findByRole('dialog', { name: /add Enterprise Priority/i });
@@ -891,7 +891,7 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/executive quarter pulse/i)).to.exist;
     expect(await screen.findByRole('heading', { name: /quarterly Enterprise Priority health/i })).to.exist;
     expect(screen.getByLabelText(/team filter/i)).to.exist;
-    expect(screen.getByText(/0\/0 q2 2026 Enterprise Priorities/i)).to.exist;
+    expect(screen.getByText(/0\/0 q3 2026 Enterprise Priorities/i)).to.exist;
     expect(screen.getByText(/no quarterly Enterprise Priorities have been defined yet/i)).to.exist;
     expect(screen.queryByRole('button', { name: /open Enterprise Priority detail/i })).to.equal(null);
     expect(screen.queryByText(/critical numbers/i)).to.equal(null);
@@ -913,7 +913,7 @@ describe('clickable user actions', () => {
         title: 'Confirm readiness',
       }],
       name: 'Canonical Enterprise Priority',
-      period: 'Q2 2026',
+      period: 'Q3 2026',
       roadmapStatus: 'Steady',
       strategicPillar: 'Care & Connection',
       strategicPillarId: 'care-connection',
@@ -937,7 +937,7 @@ describe('clickable user actions', () => {
     );
 
     expect(await screen.findByText('Canonical Enterprise Priority')).to.exist;
-    expect(screen.getByText(/1\/1 q2 2026 Enterprise Priorities/i)).to.exist;
+    expect(screen.getByText(/1\/1 q3 2026 Enterprise Priorities/i)).to.exist;
   });
 
   it('shows the blank enterprise priority state without hiding pillar coverage', async () => {

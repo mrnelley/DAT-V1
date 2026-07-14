@@ -2,6 +2,7 @@ const statusOptions = ['Steady', 'Watch', 'Alert', 'Complete', 'Rolled Into Next
 
 const quarterThemes = {
   '2026-Q2': 'Choose Your Hard',
+  '2026-Q3': 'Elevate & Accelerate',
 };
 
 const toIsoDate = (date) => date.toISOString().slice(0, 10);

@@ -26,8 +26,19 @@ coverage/
 .eslintcache
 .parcel-cache/
 
-# Local product notes
-docs/role-based-walkthrough-stories.md
+# Non-runtime documents and reference artifacts
+docs/
+deliverables/
+*.csv
+*.doc
+*.docx
+*.pdf
+*.tsv
+*.xls
+*.xlsx
+
+# Non-runtime helper scripts and audit tools
+tools/
 
 # OS/editor noise
 .DS_Store

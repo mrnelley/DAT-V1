@@ -14,6 +14,7 @@ import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import { Box, Button, Chip, Divider, InputAdornment, List, ListItemButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { dictionaryCategories, dictionaryTerms, dictionaryTermsByLetter } from '../../data/learnDictionary';
+import { dashboardReportingMap, departmentWorkProcessMap, sourceAlignmentPrinciples } from '../../data/reportingMap';
 import PageWrapper from '../layout/PageWrapper';
 
 const alphabet = Object.keys(dictionaryTermsByLetter).sort();
@@ -117,6 +118,67 @@ const DefinitionRow = ({ section, term }) => {
     </Box>
   );
 };
+
+const ReportingMapSection = () => (
+  <Box sx={{ mb: 3 }}>
+    <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1.25 }}>
+      <AccountTreeOutlinedIcon sx={{ color: 'background.accent' }} />
+      <Box>
+        <Typography variant="h2" sx={{ color: '#ffffff' }}>Source-Aligned Reporting Map</Typography>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          What reports where, based on the overview, workplan template, OLT tracker, Moves Management, and Touch Report workbooks.
+        </Typography>
+      </Box>
+    </Stack>
+
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, minmax(0, 1fr))' }, gap: 1, mb: 2 }}>
+      {sourceAlignmentPrinciples.map((principle) => (
+        <Box key={principle.label} sx={{ border: '1px solid rgba(239,220,156,0.32)', borderLeft: '4px solid', borderLeftColor: 'background.accent', p: 1.25 }}>
+          <Typography variant="caption" sx={{ color: 'background.accent', fontWeight: 800, textTransform: 'uppercase' }}>{principle.label}</Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.74)', mt: 0.5 }}>{principle.text}</Typography>
+        </Box>
+      ))}
+    </Box>
+
+    <Typography variant="h3" sx={{ color: '#ffffff', mb: 1 }}>Dashboard Reporting Flow</Typography>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(2, minmax(0, 1fr))' }, gap: 1.25, mb: 2 }}>
+      {dashboardReportingMap.map((item) => (
+        <Box key={item.surface} sx={{ border: '1px solid rgba(239,220,156,0.32)', p: 1.5 }}>
+          <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{ mb: 0.75 }}>
+            <Chip label={item.level} sx={{ bgcolor: 'rgba(94,184,168,0.16)', color: '#ffffff' }} size="small" />
+            <Chip label={item.surface} sx={{ bgcolor: 'rgba(239,220,156,0.18)', color: '#ffffff' }} size="small" />
+          </Stack>
+          <Typography variant="body2" sx={{ color: 'background.accent', fontWeight: 800 }}>{item.where}</Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.56)', display: 'block', mt: 0.35 }}>Source: {item.source}</Typography>
+          <Stack gap={0.45} sx={{ mt: 0.85 }}>
+            {item.reports.map((report) => (
+              <Typography key={report} variant="body2" sx={{ color: 'rgba(255,255,255,0.76)' }}>- {report}</Typography>
+            ))}
+          </Stack>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.52)', mt: 0.85 }}>{item.not}</Typography>
+        </Box>
+      ))}
+    </Box>
+
+    <Typography variant="h3" sx={{ color: '#ffffff', mb: 1 }}>Department Work Processes</Typography>
+    <Stack gap={0.75}>
+      {departmentWorkProcessMap.map((item) => (
+        <Box key={item.department} sx={{ border: '1px solid rgba(255,255,255,0.14)', display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', lg: '190px minmax(0, 0.9fr) minmax(0, 1.25fr)' }, p: 1.15 }}>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'background.accent', fontWeight: 800, textTransform: 'uppercase' }}>{item.department}</Typography>
+            <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 700 }}>{item.dashboard}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase' }}>Reports to</Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.76)' }}>{item.reportsTo}</Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.48)', display: 'block', mt: 0.35 }}>Source: {item.source}</Typography>
+          </Box>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.76)' }}>{item.weeklyProcess}</Typography>
+        </Box>
+      ))}
+    </Stack>
+  </Box>
+);
 
 const LearnPage = () => {
   const [activeTool, setActiveTool] = useState(null);
@@ -233,6 +295,10 @@ const LearnPage = () => {
                   <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
                 </ListItemButton>
               </List>
+
+              <Box sx={{ mt: 3 }}>
+                <ReportingMapSection />
+              </Box>
 
               <Box sx={{ mt: 3, mb: 2 }}>
                 <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1.25 }}>

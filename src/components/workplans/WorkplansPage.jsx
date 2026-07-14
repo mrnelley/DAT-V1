@@ -44,6 +44,7 @@ const statusColor = {
 };
 
 const departments = Array.from(new Set(users.map((user) => user.department))).sort();
+const projectPlanCompleteOptions = ['', 'Not Started', 'In Progress', 'Complete', 'N/A'];
 
 const formatDate = (date) => date
   ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
@@ -54,11 +55,18 @@ const blankObjective = (user, strategicPlan) => ({
   due: `${new Date().getFullYear()}-12-31`,
   enterprisePriorityId: '',
   id: `department-objective-${Date.now()}-${Math.random()}`,
+  kpi: '',
+  lastUpdated: '',
+  orgPriority: '',
   ownerId: user.id,
   progress: 0,
+  projectPlanComplete: '',
+  projectPlanUrl: '',
+  startDate: `${new Date().getFullYear()}-01-01`,
   status: 'Steady',
   strategicPillarId: strategicPlan.pillars[0]?.id || '',
   title: '',
+  yearEndTarget: '',
 });
 
 const defaultForm = (user, strategicPlan) => {
@@ -142,9 +150,16 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
         ...objective,
         description: objective.description.trim(),
         enterprisePriorityId: objective.enterprisePriorityId || null,
+        kpi: objective.kpi?.trim() || '',
+        lastUpdated: objective.lastUpdated || '',
+        orgPriority: objective.orgPriority?.trim() || '',
         owner: users.find((candidate) => candidate.id === objective.ownerId) || user,
         progress: clampProgress(objective.progress),
+        projectPlanComplete: objective.projectPlanComplete || '',
+        projectPlanUrl: objective.projectPlanUrl?.trim() || '',
+        startDate: objective.startDate || '',
         title: objective.title.trim(),
+        yearEndTarget: objective.yearEndTarget?.trim() || '',
       })),
       ownerIds: [lead.id],
       title: `${form.year} ${form.department.toUpperCase()} WORKPLAN`,
@@ -158,7 +173,7 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
       <DialogContent>
         <Stack gap={2} sx={{ pt: 1 }}>
           <Typography variant="body2">
-            The workplan is the department&apos;s annual container. Strategic alignment and Enterprise Priority relationships are validated on each Department Objective.
+            The workplan is the department&apos;s annual accountability container. Each Department Objective can preserve the source template fields: Org Priority, KPI, year-end target, dates, status, progress, progress/challenges, last update, lead person, and project-plan link.
           </Typography>
           <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
             <TextField label="Year" value={form.year} onChange={update('year')} fullWidth required />
@@ -184,6 +199,11 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
                 </Stack>
                 <Stack gap={1.25}>
                   <TextField label="Department Objective" value={objective.title} onChange={updateObjective(objective.id, 'title')} fullWidth required />
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 1.25 }}>
+                    <TextField label="Org Priority" value={objective.orgPriority || ''} onChange={updateObjective(objective.id, 'orgPriority')} fullWidth />
+                    <TextField label="Key Performance Indicator (KPI)" value={objective.kpi || ''} onChange={updateObjective(objective.id, 'kpi')} fullWidth />
+                    <TextField label="Year End Target" value={objective.yearEndTarget || ''} onChange={updateObjective(objective.id, 'yearEndTarget')} fullWidth />
+                  </Box>
                   <TextField label="Progress and Challenges" value={objective.description} onChange={updateObjective(objective.id, 'description')} multiline minRows={2} fullWidth />
                   <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
                     <TextField select label="Objective Lead" value={objective.ownerId} onChange={updateObjective(objective.id, 'ownerId')} fullWidth required>
@@ -193,7 +213,11 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
                       {workplanStatuses.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                     </TextField>
                     <TextField label="Progress" type="number" value={objective.progress} onChange={updateObjective(objective.id, 'progress')} fullWidth inputProps={{ min: 0, max: 100 }} />
-                    <TextField label="Due" type="date" value={objective.due} onChange={updateObjective(objective.id, 'due')} fullWidth InputLabelProps={{ shrink: true }} />
+                  </Stack>
+                  <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
+                    <TextField label="Start Date" type="date" value={objective.startDate || ''} onChange={updateObjective(objective.id, 'startDate')} fullWidth InputLabelProps={{ shrink: true }} />
+                    <TextField label="End Date" type="date" value={objective.due} onChange={updateObjective(objective.id, 'due')} fullWidth InputLabelProps={{ shrink: true }} />
+                    <TextField label="Last Update Date" type="date" value={objective.lastUpdated || ''} onChange={updateObjective(objective.id, 'lastUpdated')} fullWidth InputLabelProps={{ shrink: true }} />
                   </Stack>
                   <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
                     <TextField select label="Strategic Pillar" value={objective.strategicPillarId} onChange={updateObjective(objective.id, 'strategicPillarId')} fullWidth required>
@@ -210,6 +234,12 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
                       <MenuItem value="">No Enterprise Priority link</MenuItem>
                       {enterprisePriorities.map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
                     </TextField>
+                  </Stack>
+                  <Stack direction={{ xs: 'column', md: 'row' }} gap={1.25}>
+                    <TextField select label="Project Plan Complete?" value={objective.projectPlanComplete || ''} onChange={updateObjective(objective.id, 'projectPlanComplete')} fullWidth>
+                      {projectPlanCompleteOptions.map((option) => <MenuItem key={option || 'blank'} value={option}>{option || 'Not set'}</MenuItem>)}
+                    </TextField>
+                    <TextField label="Project Plan Link" value={objective.projectPlanUrl || ''} onChange={updateObjective(objective.id, 'projectPlanUrl')} fullWidth />
                   </Stack>
                 </Stack>
               </Box>
@@ -275,12 +305,27 @@ const WorkplanCard = ({ canManage, enterprisePriorities, onDelete, onEdit, strat
               <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1}>
                 <Box>
                   <Typography variant="body1" fontWeight={800}>{objective.title}</Typography>
+                  <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 0.75, mb: 0.75 }}>
+                    {objective.orgPriority && <Chip label={`Org Priority: ${objective.orgPriority}`} size="small" variant="outlined" />}
+                    {objective.kpi && <Chip label={`KPI: ${objective.kpi}`} size="small" variant="outlined" />}
+                    {objective.yearEndTarget && <Chip label={`Target: ${objective.yearEndTarget}`} size="small" variant="outlined" />}
+                  </Stack>
                   <Typography variant="body2">{objective.description || 'No progress and challenges note yet.'}</Typography>
+                  <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 0.75 }}>
+                    {objective.startDate && <Chip label={`Start ${formatDate(objective.startDate)}`} size="small" variant="outlined" />}
+                    {objective.lastUpdated && <Chip label={`Updated ${formatDate(objective.lastUpdated)}`} size="small" variant="outlined" />}
+                    {objective.projectPlanComplete && <Chip label={`Project plan ${objective.projectPlanComplete}`} size="small" variant="outlined" />}
+                  </Stack>
+                  {objective.projectPlanUrl && (
+                    <Typography variant="caption" sx={{ display: 'block', mt: 0.75 }}>
+                      Project plan link: {objective.projectPlanUrl}
+                    </Typography>
+                  )}
                 </Box>
                 <Stack direction="row" gap={0.5} flexWrap="wrap" alignItems="flex-start">
                   <Chip label={objective.status} color={statusColor[objective.status] || 'default'} size="small" />
                   <Chip label={`${clampProgress(objective.progress)}%`} size="small" variant="outlined" />
-                  <Chip label={`Due ${formatDate(objective.due)}`} size="small" variant="outlined" />
+                  <Chip label={`End ${formatDate(objective.due)}`} size="small" variant="outlined" />
                 </Stack>
               </Stack>
               <Stack direction="row" gap={0.5} flexWrap="wrap" sx={{ mt: 1 }}>

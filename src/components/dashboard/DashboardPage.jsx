@@ -8,7 +8,7 @@ import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Selec
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
-import { metrics } from '../../data/mockData';
+import { metrics, q2Roadmap } from '../../data/mockData';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useAuth } from '../../hooks/useAuth';
 import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
@@ -224,7 +224,7 @@ const DashboardPage = ({ company = false }) => {
           )}
           <Stack direction="row" alignItems="center">
             <IconButton title="Previous dashboard period" aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
-            <Chip label="1/24/2026 -> 4/24/2026" color="primary" variant="outlined" />
+            <Chip label={`${q2Roadmap.quarter}: ${q2Roadmap.start} -> ${q2Roadmap.end}`} color="primary" variant="outlined" />
             <IconButton title="Next dashboard period" aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
           </Stack>
           {!company && (
