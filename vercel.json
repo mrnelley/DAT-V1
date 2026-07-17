@@ -9,6 +9,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/learn",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/learn/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/workplans",
       "destination": "/index.html"
     },
