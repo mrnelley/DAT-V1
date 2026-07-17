@@ -202,7 +202,7 @@ const DashboardPage = ({ company = false }) => {
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 3 }}>
-        <Box>
+        <Box data-tour-id={company ? 'organization-dashboard-header' : 'personal-dashboard-header'}>
           <Typography variant="h1">{dashboardTitle}</Typography>
           <Typography variant="body2">{company ? 'Organization-wide accountability view' : `${user.department} operating view`}</Typography>
         </Box>
@@ -222,7 +222,7 @@ const DashboardPage = ({ company = false }) => {
               {calendarOpen ? 'Back to Dashboard' : 'Calendar'}
             </Button>
           )}
-          <Stack direction="row" alignItems="center">
+          <Stack data-tour-id="dashboard-period-control" direction="row" alignItems="center">
             <IconButton title="Previous dashboard period" aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
             <Chip label={`${q2Roadmap.quarter}: ${q2Roadmap.start} -> ${q2Roadmap.end}`} color="primary" variant="outlined" />
             <IconButton title="Next dashboard period" aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>

@@ -86,12 +86,12 @@ const StucksPage = () => {
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" gap={1} sx={{ mb: 2 }}>
-        <Box>
+        <Box data-tour-id="stucks-header">
           <Typography variant="h1">Manage Stucks</Typography>
           <Typography variant="body2">Every stuck is tied to a task and names the person who can help move it.</Typography>
         </Box>
         <Stack direction="row" gap={1}>
-          <Button variant="contained" onClick={() => setOpen(true)} disabled={!userTasks.length}>Issue a Stuck</Button>
+          <Button data-tour-id="stucks-issue-button" variant="contained" onClick={() => setOpen(true)} disabled={!userTasks.length}>Issue a Stuck</Button>
           <Button variant={activeOnly ? 'contained' : 'outlined'} onClick={() => setActiveOnly((value) => !value)}>Active Only</Button>
         </Stack>
       </Stack>

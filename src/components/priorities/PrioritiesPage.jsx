@@ -35,12 +35,12 @@ const PrioritiesPage = () => {
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" gap={1}>
+        <Stack data-tour-id="priorities-header" direction="row" alignItems="center" gap={1}>
           <Typography variant="h1">Enterprise Priorities</Typography>
           <IconButton title="Open priorities help" aria-label="Open priorities help" onClick={() => unavailable('priority help content has not been authored yet.')}><HelpOutlineIcon /></IconButton>
         </Stack>
         <Stack direction="row" gap={1} flexWrap="wrap">
-          <Button variant="contained" onClick={() => setPanelOpen(true)}>Add Enterprise Priority</Button>
+          <Button data-tour-id="priorities-add-button" variant="contained" onClick={() => setPanelOpen(true)}>Add Enterprise Priority</Button>
           <Button variant="outlined" onClick={() => unavailable('bulk priority value updates need a connected metric source.')}>Update Priority Values</Button>
           <Button startIcon={<FilterListOutlinedIcon />} onClick={() => setFiltersOpen((value) => !value)}>Filter</Button>
           <Button startIcon={<ExpandMoreIcon />} onClick={() => setExpandedAll((value) => !value)}>Expand All</Button>

@@ -103,7 +103,7 @@ const SignalSummaryTile = ({ count, helper, metaStatus, title }) => {
 };
 
 const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quarterState, statusCounts, team, teamOptions, totalPriorities, onTeamChange }) => (
-  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+  <Box data-tour-id="executive-quarter-pulse" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
     <Box sx={{ borderLeft: '8px solid', borderColor: 'primary.main', p: { xs: 1.75, md: 2.5 } }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'flex-start' }} gap={2}>
         <Box sx={{ maxWidth: 820 }}>
@@ -190,7 +190,7 @@ const PriorityWeeklyHeatMap = ({ priority }) => {
 };
 
 const EnterprisePriorityRegister = ({ priorities: priorityRows, onOpen }) => (
-  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
+  <Box data-tour-id="enterprise-priority-register" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 1.5, md: 2 } }}>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ mb: 1.5 }}>
       <Box>
         <Typography variant="overline" color="primary">Quarterly Commitments</Typography>

@@ -91,10 +91,10 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
           <IconButton title="Close Enterprise Priority panel" aria-label="Close Enterprise Priority panel" onClick={onClose}><CloseIcon /></IconButton>
         </Stack>
         <Stack gap={2}>
-          <TextField label="Enterprise Priority Name" value={name} onChange={(event) => setName(event.target.value)} required fullWidth />
+          <TextField data-tour-id="priority-name" label="Enterprise Priority Name" value={name} onChange={(event) => setName(event.target.value)} required fullWidth />
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
             <TextField label="Quarter" value={q2Roadmap.quarter} fullWidth InputProps={{ readOnly: true }} />
-            <FormControl fullWidth>
+            <FormControl data-tour-id="priority-strategic-pillar" fullWidth>
               <InputLabel>Strategic Pillar</InputLabel>
               <Select label="Strategic Pillar" value={pillarId} onChange={(event) => setPillarId(event.target.value)}>
                 {strategicPlan.pillars.map((pillar) => (
@@ -106,7 +106,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
 
           <Stack gap={1.25}>
             {objectives.map((objective, index) => (
-              <Box key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+              <Box data-tour-id={index === 0 ? 'priority-key-objective' : undefined} key={objective.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ mb: 1 }}>
                   <Typography variant="h4">Key Objective {index + 1}</Typography>
                   {objectives.length > 1 && (
@@ -116,7 +116,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                   )}
                 </Stack>
                 <Stack gap={1.25}>
-                  <TextField label="Key Objective" value={objective.title} onChange={(event) => updateObjective(objective.id, 'title', event.target.value)} required fullWidth />
+                  <TextField data-tour-id={index === 0 ? 'priority-key-objective-title' : undefined} label="Key Objective" value={objective.title} onChange={(event) => updateObjective(objective.id, 'title', event.target.value)} required fullWidth />
                   <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25}>
                     <Autocomplete
                       options={users}
@@ -131,6 +131,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                     </TextField>
                   </Stack>
                   <TextField
+                    data-tour-id={index === 0 ? 'priority-kpi' : undefined}
                     label="KPI / Success Measure"
                     value={objective.kpi}
                     onChange={(event) => updateObjective(objective.id, 'kpi', event.target.value)}
@@ -141,6 +142,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                     minRows={2}
                   />
                   <TextField
+                    data-tour-id={index === 0 ? 'priority-target' : undefined}
                     label="End Target / Desired Result"
                     value={objective.target}
                     onChange={(event) => updateObjective(objective.id, 'target', event.target.value)}
@@ -159,7 +161,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
           <Typography variant="body2">
             The Enterprise Priority signal is calculated from its objective statuses. It does not have a separate owner, KPI, or manually entered health signal.
           </Typography>
-          <Button variant="contained" color="success" disabled={!ready} onClick={() => save(false)}>Save</Button>
+          <Button data-tour-id="priority-save-button" variant="contained" color="success" disabled={!ready} onClick={() => save(false)}>Save</Button>
           <Button variant="outlined" disabled={!ready} onClick={() => save(true)}>Save and Add Another</Button>
           <Button onClick={onClose}>Cancel</Button>
         </Stack>

@@ -11,6 +11,7 @@ import HuddleFormPage from './components/huddles/HuddleFormPage';
 import HuddleItemPage from './components/huddles/HuddleItemPage';
 import AppShell from './components/layout/AppShell';
 import LearnPage from './components/learn/LearnPage';
+import RolePracticePage from './components/learn/RolePracticePage';
 import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
@@ -27,6 +28,7 @@ import WorkplansPage from './components/workplans/WorkplansPage';
 import { CurbAppealProvider } from './context/CurbAppealContext';
 import { ActionFeedbackProvider } from './context/ActionFeedbackContext';
 import { FeatureAccessProvider } from './context/FeatureAccessContext';
+import { GuidedPracticeProvider } from './context/GuidedPracticeContext';
 import { NotificationsProvider } from './context/NotificationsContext';
 import { CalendarEventProvider } from './context/CalendarEventContext';
 import { OperatingDataProvider } from './context/OperatingDataContext';
@@ -67,6 +69,10 @@ const AnimatedRoutes = () => {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<LearnPage />} />
+        <Route path="/learn/ELT" element={<Navigate to="/learn/elt" replace />} />
+        <Route path="/learn/OLT" element={<Navigate to="/learn/olt" replace />} />
+        <Route path="/learn/elt" element={<RolePracticePage programId="elt" />} />
+        <Route path="/learn/olt" element={<RolePracticePage programId="olt" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
         <Route path="/admin/users" element={<FeatureGate featureKey="adminUsers"><CompassDestinationPage page="adminUsers" /></FeatureGate>} />
         <Route path="/admin/teams" element={<FeatureGate featureKey="adminTeams"><CompassDestinationPage page="adminTeams" /></FeatureGate>} />
@@ -90,9 +96,11 @@ const ProtectedApp = () => {
         <NotificationsProvider>
           <OperatingDataProvider>
             <CalendarEventProvider>
-              <AppShell>
-                <AnimatedRoutes />
-              </AppShell>
+              <GuidedPracticeProvider>
+                <AppShell>
+                  <AnimatedRoutes />
+                </AppShell>
+              </GuidedPracticeProvider>
             </CalendarEventProvider>
           </OperatingDataProvider>
         </NotificationsProvider>

@@ -42,15 +42,15 @@ const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user 
       <DialogTitle id="issue-stuck-dialog-title">Issue a Stuck</DialogTitle>
       <DialogContent>
         <Stack gap={2} sx={{ pt: 1 }}>
-          <TextField select label="Task I am stuck on" value={form.sourceId} onChange={update('sourceId')} fullWidth required>
+          <TextField data-tour-id="stuck-source-task" select label="Task I am stuck on" value={form.sourceId} onChange={update('sourceId')} fullWidth required>
             {tasks.map((task) => (
               <MenuItem key={task.id} value={task.id}>
                 {task.description || task.title} - {task.sourceType === 'weekly_action_item' ? 'Weekly Action Item' : 'Day-to-Day Tasks'}
               </MenuItem>
             ))}
           </TextField>
-          <TextField label="Stuck Description" value={form.description} onChange={update('description')} multiline minRows={3} required />
-          <TextField select label="Need Help From" value={form.helpFromId} onChange={update('helpFromId')} fullWidth required>
+          <TextField data-tour-id="stuck-description" label="Stuck Description" value={form.description} onChange={update('description')} multiline minRows={3} required />
+          <TextField data-tour-id="stuck-helper" select label="Need Help From" value={form.helpFromId} onChange={update('helpFromId')} fullWidth required>
             {users.filter((candidate) => candidate.id !== user.id).map((candidate) => (
               <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>
             ))}
@@ -61,6 +61,7 @@ const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user 
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
+          data-tour-id="stuck-submit-button"
           variant="contained"
           onClick={save}
           disabled={!form.description.trim() || !form.helpFromId || !form.sourceId}

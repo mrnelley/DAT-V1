@@ -155,6 +155,7 @@ const ExecutiveScorecardCard = ({ card, onOpen }) => {
 
   return (
     <Box
+      data-tour-id="executive-pulse-scorecard-card"
       aria-label={`Open Executive Pulse scorecard for ${card.title}`}
       component="button"
       onClick={onOpen}
@@ -328,7 +329,7 @@ const ExecutivePulsePage = () => {
           },
         }}
       >
-        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+        <Box data-tour-id="executive-pulse-header" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
           <Box sx={{ borderLeft: '8px solid', borderColor: 'primary.main', p: { xs: 1.5, md: 2.25 } }}>
             <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'flex-start' }} gap={2}>
               <Box sx={{ maxWidth: 840 }}>
@@ -341,12 +342,12 @@ const ExecutivePulsePage = () => {
                 </Stack>
                 <Typography variant="h1">Executive Pulse</Typography>
               </Box>
-              <Stack gap={1} className="executive-pulse-actions" sx={{ minWidth: { lg: 460 } }}>
+              <Stack data-tour-id="executive-pulse-report-context" gap={1} className="executive-pulse-actions" sx={{ minWidth: { lg: 460 } }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
                   <TextField label="Period" value={scorecard.period} onChange={(event) => updateRootField('period', event.target.value)} fullWidth size="small" />
                   <TextField label="Prepared for" value={scorecard.preparedFor} onChange={(event) => updateRootField('preparedFor', event.target.value)} fullWidth size="small" />
                 </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="flex-end">
+                <Stack data-tour-id="executive-pulse-export-actions" direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="flex-end">
                   <Button startIcon={<PrintOutlinedIcon />} variant="outlined" onClick={() => window.print()}>Print / Save PDF</Button>
                   <Button startIcon={<DownloadOutlinedIcon />} variant="contained" onClick={exportScorecard}>Export CSV</Button>
                 </Stack>
@@ -370,7 +371,7 @@ const ExecutivePulsePage = () => {
           ))}
         </Box>
 
-        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+        <Box data-tour-id="executive-pulse-board-questions" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
           <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
             <AssessmentOutlinedIcon color="primary" />
             <Box>

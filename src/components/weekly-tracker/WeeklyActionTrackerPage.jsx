@@ -489,14 +489,14 @@ const WeeklyActionTrackerPage = () => {
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ xs: 'flex-start', lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
-        <Box>
+        <Box data-tour-id="weekly-tracker-header">
           <Typography variant="h1">Weekly Tracker</Typography>
           <Typography variant="body2" color="text.secondary">
             Users define ranked Weekly Priorities here, align each one to an Enterprise Priority or Departmental Priority, then assign Action Items pursuant to the week&apos;s commitments.
           </Typography>
         </Box>
         <Stack direction="row" gap={1} flexWrap="wrap">
-          <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={openCurrentUserPriorityDialog}>
+          <Button data-tour-id="weekly-priority-set-button" startIcon={<AddOutlinedIcon />} variant="contained" onClick={openCurrentUserPriorityDialog}>
             Set My Weekly Priority
           </Button>
           <Chip icon={<EventAvailableOutlinedIcon />} label={`Due ${formatDateTime(report.submissionDueAt)}`} color="warning" />
@@ -766,6 +766,7 @@ const WeeklyActionTrackerPage = () => {
               </Typography>
             </Box>
             <TextField
+              data-tour-id="weekly-priority-title"
               label="Weekly priority"
               value={priorityForm.title}
               onChange={updatePriorityForm('title')}
@@ -780,6 +781,7 @@ const WeeklyActionTrackerPage = () => {
               </Box>
             )}
             <TextField
+              data-tour-id="weekly-priority-alignment-objective"
               select
               label="Departmental Priority / Department Objective"
               value={priorityForm.objectiveId}
@@ -810,12 +812,13 @@ const WeeklyActionTrackerPage = () => {
                 })
                 .map((priority) => <MenuItem key={priority.id} value={priority.id}>{priority.name}</MenuItem>)}
             </TextField>
-            <TextField select label="Priority health" value={priorityForm.status} onChange={updatePriorityForm('status')} fullWidth>
+            <TextField data-tour-id="weekly-priority-health" select label="Priority health" value={priorityForm.status} onChange={updatePriorityForm('status')} fullWidth>
               {weeklyPriorityStatuses.map((status) => (
                 <MenuItem key={status} value={status}>{statusLabels[status]}</MenuItem>
               ))}
             </TextField>
             <TextField
+              data-tour-id="weekly-priority-support-note"
               label="Risk or support needed"
               value={priorityForm.riskSupportNote}
               onChange={updatePriorityForm('riskSupportNote')}
@@ -847,7 +850,7 @@ const WeeklyActionTrackerPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closePriorityDialog}>Cancel</Button>
-          <Button variant="contained" onClick={saveWeeklyPriority} disabled={!canSavePriority}>Save Weekly Priority</Button>
+          <Button data-tour-id="weekly-priority-save-button" variant="contained" onClick={saveWeeklyPriority} disabled={!canSavePriority}>Save Weekly Priority</Button>
         </DialogActions>
       </Dialog>
 
@@ -888,7 +891,7 @@ const WeeklyActionTrackerPage = () => {
                   <Typography variant="h3">Action Items</Typography>
                   <Typography variant="body2">Action Items are the concrete tasks attached to this weekly priority.</Typography>
                 </Box>
-                <Button startIcon={<AddOutlinedIcon />} onClick={() => openTaskDialog(selectedEntry)}>
+                <Button data-tour-id="weekly-action-item-add-button" startIcon={<AddOutlinedIcon />} onClick={() => openTaskDialog(selectedEntry)}>
                   Add Action Item
                 </Button>
               </Stack>
@@ -928,7 +931,7 @@ const WeeklyActionTrackerPage = () => {
         <DialogContent>
           <Stack gap={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">{taskDialogEntry?.title}</Typography>
-            <TextField label="Action Item" value={taskForm.title} onChange={updateTaskForm('title')} fullWidth />
+            <TextField data-tour-id="weekly-action-item-title" label="Action Item" value={taskForm.title} onChange={updateTaskForm('title')} fullWidth />
             <TextField select label="Owner" value={taskForm.ownerId} onChange={updateTaskForm('ownerId')} fullWidth>
               {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
             </TextField>

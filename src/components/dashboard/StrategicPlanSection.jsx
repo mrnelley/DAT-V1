@@ -534,7 +534,7 @@ const StrategicPlanSection = () => {
 
   return (
     <Box sx={{ mb: 3 }}>
-      <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 2, md: 2.5 }, mb: 2 }}>
+      <Box data-tour-id="strategic-plan-header" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 2, md: 2.5 }, mb: 2 }}>
         <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" gap={2}>
           <Box sx={{ maxWidth: 780 }}>
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
@@ -558,6 +558,7 @@ const StrategicPlanSection = () => {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', xl: 'repeat(3, 1fr)' }, gap: 1.5, mb: 2 }}>
         {pillarSummaries.map((pillar) => (
           <Box
+            data-tour-id={pillar.order === 1 ? 'strategic-pillar-card' : undefined}
             key={pillar.id}
             onClick={() => setSelectedPillarId(pillar.id)}
             onKeyDown={(event) => {

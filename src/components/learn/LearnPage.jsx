@@ -5,16 +5,21 @@ import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import DataObjectOutlinedIcon from '@mui/icons-material/DataObjectOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import { Box, Button, Chip, Divider, InputAdornment, List, ListItemButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { dictionaryCategories, dictionaryTerms, dictionaryTermsByLetter } from '../../data/learnDictionary';
 import { dashboardReportingMap, departmentWorkProcessMap, sourceAlignmentPrinciples } from '../../data/reportingMap';
+import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 
 const alphabet = Object.keys(dictionaryTermsByLetter).sort();
@@ -53,6 +58,42 @@ const dashboardLevels = [
     not: 'Not a catch-all task list unless Day-to-Day Tasks is intentionally enabled.',
   },
 ];
+
+const helpItems = [
+  {
+    title: 'Department Workplans',
+    body: 'Use Workplans to define department objectives, owners, KPIs, targets, status, progress notes, and Enterprise Priority alignment.',
+  },
+  {
+    title: 'Weekly Priorities',
+    body: 'Use Weekly Tracker for the ranked commitments that should move this week. Each priority should connect to a Department Objective or Enterprise Priority.',
+  },
+  {
+    title: 'Support Requests',
+    body: 'Use the risk/support note when help is needed early. Use Stucks when a task is blocked and a specific teammate can help move it.',
+  },
+  {
+    title: 'Quarterly Scorecard',
+    body: 'Use Executive Pulse for scorecard context, KPI rows, current status notes, board discussion prompts, and report exports.',
+  },
+  {
+    title: 'Enterprise Progress',
+    body: 'Use the Organization Dashboard to review Enterprise Priority health, objective owners, KPI evidence, and weekly movement.',
+  },
+];
+
+const featureRequestMailto = `mailto:pkelley@hdcweb.org?subject=${encodeURIComponent('Compass Feature Request')}&body=${encodeURIComponent(`Compass feature request
+
+What I am trying to do:
+
+What would make this better:
+
+Where I was in Compass:
+
+Priority or impact:
+
+Requested by:
+`)}`;
 
 const normalize = (value) => value.toLowerCase().trim();
 
@@ -181,6 +222,7 @@ const ReportingMapSection = () => (
 );
 
 const LearnPage = () => {
+  const { user } = useAuth();
   const [activeTool, setActiveTool] = useState(null);
   const [category, setCategory] = useState('All');
   const [letter, setLetter] = useState('All');
@@ -226,6 +268,9 @@ const LearnPage = () => {
     setLetter('All');
     setQuery('');
   };
+
+  const practicePath = user.workingGroup === 'ELT' ? '/learn/elt' : '/learn/olt';
+  const practiceLabel = user.workingGroup === 'ELT' ? 'Open ELT Practice Mode' : 'Open OLT Practice Mode';
 
   return (
     <PageWrapper>
@@ -295,6 +340,47 @@ const LearnPage = () => {
                   <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
                 </ListItemButton>
               </List>
+
+              <Box sx={{ mt: 3, mb: 3 }}>
+                <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1.5} sx={{ borderTop: '1px solid rgba(239,220,156,0.45)', borderBottom: '1px solid rgba(239,220,156,0.45)', py: 2 }}>
+                  <Stack direction="row" gap={1} alignItems="flex-start">
+                    <HelpOutlineOutlinedIcon sx={{ color: 'background.accent', mt: 0.25 }} />
+                    <Box>
+                      <Typography variant="h2" sx={{ color: '#ffffff' }}>Help</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', maxWidth: 640 }}>
+                        Quick reference for where common operating work lives in Compass.
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
+                    <Button
+                      component={RouterLink}
+                      to={practicePath}
+                      startIcon={<PlayCircleOutlineOutlinedIcon />}
+                      variant="contained"
+                    >
+                      {practiceLabel}
+                    </Button>
+                    <Button
+                      component="a"
+                      href={featureRequestMailto}
+                      startIcon={<EmailOutlinedIcon />}
+                      sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.4)' }}
+                      variant="outlined"
+                    >
+                      Request Improvement
+                    </Button>
+                  </Stack>
+                </Stack>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(5, minmax(0, 1fr))' }, gap: 1, mt: 1.5 }}>
+                  {helpItems.map((item) => (
+                    <Box key={item.title} sx={{ border: '1px solid rgba(255,255,255,0.14)', borderLeft: '3px solid', borderLeftColor: 'background.accent', p: 1.25 }}>
+                      <Typography variant="subtitle2" sx={{ color: '#ffffff' }}>{item.title}</Typography>
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.68)', mt: 0.5 }}>{item.body}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
 
               <Box sx={{ mt: 3 }}>
                 <ReportingMapSection />

@@ -198,8 +198,8 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
                   )}
                 </Stack>
                 <Stack gap={1.25}>
-                  <TextField label="Department Objective" value={objective.title} onChange={updateObjective(objective.id, 'title')} fullWidth required />
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 1.25 }}>
+                  <TextField data-tour-id={index === 0 ? 'workplan-objective-title' : undefined} label="Department Objective" value={objective.title} onChange={updateObjective(objective.id, 'title')} fullWidth required />
+                  <Box data-tour-id={index === 0 ? 'workplan-kpi-targets' : undefined} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 1.25 }}>
                     <TextField label="Org Priority" value={objective.orgPriority || ''} onChange={updateObjective(objective.id, 'orgPriority')} fullWidth />
                     <TextField label="Key Performance Indicator (KPI)" value={objective.kpi || ''} onChange={updateObjective(objective.id, 'kpi')} fullWidth />
                     <TextField label="Year End Target" value={objective.yearEndTarget || ''} onChange={updateObjective(objective.id, 'yearEndTarget')} fullWidth />
@@ -224,6 +224,7 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
                       {strategicPlan.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
                     </TextField>
                     <TextField
+                      data-tour-id={index === 0 ? 'workplan-enterprise-alignment' : undefined}
                       select
                       label="Enterprise Priority"
                       value={objective.enterprisePriorityId || ''}
@@ -250,7 +251,7 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={save} disabled={!ready}>Save Department Workplan</Button>
+        <Button data-tour-id="workplan-save-button" variant="contained" onClick={save} disabled={!ready}>Save Department Workplan</Button>
       </DialogActions>
     </Dialog>
   );
@@ -377,7 +378,7 @@ const WorkplansPage = () => {
   return (
     <PageWrapper>
       <Stack direction={{ xs: 'column', lg: 'row' }} gap={2} alignItems={{ lg: 'center' }} justifyContent="space-between" sx={{ mb: 2 }}>
-        <Box>
+        <Box data-tour-id="workplans-header">
           <Typography variant="h1">Department Workplans</Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>
             Annual department containers with objective-level Strategic Pillar and Enterprise Priority alignment.
@@ -388,7 +389,7 @@ const WorkplansPage = () => {
             <ToggleButton value="all">All</ToggleButton>
             <ToggleButton value="mine">Mine</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialog({ item: null, open: true })}>Add Department Workplan</Button>
+          <Button data-tour-id="workplans-add-button" variant="contained" startIcon={<AddIcon />} onClick={() => setDialog({ item: null, open: true })}>Add Department Workplan</Button>
         </Stack>
       </Stack>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
