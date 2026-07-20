@@ -82,6 +82,19 @@ const helpItems = [
   },
 ];
 
+const learningModes = [
+  {
+    body: 'Workplans, scorecard updates, weekly priorities, support requests, and enterprise progress reporting.',
+    label: 'OLT Practice Mode',
+    path: '/learn/olt',
+  },
+  {
+    body: 'Strategic objectives, quarterly themes, board reporting, and the standard operating accountability path.',
+    label: 'ELT Practice Mode',
+    path: '/learn/elt',
+  },
+];
+
 const featureRequestMailto = `mailto:pkelley@hdcweb.org?subject=${encodeURIComponent('Compass Feature Request')}&body=${encodeURIComponent(`Compass feature request
 
 What I am trying to do:
@@ -271,6 +284,7 @@ const LearnPage = () => {
 
   const practicePath = user.workingGroup === 'ELT' ? '/learn/elt' : '/learn/olt';
   const practiceLabel = user.workingGroup === 'ELT' ? 'Open ELT Practice Mode' : 'Open OLT Practice Mode';
+  const recommendedMode = user.workingGroup === 'ELT' ? 'ELT Practice Mode' : 'OLT Practice Mode';
 
   return (
     <PageWrapper>
@@ -315,6 +329,50 @@ const LearnPage = () => {
                 <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.74)', maxWidth: 650, mt: 1 }}>
                   Build fluency in Compass and the operating model behind it.
                 </Typography>
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1.25 }}>
+                  <PlayCircleOutlineOutlinedIcon sx={{ color: 'background.accent' }} />
+                  <Box>
+                    <Typography variant="h2" sx={{ color: '#ffffff' }}>Learning Modes</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                      Open a repeatable live spotlight practice path.
+                    </Typography>
+                  </Box>
+                </Stack>
+                <List disablePadding sx={{ borderTop: '1px solid rgba(239,220,156,0.45)' }}>
+                  {learningModes.map((mode) => (
+                    <ListItemButton
+                      component={RouterLink}
+                      key={mode.path}
+                      to={mode.path}
+                      sx={{
+                        borderBottom: '1px solid rgba(239,220,156,0.45)',
+                        borderRadius: 0,
+                        color: '#ffffff',
+                        gap: 2,
+                        px: { xs: 0, md: 1.5 },
+                        py: { xs: 2, md: 2.35 },
+                        '&:hover': { bgcolor: 'rgba(94,184,168,0.12)' },
+                      }}
+                    >
+                      <PlayCircleOutlineOutlinedIcon sx={{ color: 'background.accent', fontSize: 32 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
+                          <Typography variant="h2" sx={{ color: '#ffffff' }}>{mode.label}</Typography>
+                          {mode.label === recommendedMode && (
+                            <Chip label="Recommended" size="small" sx={{ bgcolor: 'rgba(94,184,168,0.18)', color: '#ffffff' }} />
+                          )}
+                        </Stack>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.68)', mt: 0.5 }}>
+                          {mode.body}
+                        </Typography>
+                      </Box>
+                      <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
+                    </ListItemButton>
+                  ))}
+                </List>
               </Box>
 
               <List disablePadding sx={{ borderTop: '1px solid rgba(239,220,156,0.45)' }}>
