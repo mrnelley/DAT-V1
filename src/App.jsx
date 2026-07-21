@@ -69,10 +69,6 @@ const AnimatedRoutes = () => {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/learn" element={<LearnPage />} />
-        <Route path="/learn/ELT" element={<Navigate to="/learn/elt" replace />} />
-        <Route path="/learn/OLT" element={<Navigate to="/learn/olt" replace />} />
-        <Route path="/learn/elt" element={<RolePracticePage programId="elt" />} />
-        <Route path="/learn/olt" element={<RolePracticePage programId="olt" />} />
         <Route path="/admin" element={<PlaceholderPage title="Administration" />} />
         <Route path="/admin/users" element={<FeatureGate featureKey="adminUsers"><CompassDestinationPage page="adminUsers" /></FeatureGate>} />
         <Route path="/admin/teams" element={<FeatureGate featureKey="adminTeams"><CompassDestinationPage page="adminTeams" /></FeatureGate>} />
@@ -83,8 +79,37 @@ const AnimatedRoutes = () => {
   );
 };
 
+const PracticeModeRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={user.workingGroup === 'ELT' ? '/practice/elt' : '/practice/olt'} replace />;
+};
+
+const PracticeEntryRoutes = () => (
+  <Routes>
+    <Route path="/practice" element={<PracticeModeRedirect />} />
+    <Route path="/practice/ELT" element={<Navigate to="/practice/elt" replace />} />
+    <Route path="/practice/OLT" element={<Navigate to="/practice/olt" replace />} />
+    <Route path="/practice/elt" element={<RolePracticePage programId="elt" />} />
+    <Route path="/practice/olt" element={<RolePracticePage programId="olt" />} />
+    <Route path="/learn/ELT" element={<Navigate to="/practice/elt" replace />} />
+    <Route path="/learn/OLT" element={<Navigate to="/practice/olt" replace />} />
+    <Route path="/learn/elt" element={<Navigate to="/practice/elt" replace />} />
+    <Route path="/learn/olt" element={<Navigate to="/practice/olt" replace />} />
+    <Route path="*" element={<Navigate to="/learn" replace />} />
+  </Routes>
+);
+
+const isPracticeEntryPath = (pathname) => [
+  '/learn/elt',
+  '/learn/olt',
+  '/practice',
+  '/practice/elt',
+  '/practice/olt',
+].includes(pathname.toLowerCase());
+
 const ProtectedApp = () => {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -97,9 +122,13 @@ const ProtectedApp = () => {
           <OperatingDataProvider>
             <CalendarEventProvider>
               <GuidedPracticeProvider>
-                <AppShell>
-                  <AnimatedRoutes />
-                </AppShell>
+                {isPracticeEntryPath(location.pathname) ? (
+                  <PracticeEntryRoutes />
+                ) : (
+                  <AppShell>
+                    <AnimatedRoutes />
+                  </AppShell>
+                )}
               </GuidedPracticeProvider>
             </CalendarEventProvider>
           </OperatingDataProvider>

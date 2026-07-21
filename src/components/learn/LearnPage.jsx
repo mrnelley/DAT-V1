@@ -86,12 +86,12 @@ const learningModes = [
   {
     body: 'Workplans, scorecard updates, weekly priorities, support requests, and enterprise progress reporting.',
     label: 'OLT Practice Mode',
-    path: '/learn/olt',
+    path: '/practice/olt',
   },
   {
     body: 'Strategic objectives, quarterly themes, board reporting, and the standard operating accountability path.',
     label: 'ELT Practice Mode',
-    path: '/learn/elt',
+    path: '/practice/elt',
   },
 ];
 
@@ -282,7 +282,7 @@ const LearnPage = () => {
     setQuery('');
   };
 
-  const practicePath = user.workingGroup === 'ELT' ? '/learn/elt' : '/learn/olt';
+  const practicePath = user.workingGroup === 'ELT' ? '/practice/elt' : '/practice/olt';
   const practiceLabel = user.workingGroup === 'ELT' ? 'Open ELT Practice Mode' : 'Open OLT Practice Mode';
   const recommendedMode = user.workingGroup === 'ELT' ? 'ELT Practice Mode' : 'OLT Practice Mode';
 

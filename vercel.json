@@ -17,6 +17,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/practice",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/practice/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/workplans",
       "destination": "/index.html"
     },
