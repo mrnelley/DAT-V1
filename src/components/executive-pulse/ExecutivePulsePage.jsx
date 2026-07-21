@@ -6,11 +6,20 @@ import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
 import { executivePulseSeed, scorecardStatusOptions } from '../../data/executivePulseSeed';
+import {
+  getPreviousReportingPeriod,
+  getReportingPeriod,
+  getReportingPeriodMonths,
+  normalizeReportingPeriodId,
+} from '../../data/reportingPeriods';
 import PageWrapper from '../layout/PageWrapper';
+import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
-const storageKey = 'hdc_compass_executive_pulse_scorecard_v2';
+const storageKey = 'hdc_compass_executive_pulse_scorecards_v3';
+const legacyStorageKey = 'hdc_compass_executive_pulse_scorecard_v2';
 
 const statusMeta = {
   'On Track': { color: 'success', fill: '#006e5c', soft: 'rgba(0, 110, 92, 0.09)', tone: 'success.main' },
@@ -19,35 +28,83 @@ const statusMeta = {
   'No Data': { color: 'default', fill: '#5a6475', soft: 'rgba(90, 100, 117, 0.09)', tone: 'text.secondary' },
 };
 
-const editableMetricFields = [
-  ['kpi', 'KPI'],
-  ['dept', 'Dept'],
-  ['target', 'Target'],
-  ['q1', 'Q1'],
-  ['april', 'April'],
-  ['may', 'May'],
-  ['june', 'June'],
-  ['q2', 'Q2'],
-  ['progress', '% Progress'],
-  ['currentStatus', 'Current Status'],
-];
+const getEditableMetricFields = (reportingPeriod) => {
+  const months = getReportingPeriodMonths(reportingPeriod);
+  const previousPeriod = getPreviousReportingPeriod(reportingPeriod);
 
-const cloneSeed = () => JSON.parse(JSON.stringify(executivePulseSeed));
+  return [
+    ['kpi', 'KPI'],
+    ['dept', 'Dept'],
+    ['target', 'Target'],
+    ['priorPeriodResult', previousPeriod?.label || 'Prior Period'],
+    ['month1', months[0]],
+    ['month2', months[1]],
+    ['month3', months[2]],
+    ['periodResult', reportingPeriod.label],
+    ['progress', '% Progress'],
+    ['currentStatus', 'Current Status'],
+  ];
+};
 
-const readScorecard = () => {
-  if (typeof window === 'undefined') return cloneSeed();
+const cloneSeed = (reportingPeriodId) => ({
+  ...JSON.parse(JSON.stringify(executivePulseSeed)),
+  reportingPeriodId,
+});
+
+const normalizeMetric = (metric) => {
+  const normalized = {
+    ...metric,
+    month1: metric.month1 ?? metric.april ?? '',
+    month2: metric.month2 ?? metric.may ?? '',
+    month3: metric.month3 ?? metric.june ?? '',
+    periodResult: metric.periodResult ?? metric.q2 ?? '',
+    priorPeriodResult: metric.priorPeriodResult ?? metric.q1 ?? '',
+  };
+  ['april', 'may', 'june', 'q1', 'q2'].forEach((field) => delete normalized[field]);
+  return normalized;
+};
+
+const normalizeScorecard = (scorecard, reportingPeriodId) => {
+  const normalized = {
+    ...scorecard,
+    reportingPeriodId,
+    scorecards: scorecard.scorecards.map((card) => ({
+      ...card,
+      metrics: card.metrics.map(normalizeMetric),
+    })),
+  };
+  delete normalized.period;
+  delete normalized.quarter;
+  return normalized;
+};
+
+const readScorecardsByPeriod = () => {
+  if (typeof window === 'undefined') return {};
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(storageKey));
-    return stored?.scorecards ? stored : cloneSeed();
+    if (stored && typeof stored === 'object') {
+      return Object.fromEntries(Object.entries(stored).map(([reportingPeriodId, scorecard]) => [
+        normalizeReportingPeriodId(reportingPeriodId),
+        normalizeScorecard(scorecard, normalizeReportingPeriodId(reportingPeriodId)),
+      ]));
+    }
+
+    const legacy = JSON.parse(window.localStorage.getItem(legacyStorageKey));
+    if (!legacy?.scorecards) return {};
+
+    const reportingPeriodId = normalizeReportingPeriodId(legacy);
+    const migrated = normalizeScorecard(legacy, reportingPeriodId);
+    window.localStorage.removeItem(legacyStorageKey);
+    return { [reportingPeriodId]: migrated };
   } catch {
-    return cloneSeed();
+    return {};
   }
 };
 
-const saveScorecard = (nextScorecard) => {
+const saveScorecardsByPeriod = (scorecardsByPeriod) => {
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem(storageKey, JSON.stringify(nextScorecard));
+    window.localStorage.setItem(storageKey, JSON.stringify(scorecardsByPeriod));
   }
 };
 
@@ -102,19 +159,20 @@ const downloadCsv = (filename, rows) => {
 
 const flattenScorecardRows = (scorecard) => scorecard.scorecards.flatMap((card) => (
   card.metrics.map((metric) => ({
-    april: metric.april,
     card: card.title,
     currentStatus: metric.currentStatus,
     dept: metric.dept,
-    june: metric.june,
     kpi: metric.kpi,
-    may: metric.may,
+    month1: metric.month1,
+    month2: metric.month2,
+    month3: metric.month3,
     orgPriority: card.orgPriority,
-    period: scorecard.period,
+    reportingPeriod: getReportingPeriod(scorecard.reportingPeriodId).label,
+    reportingPeriodId: scorecard.reportingPeriodId,
     preparedFor: scorecard.preparedFor,
     progress: metric.progress,
-    q1: metric.q1,
-    q2: metric.q2,
+    periodResult: metric.periodResult,
+    priorPeriodResult: metric.priorPeriodResult,
     signal: metric.status,
     strategicGoal: card.strategicGoal,
     target: metric.target,
@@ -148,10 +206,12 @@ const StatusDistributionChart = ({ card }) => {
   );
 };
 
-const ExecutiveScorecardCard = ({ card, onOpen }) => {
+const ExecutiveScorecardCard = ({ card, onOpen, reportingPeriod }) => {
   const meta = statusMeta[card.status] || statusMeta['No Data'];
   const progress = cardProgress(card);
   const attentionCount = card.metrics.filter((metric) => ['Needs Attention', 'Off Track'].includes(metric.status)).length;
+  const monthLabels = getReportingPeriodMonths(reportingPeriod);
+  const previousPeriod = getPreviousReportingPeriod(reportingPeriod);
 
   return (
     <Box
@@ -213,10 +273,10 @@ const ExecutiveScorecardCard = ({ card, onOpen }) => {
                   <Typography variant="body2" noWrap title={metric.kpi}>{metric.kpi}</Typography>
                   <Typography variant="caption">{metric.dept} | Target {metric.target}</Typography>
                   <Typography variant="caption" display="block" sx={{ mt: 0.45, color: 'text.primary', fontWeight: 700 }}>
-                    Q1: {metricValue(metric.q1)}
+                    {previousPeriod?.label || 'Prior period'}: {metricValue(metric.priorPeriodResult)}
                   </Typography>
                   <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
-                    Q2: Apr {metricValue(metric.april)} | May {metricValue(metric.may)} | Jun {metricValue(metric.june)} | Total {metricValue(metric.q2)}
+                    {reportingPeriod.label}: {monthLabels[0]} {metricValue(metric.month1)} | {monthLabels[1]} {metricValue(metric.month2)} | {monthLabels[2]} {metricValue(metric.month3)} | Total {metricValue(metric.periodResult)}
                   </Typography>
                 </Box>
                 <Box sx={{ bgcolor: metricMeta.soft, borderRadius: 1, minWidth: 74, px: 0.8, py: 0.65, textAlign: 'right' }}>
@@ -237,9 +297,16 @@ const ExecutiveScorecardCard = ({ card, onOpen }) => {
 };
 
 const ExecutivePulsePage = () => {
-  const [scorecard, setScorecard] = useState(readScorecard);
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
+  const [scorecardsByPeriod, setScorecardsByPeriod] = useState(readScorecardsByPeriod);
   const [selectedCardId, setSelectedCardId] = useState(null);
+  const scorecard = scorecardsByPeriod[selectedPeriodId] || cloneSeed(selectedPeriodId);
   const selectedCard = scorecard.scorecards.find((card) => card.id === selectedCardId);
+  const editableMetricFields = useMemo(() => getEditableMetricFields(selectedPeriod), [selectedPeriod]);
+
+  useEffect(() => {
+    setSelectedCardId(null);
+  }, [selectedPeriodId]);
   const scorecardSummary = useMemo(() => {
     const metrics = scorecard.scorecards.flatMap((card) => card.metrics);
     return {
@@ -251,10 +318,14 @@ const ExecutivePulsePage = () => {
   }, [scorecard]);
 
   const updateScorecard = (updater) => {
-    setScorecard((current) => {
-      const nextScorecard = updater(current);
-      saveScorecard(nextScorecard);
-      return nextScorecard;
+    setScorecardsByPeriod((current) => {
+      const currentScorecard = current[selectedPeriodId] || cloneSeed(selectedPeriodId);
+      const nextScorecard = { ...updater(currentScorecard), reportingPeriodId: selectedPeriodId };
+      delete nextScorecard.period;
+      delete nextScorecard.quarter;
+      const nextScorecardsByPeriod = { ...current, [selectedPeriodId]: nextScorecard };
+      saveScorecardsByPeriod(nextScorecardsByPeriod);
+      return nextScorecardsByPeriod;
     });
   };
 
@@ -296,16 +367,16 @@ const ExecutivePulsePage = () => {
         metrics: [
           ...card.metrics,
           {
-            april: '',
             currentStatus: '',
             dept: '',
             id: `${card.id}-metric-${Date.now()}`,
-            june: '',
             kpi: '',
-            may: '',
+            month1: '',
+            month2: '',
+            month3: '',
+            periodResult: '',
+            priorPeriodResult: '',
             progress: '',
-            q1: '',
-            q2: '',
             status: 'No Data',
             target: '',
           },
@@ -314,7 +385,7 @@ const ExecutivePulsePage = () => {
     }),
   }));
 
-  const exportScorecard = () => downloadCsv('executive-pulse-board-report.csv', flattenScorecardRows(scorecard));
+  const exportScorecard = () => downloadCsv(`executive-pulse-${selectedPeriodId}.csv`, flattenScorecardRows(scorecard));
 
   return (
     <PageWrapper>
@@ -344,7 +415,7 @@ const ExecutivePulsePage = () => {
               </Box>
               <Stack data-tour-id="executive-pulse-report-context" gap={1} className="executive-pulse-actions" sx={{ minWidth: { lg: 460 } }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
-                  <TextField label="Period" value={scorecard.period} onChange={(event) => updateRootField('period', event.target.value)} fullWidth size="small" />
+                  <ReportingPeriodSelect fullWidth />
                   <TextField label="Prepared for" value={scorecard.preparedFor} onChange={(event) => updateRootField('preparedFor', event.target.value)} fullWidth size="small" />
                 </Stack>
                 <Stack data-tour-id="executive-pulse-export-actions" direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="flex-end">
@@ -367,7 +438,7 @@ const ExecutivePulsePage = () => {
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, minmax(0, 1fr))' }, gap: 1.5 }}>
           {scorecard.scorecards.map((card) => (
-            <ExecutiveScorecardCard key={card.id} card={card} onOpen={() => setSelectedCardId(card.id)} />
+            <ExecutiveScorecardCard key={card.id} card={card} onOpen={() => setSelectedCardId(card.id)} reportingPeriod={selectedPeriod} />
           ))}
         </Box>
 

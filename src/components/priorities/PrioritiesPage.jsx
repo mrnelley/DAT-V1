@@ -2,26 +2,32 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box, Button, Chip, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { q2Roadmap } from '../../data/mockData';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
+import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EditPriorityPanel from './EditPriorityPanel';
 import FilterPanel from './FilterPanel';
 import PriorityRow from './PriorityRow';
+import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
 const PrioritiesPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
   const { enterprisePriorities, saveEnterprisePriority, strategicPlan } = useOperatingData();
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [expandedAll, setExpandedAll] = useState(false);
+  const visiblePriorities = enterprisePriorities.filter((priority) => (
+    recordMatchesReportingPeriod(priority, selectedPeriodId)
+  ));
 
   useEffect(() => {
     if (searchParams.get('new') !== '1') return;
@@ -48,13 +54,13 @@ const PrioritiesPage = () => {
         </Stack>
       </Stack>
       <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
-        <Chip label={`${q2Roadmap.quarter}: ${q2Roadmap.start} -> ${q2Roadmap.end}`} color="primary" variant="outlined" />
+        <ReportingPeriodSelect />
       </Stack>
       <FilterPanel open={filtersOpen} />
       <Box>
-        {enterprisePriorities.length
-          ? enterprisePriorities.map((priority) => <PriorityRow key={`${priority.id}-${expandedAll}`} currentUser={user} priority={priority} expandedAll={expandedAll} />)
-          : <Typography variant="body2" color="text.secondary">No Enterprise Priorities have been created yet.</Typography>}
+        {visiblePriorities.length
+          ? visiblePriorities.map((priority) => <PriorityRow key={`${priority.id}-${expandedAll}`} currentUser={user} priority={priority} expandedAll={expandedAll} />)
+          : <Typography variant="body2" color="text.secondary">No Enterprise Priorities have been created for {selectedPeriod.label}.</Typography>}
       </Box>
       <EditPriorityPanel
         open={panelOpen}

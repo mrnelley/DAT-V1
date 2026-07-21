@@ -7,7 +7,8 @@ import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivism
 import { Box, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { activeRoadmap } from '../../data/quarterlyRoadmap';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
+import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { decorateWorkplan } from '../../utils/workplans';
 import UserAvatar from '../shared/UserAvatar';
@@ -220,11 +221,15 @@ const EditableStatCard = ({ field, label, storageKey }) => {
   );
 };
 
-const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, user, workplans }) => {
+const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, reportingPeriod, reportingPeriodId, user, workplans }) => {
   const departments = getLaneDepartments(user);
+  const periodPriorityIds = new Set(enterprisePriorities
+    .filter((priority) => recordMatchesReportingPeriod(priority, reportingPeriodId))
+    .map((priority) => priority.id));
   const visibleWorkplans = workplans
     .filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments))
     .map((workplan) => decorateWorkplan(workplan, enterprisePriorities))
+    .filter((workplan) => workplan.enterprisePriorityIds.some((priorityId) => periodPriorityIds.has(priorityId)))
     .sort((a, b) => (
       (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4)
       || new Date(`${a.due}T00:00:00`) - new Date(`${b.due}T00:00:00`)
@@ -239,7 +244,7 @@ const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, user, workpl
           <Typography variant="h3">Department Workplan Alignment</Typography>
           <Typography variant="body2">Department Objectives tied to Enterprise Priorities, strategic pillars, and due dates.</Typography>
         </Box>
-        <Chip label={`${visibleWorkplans.length} ${activeRoadmap.quarter} workplans`} color="primary" variant="outlined" />
+        <Chip label={`${visibleWorkplans.length} aligned to ${reportingPeriod.label}`} color="primary" variant="outlined" />
       </Stack>
 
       <Stack gap={1}>
@@ -253,7 +258,7 @@ const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, user, workpl
             <Box sx={{ minWidth: 0 }}>
               <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{ mb: 0.5 }}>
                 <Chip label={workplan.status} color={statusColor[workplan.status] || 'default'} size="small" />
-                <Chip label={workplan.quarter} size="small" variant="outlined" />
+                <Chip label={reportingPeriod.label} size="small" variant="outlined" />
                 <Chip label={`Due ${workplan.due}`} size="small" variant="outlined" />
               </Stack>
               <Typography variant="body1" color="text.primary" fontWeight={800}>{workplan.title}</Typography>
@@ -295,6 +300,7 @@ const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, user, workpl
 
 const FocusedDashboard = ({ user }) => {
   const { departmentWorkplans, enterprisePriorities, queuedTasks, stucks, weeklyPriorityEntriesByWeek } = useOperatingData();
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const weeklyTrackerEntries = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
   const liveStats = buildLiveStats({
     departmentWorkplans,
@@ -308,7 +314,7 @@ const FocusedDashboard = ({ user }) => {
     return (
       <Box sx={{ mb: 3 }}>
         <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
-        <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} user={user} workplans={departmentWorkplans} />
+        <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} user={user} workplans={departmentWorkplans} />
         <PropertyManagementDashboard user={user} />
       </Box>
     );
@@ -347,7 +353,7 @@ const FocusedDashboard = ({ user }) => {
       </Box>
 
       <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
-      <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} user={user} workplans={departmentWorkplans} />
+      <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} user={user} workplans={departmentWorkplans} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
     </Box>

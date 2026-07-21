@@ -4,7 +4,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Autocomplete, Box, Button, Drawer, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { q2Roadmap, users } from '../../data/mockData';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
+import { users } from '../../data/mockData';
+import { roadmapStatusOptions } from '../../data/quarterlyRoadmap';
+import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
 const blankObjective = () => ({
   id: `objective-${Date.now()}-${Math.random()}`,
@@ -16,6 +19,7 @@ const blankObjective = () => ({
 });
 
 const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [name, setName] = useState('');
   const [pillarId, setPillarId] = useState(strategicPlan.pillars[0]?.id || '');
   const [objectives, setObjectives] = useState([blankObjective()]);
@@ -61,11 +65,11 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
     onSave({
       children: [],
       company: true,
-      description: `${q2Roadmap.quarter} Enterprise Priority aligned to ${pillar?.name || 'the strategic plan'}.`,
-      id: `q2-priority-${Date.now()}`,
+      description: `${selectedPeriod.label} Enterprise Priority aligned to ${pillar?.name || 'the strategic plan'}.`,
+      id: `priority-${Date.now()}`,
       keyObjectives,
       name: name.trim(),
-      period: q2Roadmap.quarter,
+      reportingPeriodId: selectedPeriodId,
       roadmapStatus: keyObjectives.some((objective) => ['Alert', 'Off Course'].includes(objective.status))
         ? 'Alert'
         : keyObjectives.some((objective) => ['Watch', 'Needs Attention'].includes(objective.status))
@@ -93,7 +97,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
         <Stack gap={2}>
           <TextField data-tour-id="priority-name" label="Enterprise Priority Name" value={name} onChange={(event) => setName(event.target.value)} required fullWidth />
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
-            <TextField label="Quarter" value={q2Roadmap.quarter} fullWidth InputProps={{ readOnly: true }} />
+            <ReportingPeriodSelect fullWidth />
             <FormControl data-tour-id="priority-strategic-pillar" fullWidth>
               <InputLabel>Strategic Pillar</InputLabel>
               <Select label="Strategic Pillar" value={pillarId} onChange={(event) => setPillarId(event.target.value)}>
@@ -127,7 +131,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                       fullWidth
                     />
                     <TextField select label="Objective Status" value={objective.status} onChange={(event) => updateObjective(objective.id, 'status', event.target.value)} fullWidth>
-                      {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                      {roadmapStatusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                     </TextField>
                   </Stack>
                   <TextField
@@ -146,7 +150,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
                     label="End Target / Desired Result"
                     value={objective.target}
                     onChange={(event) => updateObjective(objective.id, 'target', event.target.value)}
-                    helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                    helperText={`Describe the intended result by the end of ${selectedPeriod.label}.`}
                     required
                     fullWidth
                     multiline

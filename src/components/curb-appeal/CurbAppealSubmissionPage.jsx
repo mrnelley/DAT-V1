@@ -17,6 +17,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { curbAppealStatusColors, curbAppealStatusLabels } from '../../data/curbAppeal';
+import { getReportingPeriod } from '../../data/reportingPeriods';
 import { useCurbAppeal } from '../../context/CurbAppealContext';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
@@ -76,7 +77,7 @@ const CurbAppealSubmissionPage = () => {
         <Box>
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dashboard/me')} sx={{ mb: 1 }}>Back</Button>
           <Typography variant="h1">{checklistTemplate.title}</Typography>
-          <Typography variant="body2">{submission.propertyName} - {submission.quarter} submission due {submission.dueDate}</Typography>
+          <Typography variant="body2">{submission.propertyName} - {getReportingPeriod(submission).label} submission due {submission.dueDate}</Typography>
         </Box>
         <Stack direction="row" alignItems="center" gap={1}>
           <UserAvatar user={submission.propertyManager} size="md" />

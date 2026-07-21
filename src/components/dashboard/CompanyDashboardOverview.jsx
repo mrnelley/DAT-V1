@@ -11,9 +11,10 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { q2Roadmap } from '../../data/mockData';
 import { getQuarterTransitionState } from '../../data/quarterlyRoadmap';
+import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
 import { useAuth } from '../../hooks/useAuth';
 import CalendarPanel from '../calendar/CalendarPanel';
 import UserAvatar from '../shared/UserAvatar';
@@ -102,15 +103,15 @@ const SignalSummaryTile = ({ count, helper, metaStatus, title }) => {
   );
 };
 
-const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quarterState, statusCounts, team, teamOptions, totalPriorities, onTeamChange }) => (
+const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quarterState, reportingPeriod, statusCounts, team, teamOptions, totalPriorities, onTeamChange }) => (
   <Box data-tour-id="executive-quarter-pulse" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
     <Box sx={{ borderLeft: '8px solid', borderColor: 'primary.main', p: { xs: 1.75, md: 2.5 } }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'flex-start' }} gap={2}>
         <Box sx={{ maxWidth: 820 }}>
           <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
-            <Chip label={q2Roadmap.quarter} color="primary" />
-            <Chip label={q2Roadmap.theme} color="secondary" variant="outlined" />
-            <Chip label={`${prioritiesShown}/${totalPriorities} ${q2Roadmap.quarter} Enterprise Priorities`} variant="outlined" />
+            <Chip label={reportingPeriod.label} color="primary" />
+            <Chip label={reportingPeriod.theme} color="secondary" variant="outlined" />
+            <Chip label={`${prioritiesShown}/${totalPriorities} ${reportingPeriod.label} Enterprise Priorities`} variant="outlined" />
             <Chip label={quarterState.label} color={quarterState.mode === 'closing' ? 'warning' : quarterState.mode === 'setting' ? 'secondary' : 'default'} variant="outlined" />
           </Stack>
           <Typography variant="overline" color="primary">Executive Quarter Pulse</Typography>
@@ -152,7 +153,7 @@ const ExecutiveSignalHeader = ({ averagePriorityProgress, prioritiesShown, quart
             <TrendingUpOutlinedIcon />
           </Stack>
           <Typography variant="body2" sx={{ mt: 0.25, color: 'primary.contrastText', opacity: 0.82 }}>
-            Average across {prioritiesShown} {q2Roadmap.quarter} Enterprise Priorities
+            Average across {prioritiesShown} {reportingPeriod.label} Enterprise Priorities
           </Typography>
         </Box>
       </Box>
@@ -508,7 +509,7 @@ const PillarCoverage = ({ canManage, companyPriorities, onDeletePillar, onEditPi
   </Box>
 );
 
-const PillarDetailDialog = ({ detail, onClose }) => {
+const PillarDetailDialog = ({ detail, onClose, reportingPeriod }) => {
   const open = Boolean(detail);
   const pillar = detail?.pillar;
   const pillarPriorities = detail?.priorities || [];
@@ -553,7 +554,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
                 <Box>
                   <Typography variant="h3">Aligned Enterprise Priorities</Typography>
-                  <Typography variant="body2">{q2Roadmap.quarter} Enterprise Priorities and their KPI evidence tied to this long-term pillar.</Typography>
+                  <Typography variant="body2">{reportingPeriod.label} Enterprise Priorities and their KPI evidence tied to this long-term pillar.</Typography>
                 </Box>
                 <Chip label={`${pillarPriorities.length} priorit${pillarPriorities.length === 1 ? 'y' : 'ies'}`} color="primary" variant="outlined" />
               </Stack>
@@ -600,6 +601,7 @@ const PillarDetailDialog = ({ detail, onClose }) => {
 const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrganizationCalendarEvent, isAdmin }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const {
     deleteStrategicPillar,
     enterprisePriorities,
@@ -611,8 +613,10 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrga
   const [pillarEditor, setPillarEditor] = useState(null);
   const [team, setTeam] = useState('All Teams');
   const companyPriorities = useMemo(
-    () => enterprisePriorities.filter((priority) => priority.company),
-    [enterprisePriorities],
+    () => enterprisePriorities.filter((priority) => (
+      priority.company && recordMatchesReportingPeriod(priority, selectedPeriodId)
+    )),
+    [enterprisePriorities, selectedPeriodId],
   );
   const teamOptions = useMemo(() => getTeamOptions(companyPriorities), [companyPriorities]);
   const visiblePriorities = useMemo(
@@ -629,7 +633,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrga
     count: sortedPriorities.filter((priority) => group.statuses.includes(getPriorityStatus(priority))).length,
   }));
   const averagePriorityProgress = averageProgress(sortedPriorities, getPriorityProgress);
-  const quarterState = useMemo(() => getQuarterTransitionState(), []);
+  const quarterState = useMemo(() => getQuarterTransitionState(selectedPeriod), [selectedPeriod]);
 
   return (
     <Stack gap={2}>
@@ -637,6 +641,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrga
         averagePriorityProgress={averagePriorityProgress}
         prioritiesShown={sortedPriorities.length}
         quarterState={quarterState}
+        reportingPeriod={selectedPeriod}
         statusCounts={statusCounts}
         team={team}
         teamOptions={teamOptions}
@@ -673,6 +678,7 @@ const CompanyDashboardOverview = ({ calendarEvents, calendarProps, canCreateOrga
       <PillarDetailDialog
         detail={pillarDetail}
         onClose={() => setPillarDetail(null)}
+        reportingPeriod={selectedPeriod}
       />
       {pillarEditor && (
         <PillarEditorDialog

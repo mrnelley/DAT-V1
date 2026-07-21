@@ -220,7 +220,7 @@ export const initialCurbAppealSubmissions = portfolioProperties.map((property, i
   return {
     id: `curb-2026-q2-${property.id}`,
     checklistTemplateId: curbAppealChecklistTemplate.id,
-    quarter: 'Q2 2026',
+    reportingPeriodId: '2026-Q2',
     dueDate: '2026-06-30',
     scheduledPromptDate: '2026-04-01',
     reminderDate: '2026-06-15',

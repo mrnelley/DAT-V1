@@ -1,5 +1,3 @@
-import { activeRoadmap } from './quarterlyRoadmap';
-
 const userSeed = [
   {
     id: 'u1',
@@ -305,10 +303,6 @@ export const strategicPlan2030 = {
 };
 
 export const strategicPillarById = Object.fromEntries(strategicPlan2030.pillars.map((pillar) => [pillar.id, pillar]));
-
-export const q2Roadmap = {
-  ...activeRoadmap,
-};
 
 // Operating collections intentionally start empty. Users create the live records.
 export const metrics = [];

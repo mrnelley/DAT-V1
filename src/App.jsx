@@ -1,6 +1,7 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import LoginPage from './components/auth/LoginPage';
 import CurbAppealSubmissionPage from './components/curb-appeal/CurbAppealSubmissionPage';
@@ -11,7 +12,6 @@ import HuddleFormPage from './components/huddles/HuddleFormPage';
 import HuddleItemPage from './components/huddles/HuddleItemPage';
 import AppShell from './components/layout/AppShell';
 import LearnPage from './components/learn/LearnPage';
-import RolePracticePage from './components/learn/RolePracticePage';
 import DataTablePage from './components/metrics/DataTablePage';
 import CompassDestinationPage from './components/navigation/CompassDestinationPage';
 import NotificationsPage from './components/notifications/NotificationsPage';
@@ -32,6 +32,8 @@ import { GuidedPracticeProvider } from './context/GuidedPracticeContext';
 import { NotificationsProvider } from './context/NotificationsContext';
 import { CalendarEventProvider } from './context/CalendarEventContext';
 import { OperatingDataProvider } from './context/OperatingDataContext';
+import { ReportingPeriodProvider } from './context/ReportingPeriodContext';
+import { getPracticeAppUrl, practiceAppUrls } from './data/practiceLinks';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './store/queryClient';
 import theme from './theme';
@@ -79,22 +81,30 @@ const AnimatedRoutes = () => {
   );
 };
 
-const PracticeModeRedirect = () => {
+const PracticeModeRedirect = ({ programId }) => {
   const { user } = useAuth();
-  return <Navigate to={user.workingGroup === 'ELT' ? '/practice/elt' : '/practice/olt'} replace />;
+  const destination = programId
+    ? practiceAppUrls[programId.toUpperCase()]
+    : getPracticeAppUrl(user.workingGroup);
+
+  useEffect(() => {
+    window.location.replace(destination);
+  }, [destination]);
+
+  return null;
 };
 
 const PracticeEntryRoutes = () => (
   <Routes>
     <Route path="/practice" element={<PracticeModeRedirect />} />
-    <Route path="/practice/ELT" element={<Navigate to="/practice/elt" replace />} />
-    <Route path="/practice/OLT" element={<Navigate to="/practice/olt" replace />} />
-    <Route path="/practice/elt" element={<RolePracticePage programId="elt" />} />
-    <Route path="/practice/olt" element={<RolePracticePage programId="olt" />} />
-    <Route path="/learn/ELT" element={<Navigate to="/practice/elt" replace />} />
-    <Route path="/learn/OLT" element={<Navigate to="/practice/olt" replace />} />
-    <Route path="/learn/elt" element={<Navigate to="/practice/elt" replace />} />
-    <Route path="/learn/olt" element={<Navigate to="/practice/olt" replace />} />
+    <Route path="/practice/ELT" element={<PracticeModeRedirect programId="ELT" />} />
+    <Route path="/practice/OLT" element={<PracticeModeRedirect programId="OLT" />} />
+    <Route path="/practice/elt" element={<PracticeModeRedirect programId="ELT" />} />
+    <Route path="/practice/olt" element={<PracticeModeRedirect programId="OLT" />} />
+    <Route path="/learn/ELT" element={<PracticeModeRedirect programId="ELT" />} />
+    <Route path="/learn/OLT" element={<PracticeModeRedirect programId="OLT" />} />
+    <Route path="/learn/elt" element={<PracticeModeRedirect programId="ELT" />} />
+    <Route path="/learn/olt" element={<PracticeModeRedirect programId="OLT" />} />
     <Route path="*" element={<Navigate to="/learn" replace />} />
   </Routes>
 );
@@ -151,9 +161,11 @@ const App = () => (
       <CssBaseline />
       <BrowserRouter>
         <AuthProvider>
-          <ActionFeedbackProvider>
-            <AppRoutes />
-          </ActionFeedbackProvider>
+          <ReportingPeriodProvider>
+            <ActionFeedbackProvider>
+              <AppRoutes />
+            </ActionFeedbackProvider>
+          </ReportingPeriodProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

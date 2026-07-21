@@ -8,17 +8,27 @@ import {
   stucks as seededStucks,
   users,
 } from '../data/mockData';
+import { normalizeReportingPeriodRecord } from '../data/reportingPeriods';
 import { findWorkplanObjective, normalizeWorkplan } from '../utils/workplans';
 
 const OperatingDataContext = createContext(null);
 const storageKey = 'hdc_compass_operating_data';
-const stateVersion = 4;
+const stateVersion = 5;
 const legacyWeeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
 
 const groupTasksByOwner = (tasks) => tasks.reduce((groups, task) => ({
   ...groups,
   [task.owner.id]: [...(groups[task.owner.id] || []), task],
 }), {});
+
+const normalizeEnterprisePriority = (priority) => ({
+  ...normalizeReportingPeriodRecord(priority),
+  children: (priority.children || []).map(normalizeEnterprisePriority),
+});
+
+const normalizeEnterprisePriorities = (priorities) => (
+  (priorities || []).map(normalizeEnterprisePriority)
+);
 
 const sanitizeWeeklyAlignments = (entriesByWeek, workplans, enterprisePriorities) => Object.fromEntries(
   Object.entries(entriesByWeek || {}).map(([weekId, entries]) => [
@@ -59,7 +69,7 @@ const buildInitialState = () => ({
     ownerId: users[0].id,
     ...huddle,
   })),
-  enterprisePriorities: seededEnterprisePriorities,
+  enterprisePriorities: normalizeEnterprisePriorities(seededEnterprisePriorities),
   queuedTasksByOwner: groupTasksByOwner(queuedTasks),
   strategicPlan: strategicPlan2030,
   stucks: seededStucks.map((stuck) => ({
@@ -89,7 +99,9 @@ const readState = () => {
     if (!parsed) return buildInitialState();
 
     const hasCanonicalWeeklyPriorities = Object.prototype.hasOwnProperty.call(parsed, 'weeklyPriorityEntriesByWeek');
-    const enterprisePriorities = parsed.enterprisePriorities || parsed.organizationalPriorities || seededEnterprisePriorities;
+    const enterprisePriorities = normalizeEnterprisePriorities(
+      parsed.enterprisePriorities || parsed.organizationalPriorities || seededEnterprisePriorities,
+    );
     const normalizedWorkplans = (parsed.departmentWorkplans || departmentWorkplans)
       .map((workplan) => normalizeWorkplan(workplan, enterprisePriorities));
     const weeklyPriorityEntriesByWeek = hasCanonicalWeeklyPriorities ? parsed.weeklyPriorityEntriesByWeek || {} : {};
@@ -270,9 +282,10 @@ export const OperatingDataProvider = ({ children }) => {
 
   const setEnterprisePriorities = useCallback((updater) => {
     setState((current) => {
-      const enterprisePriorities = typeof updater === 'function'
+      const updatedPriorities = typeof updater === 'function'
         ? updater(current.enterprisePriorities)
         : updater;
+      const enterprisePriorities = normalizeEnterprisePriorities(updatedPriorities);
       const validPriorityIds = new Set(enterprisePriorities.map((priority) => priority.id));
       const departmentWorkplans = current.departmentWorkplans.map((workplan) => ({
         ...workplan,

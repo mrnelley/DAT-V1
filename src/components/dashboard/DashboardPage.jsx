@@ -4,12 +4,12 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Button, Chip, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { useActionFeedback } from '../../context/ActionFeedbackContext';
-import { metrics, q2Roadmap } from '../../data/mockData';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
+import { metrics } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
 import CalendarPanel from '../calendar/CalendarPanel';
@@ -20,6 +20,7 @@ import CriticalNumbersSection from './CriticalNumbersSection';
 import FocusedDashboard from './FocusedDashboard';
 import MyKpisSection from './MyKpisSection';
 import StrategicPlanSection from './StrategicPlanSection';
+import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
 const getStoredWidgetOrder = (storageKey, fallback) => {
   if (typeof window === 'undefined') return fallback;
@@ -65,7 +66,12 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
-  const { unavailable } = useActionFeedback();
+  const {
+    goToNextPeriod,
+    goToPreviousPeriod,
+    hasNextPeriod,
+    hasPreviousPeriod,
+  } = useReportingPeriod();
   const teamOptions = company ? [] : user.teams;
   const opensCalendarFirst = !company && ['u1', 'u19'].includes(user.id);
   const [team, setTeam] = useState(teamOptions[0] || 'All Teams');
@@ -223,9 +229,9 @@ const DashboardPage = ({ company = false }) => {
             </Button>
           )}
           <Stack data-tour-id="dashboard-period-control" direction="row" alignItems="center">
-            <IconButton title="Previous dashboard period" aria-label="Previous dashboard period" onClick={() => unavailable('historical dashboard periods are not loaded yet.')}><ChevronLeftIcon /></IconButton>
-            <Chip label={`${q2Roadmap.quarter}: ${q2Roadmap.start} -> ${q2Roadmap.end}`} color="primary" variant="outlined" />
-            <IconButton title="Next dashboard period" aria-label="Next dashboard period" onClick={() => unavailable('future dashboard periods are not loaded yet.')}><ChevronRightIcon /></IconButton>
+            <IconButton title="Previous reporting period" aria-label="Previous reporting period" disabled={!hasPreviousPeriod} onClick={goToPreviousPeriod}><ChevronLeftIcon /></IconButton>
+            <ReportingPeriodSelect />
+            <IconButton title="Next reporting period" aria-label="Next reporting period" disabled={!hasNextPeriod} onClick={goToNextPeriod}><ChevronRightIcon /></IconButton>
           </Stack>
           {!company && (
             <FormControl size="small" sx={{ minWidth: 230 }}>

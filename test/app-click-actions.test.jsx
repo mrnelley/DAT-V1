@@ -96,6 +96,7 @@ const { CalendarEventProvider } = await import('../src/context/CalendarEventCont
 const { FeatureAccessProvider } = await import('../src/context/FeatureAccessContext.jsx');
 const { NotificationsProvider } = await import('../src/context/NotificationsContext.jsx');
 const { OperatingDataProvider } = await import('../src/context/OperatingDataContext.jsx');
+const { ReportingPeriodProvider } = await import('../src/context/ReportingPeriodContext.jsx');
 const { default: theme } = await import('../src/theme/index.js');
 const { default: CompanyDashboardOverview } = await import('../src/components/dashboard/CompanyDashboardOverview.jsx');
 const { default: CurrentWeekPrioritiesSection } = await import('../src/components/dashboard/CurrentWeekPrioritiesSection.jsx');
@@ -118,6 +119,7 @@ const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 const { default: WorkplansPage } = await import('../src/components/workplans/WorkplansPage.jsx');
 const { users } = await import('../src/data/mockData.js');
+const { getCurrentReportingPeriodId } = await import('../src/data/reportingPeriods.js');
 const { currentWeeklyReport } = await import('../src/data/weeklyTrackerConfig.js');
 
 const testUser = (id) => users.find((user) => user.id === id);
@@ -127,7 +129,7 @@ const blankOperatingData = (overrides = {}) => ({
   enterprisePriorities: [],
   queuedTasksByOwner: {},
   stucks: [],
-  version: 4,
+  version: 5,
   weeklyActionItems: [],
   weeklyPriorityEntriesByWeek: {},
   ...overrides,
@@ -226,17 +228,19 @@ const renderWithProviders = (ui, path = '/', userId = 'u1', operatingData = null
         <CssBaseline />
         <MemoryRouter initialEntries={[path]}>
           <AuthProvider>
-            <ActionFeedbackProvider>
-              <FeatureAccessProvider>
-                <NotificationsProvider>
-                  <OperatingDataProvider>
-                    <CalendarEventProvider>
-                      {ui}
-                    </CalendarEventProvider>
-                  </OperatingDataProvider>
-                </NotificationsProvider>
-              </FeatureAccessProvider>
-            </ActionFeedbackProvider>
+            <ReportingPeriodProvider>
+              <ActionFeedbackProvider>
+                <FeatureAccessProvider>
+                  <NotificationsProvider>
+                    <OperatingDataProvider>
+                      <CalendarEventProvider>
+                        {ui}
+                      </CalendarEventProvider>
+                    </OperatingDataProvider>
+                  </NotificationsProvider>
+                </FeatureAccessProvider>
+              </ActionFeedbackProvider>
+            </ReportingPeriodProvider>
           </AuthProvider>
         </MemoryRouter>
       </ThemeProvider>,
@@ -434,8 +438,8 @@ describe('clickable user actions', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: /done/i }));
 
     await waitFor(() => {
-      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_executive_pulse_scorecard_v2'));
-      const pipeline = saved.scorecards.find((card) => card.id === 'mission-impact');
+      const saved = JSON.parse(window.localStorage.getItem('hdc_compass_executive_pulse_scorecards_v3'));
+      const pipeline = saved[getCurrentReportingPeriodId()].scorecards.find((card) => card.id === 'mission-impact');
       expect(pipeline.metrics[0].currentStatus).to.equal('TC5 in process; New Holland acquired');
     });
   });
@@ -762,9 +766,36 @@ describe('clickable user actions', () => {
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('hdc_compass_operating_data'));
       const priority = saved.enterprisePriorities.find((item) => item.name === 'Resident service readiness');
+      expect(priority.reportingPeriodId).to.equal(getCurrentReportingPeriodId());
+      expect(priority).not.to.have.property('period');
       expect(priority.keyObjectives[0].owner.id).to.equal('u1');
       expect(priority.keyObjectives[0].kpis[0].target).to.equal('Approved by June 30');
     });
+  });
+
+  it('changes the visible Enterprise Priority dataset with the reporting period selector', async () => {
+    const q2Priority = enterprisePriorityFixture({
+      id: 'q2-priority',
+      name: 'Q2 closeout priority',
+      reportingPeriodId: '2026-Q2',
+    });
+    const q3Priority = enterprisePriorityFixture({
+      id: 'q3-priority',
+      name: 'Q3 active priority',
+      reportingPeriodId: '2026-Q3',
+    });
+    const { user } = renderWithProviders(<PrioritiesPage />, '/priorities', 'u1', {
+      enterprisePriorities: [q2Priority, q3Priority],
+    });
+
+    expect(await screen.findByText('Q3 active priority')).to.exist;
+    expect(screen.queryByText('Q2 closeout priority')).to.equal(null);
+
+    await user.click(screen.getByLabelText(/reporting period/i));
+    await user.click(await screen.findByRole('option', { name: /q2 2026/i }));
+
+    expect(await screen.findByText('Q2 closeout priority')).to.exist;
+    expect(screen.queryByText('Q3 active priority')).to.equal(null);
   });
 
   it('creates an Enterprise Priority from owned Key Objectives and rolls up its signal', async () => {
@@ -913,7 +944,7 @@ describe('clickable user actions', () => {
         title: 'Confirm readiness',
       }],
       name: 'Canonical Enterprise Priority',
-      period: 'Q3 2026',
+      reportingPeriodId: '2026-Q3',
       roadmapStatus: 'Steady',
       strategicPillar: 'Care & Connection',
       strategicPillarId: 'care-connection',
@@ -1046,6 +1077,8 @@ describe('clickable user actions', () => {
     const { user } = renderWithProviders(<LearnPage />, '/learn');
 
     expect(await screen.findByRole('heading', { name: /^learn$/i })).to.exist;
+    expect(screen.getAllByRole('link', { name: /olt practice mode/i })[0].href).to.equal('https://dat-practice-rn98.vercel.app/learn/OLT');
+    expect(screen.getAllByRole('link', { name: /elt practice mode/i })[0].href).to.equal('https://dat-practice-rn98.vercel.app/learn/ELT');
     await user.click(screen.getByRole('button', { name: /dictionary/i }));
     expect(screen.getByRole('heading', { name: /compass dictionary/i })).to.exist;
     expect(screen.getByRole('searchbox', { name: /search the dictionary/i })).to.exist;

@@ -7,7 +7,10 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, LinearProgress, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { q2Roadmap, users } from '../../data/mockData';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
+import { users } from '../../data/mockData';
+import { roadmapStatusOptions } from '../../data/quarterlyRoadmap';
+import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { useAuth } from '../../hooks/useAuth';
 import { decorateWorkplan } from '../../utils/workplans';
 import UserAvatar from '../shared/UserAvatar';
@@ -94,7 +97,7 @@ const getBlankForm = (type, selectedPillar, user, priorityId, objectiveId) => ({
   objectiveDrafts: type === 'priority' ? [blankObjectiveDraft(user)] : [],
 });
 
-const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) => {
+const RoadmapEditorDialog = ({ editor, onClose, onSave, reportingPeriod, selectedPillar, user }) => {
   const [form, setForm] = useState(() => editor.form);
 
   const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -150,7 +153,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                           {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
                         </TextField>
                         <TextField select label="Objective Status" value={draft.status} onChange={updateObjectiveDraft(draft.id, 'status')} fullWidth>
-                          {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                          {roadmapStatusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                         </TextField>
                       </Stack>
                       <TextField
@@ -167,7 +170,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                         label="End Target / Desired Result"
                         value={draft.kpiTarget}
                         onChange={updateObjectiveDraft(draft.id, 'kpiTarget')}
-                        helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                        helperText={`Describe the intended result by the end of ${reportingPeriod.label}.`}
                         fullWidth
                         required
                         multiline
@@ -189,7 +192,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                   {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name} - {candidate.department}</MenuItem>)}
                 </TextField>
                 <TextField select label="Status" value={form.status} onChange={update('status')} fullWidth>
-                  {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                  {roadmapStatusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                 </TextField>
               </Stack>
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
@@ -210,7 +213,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
                 label="End Target / Desired Result"
                 value={form.kpiTarget}
                 onChange={update('kpiTarget')}
-                helperText={`Describe the intended result by the end of ${q2Roadmap.quarter}.`}
+                helperText={`Describe the intended result by the end of ${reportingPeriod.label}.`}
                 fullWidth
                 required
                 multiline
@@ -230,7 +233,7 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <TextField type="number" label="Progress" value={form.progress} onChange={update('progress')} fullWidth inputProps={{ min: 0, max: 100 }} />
                 <TextField select label="Status" value={form.status} onChange={update('status')} fullWidth>
-                  {q2Roadmap.statusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
+                  {roadmapStatusOptions.map((status) => <MenuItem key={status} value={status}>{status}</MenuItem>)}
                 </TextField>
               </Stack>
             </>
@@ -252,12 +255,12 @@ const RoadmapEditorDialog = ({ editor, onClose, onSave, selectedPillar, user }) 
   );
 };
 
-const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjective, onDeletePriority, onOpenEditor, open, pillar }) => (
+const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjective, onDeletePriority, onOpenEditor, open, pillar, reportingPeriod }) => (
   <Dialog aria-labelledby="roadmap-detail-dialog-title" open={open} onClose={onClose} maxWidth="lg" fullWidth>
     <DialogTitle id="roadmap-detail-dialog-title">
       <Stack direction={{ xs: 'column', md: 'row' }} gap={1} justifyContent="space-between">
         <Box>
-          <Typography variant="caption" color="primary">{q2Roadmap.quarter} Roadmap - {q2Roadmap.theme}</Typography>
+          <Typography variant="caption" color="primary">{reportingPeriod.label} Roadmap - {reportingPeriod.theme}</Typography>
           <Typography variant="h2">{pillar?.name}</Typography>
         </Box>
         {canManage && (
@@ -276,7 +279,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
                 <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
                   <Typography variant="h3">{priority.name}</Typography>
                   <Chip label={getPriorityRollupStatus(priority)} color={statusColor[getPriorityRollupStatus(priority)] || 'default'} size="small" />
-                  <Chip label={priority.period} variant="outlined" size="small" />
+                  <Chip label={reportingPeriod.label} variant="outlined" size="small" />
                 </Stack>
                 <Typography variant="body2" sx={{ mt: 0.75 }}>
                   {priority.keyObjectives?.length || 0} Key Objectives with individual owners and KPI targets
@@ -369,6 +372,7 @@ const RoadmapDetailDialog = ({ canManage, onClose, onDeleteKpi, onDeleteObjectiv
 
 const StrategicPlanSection = () => {
   const { user } = useAuth();
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const {
     departmentWorkplans,
     enterprisePriorities,
@@ -380,7 +384,10 @@ const StrategicPlanSection = () => {
   const [editor, setEditor] = useState({ open: false, type: null, mode: 'create', form: {} });
   const canManageRoadmap = eltUserIds.has(user.id);
 
-  const flatPriorities = flattenPriorities(enterprisePriorities);
+  const periodPriorities = enterprisePriorities.filter((priority) => (
+    recordMatchesReportingPeriod(priority, selectedPeriodId)
+  ));
+  const flatPriorities = flattenPriorities(periodPriorities);
   const decoratedWorkplans = departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities));
   const pillarSummaries = strategicPlan.pillars.map((pillar) => {
     const pillarWorkplans = decoratedWorkplans.filter((workplan) => workplan.objectives.some((objective) => objective.strategicPillarId === pillar.id));
@@ -453,16 +460,16 @@ const StrategicPlanSection = () => {
           };
         });
         const nextPriority = {
-          id: form.id || `q2-priority-${Date.now()}`,
+          id: form.id || `priority-${Date.now()}`,
           name: form.name,
           type: 'ROLLUP',
           roadmapStatus: roadmapStatusFromObjectives(keyObjectives),
           company: true,
-          period: q2Roadmap.quarter,
+          reportingPeriodId: selectedPeriodId,
           strategicPlan: strategicPlan.name,
           strategicPillarId: form.strategicPillarId,
           strategicPillar: strategicPlan.pillars.find((pillar) => pillar.id === form.strategicPillarId)?.name,
-          description: `${q2Roadmap.quarter} Enterprise Priority aligned to ${form.strategicPillarId}.`,
+          description: `${selectedPeriod.label} Enterprise Priority aligned to ${form.strategicPillarId}.`,
           keyObjectives,
           children: [],
         };
@@ -541,7 +548,7 @@ const StrategicPlanSection = () => {
               Strategic Plan {strategicPlan.timeframe}
             </Typography>
             <Typography variant="h1" sx={{ mt: 0.5 }}>{strategicPlan.name}</Typography>
-            <Typography variant="h2" sx={{ mt: 1 }}>{q2Roadmap.quarter} Roadmap: {q2Roadmap.theme}</Typography>
+            <Typography variant="h2" sx={{ mt: 1 }}>{selectedPeriod.label} Roadmap: {selectedPeriod.theme}</Typography>
             <Typography variant="body2" sx={{ mt: 0.75 }}>
               ELT defines strategic pillars, Enterprise Priorities, key objectives, KPI targets, and accountable Director-owners. OLT contributes progress through departmental workplans and assigned work.
             </Typography>
@@ -569,8 +576,8 @@ const StrategicPlanSection = () => {
             }}
             role="button"
             tabIndex={0}
-            aria-label={`Open ${pillar.name} ${q2Roadmap.quarter} roadmap`}
-            title={`Open ${pillar.name} ${q2Roadmap.quarter} roadmap`}
+            aria-label={`Open ${pillar.name} ${selectedPeriod.label} roadmap`}
+            title={`Open ${pillar.name} ${selectedPeriod.label} roadmap`}
             sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: pillar.attentionCount ? 'warning.light' : 'divider', borderRadius: 1, p: 1.5, cursor: 'pointer', '&:hover': { borderColor: 'primary.main', boxShadow: 2 } }}
           >
             <Stack direction="row" justifyContent="space-between" gap={1} alignItems="flex-start">
@@ -579,7 +586,7 @@ const StrategicPlanSection = () => {
             </Stack>
             <Typography variant="h3" sx={{ mt: 1 }}>{pillar.name}</Typography>
             <Box sx={{ mt: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>{q2Roadmap.quarter} Priorities</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>{selectedPeriod.label} Priorities</Typography>
               <Stack gap={0.75} sx={{ mt: 0.75 }}>
                 {pillar.priorityItems.length ? (
                   pillar.priorityItems.map((priority) => (
@@ -587,7 +594,7 @@ const StrategicPlanSection = () => {
                       <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
                         <Typography variant="body2" color="text.primary" fontWeight={800}>{priority.name}</Typography>
                         <Stack direction="row" gap={0.5}>
-                          <Chip label={priority.period} size="small" variant="outlined" />
+                          <Chip label={selectedPeriod.label} size="small" variant="outlined" />
                           <Chip label={`${priority.keyObjectives?.length || 0} objectives`} size="small" variant="outlined" />
                         </Stack>
                       </Stack>
@@ -595,7 +602,7 @@ const StrategicPlanSection = () => {
                     </Box>
                   ))
                 ) : (
-                  <Chip label={`No ${q2Roadmap.quarter} Enterprise Priority set`} size="small" variant="outlined" />
+                  <Chip label={`No ${selectedPeriod.label} Enterprise Priority set`} size="small" variant="outlined" />
                 )}
               </Stack>
             </Box>
@@ -627,7 +634,7 @@ const StrategicPlanSection = () => {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1.5 }}>
           <Box>
             <Typography variant="h3">Departmental Workplan Alignment</Typography>
-            <Typography variant="body2">Every visible workplan carries a strategic pillar, quarter, lead, and linked priority set.</Typography>
+            <Typography variant="body2">Workplans inherit reporting context through their linked Enterprise Priorities.</Typography>
           </Box>
           <Chip label="Organization-wide view" color="primary" variant="outlined" />
         </Stack>
@@ -675,12 +682,14 @@ const StrategicPlanSection = () => {
         onOpenEditor={openEditor}
         open={Boolean(selectedPillar)}
         pillar={selectedPillar}
+        reportingPeriod={selectedPeriod}
       />
       {editor.open && (
         <RoadmapEditorDialog
           editor={editor}
           onClose={closeEditor}
           onSave={saveEditor}
+          reportingPeriod={selectedPeriod}
           selectedPillar={selectedPillar}
           user={user}
         />

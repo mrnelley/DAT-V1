@@ -16,8 +16,8 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import { Box, Button, Chip, Divider, InputAdornment, List, ListItemButton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import { dictionaryCategories, dictionaryTerms, dictionaryTermsByLetter } from '../../data/learnDictionary';
+import { getPracticeAppUrl, practiceAppUrls } from '../../data/practiceLinks';
 import { dashboardReportingMap, departmentWorkProcessMap, sourceAlignmentPrinciples } from '../../data/reportingMap';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
@@ -86,12 +86,12 @@ const learningModes = [
   {
     body: 'Workplans, scorecard updates, weekly priorities, support requests, and enterprise progress reporting.',
     label: 'OLT Practice Mode',
-    path: '/practice/olt',
+    url: practiceAppUrls.OLT,
   },
   {
     body: 'Strategic objectives, quarterly themes, board reporting, and the standard operating accountability path.',
     label: 'ELT Practice Mode',
-    path: '/practice/elt',
+    url: practiceAppUrls.ELT,
   },
 ];
 
@@ -282,7 +282,7 @@ const LearnPage = () => {
     setQuery('');
   };
 
-  const practicePath = user.workingGroup === 'ELT' ? '/practice/elt' : '/practice/olt';
+  const practiceUrl = getPracticeAppUrl(user.workingGroup);
   const practiceLabel = user.workingGroup === 'ELT' ? 'Open ELT Practice Mode' : 'Open OLT Practice Mode';
   const recommendedMode = user.workingGroup === 'ELT' ? 'ELT Practice Mode' : 'OLT Practice Mode';
 
@@ -344,9 +344,11 @@ const LearnPage = () => {
                 <List disablePadding sx={{ borderTop: '1px solid rgba(239,220,156,0.45)' }}>
                   {learningModes.map((mode) => (
                     <ListItemButton
-                      component={RouterLink}
-                      key={mode.path}
-                      to={mode.path}
+                      component="a"
+                      href={mode.url}
+                      key={mode.url}
+                      rel="noreferrer"
+                      target="_blank"
                       sx={{
                         borderBottom: '1px solid rgba(239,220,156,0.45)',
                         borderRadius: 0,
@@ -412,9 +414,11 @@ const LearnPage = () => {
                   </Stack>
                   <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
                     <Button
-                      component={RouterLink}
-                      to={practicePath}
+                      component="a"
+                      href={practiceUrl}
+                      rel="noreferrer"
                       startIcon={<PlayCircleOutlineOutlinedIcon />}
+                      target="_blank"
                       variant="contained"
                     >
                       {practiceLabel}

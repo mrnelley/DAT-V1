@@ -33,6 +33,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
+import { useReportingPeriod } from '../../context/ReportingPeriodContext';
 import {
   advocacyContacts,
   advocacyInitiatives,
@@ -42,17 +43,19 @@ import {
   strategicPlan2030,
   users,
 } from '../../data/mockData';
+import { getReportingPeriod, normalizeReportingPeriodRecord, recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
 import CurrentWeekPrioritiesSection from '../dashboard/CurrentWeekPrioritiesSection';
+import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 import UserAvatar from '../shared/UserAvatar';
 
 const periods = [
   { value: 'day', label: 'DAY', title: 'Today', context: 'June 23, 2026' },
   { value: 'week', label: 'WEEK', title: 'This week', context: 'Week of June 22, 2026' },
   { value: 'month', label: 'MONTH', title: 'This month', context: 'June 2026' },
-  { value: 'quarter', label: 'QUARTER', title: 'This quarter', context: 'Q2 2026' },
-  { value: 'year', label: 'YEAR', title: 'This year', context: '2026' },
+  { value: 'quarter', label: 'QUARTER', title: 'This quarter', context: '' },
+  { value: 'year', label: 'YEAR', title: 'This year', context: '' },
 ];
 
 const statusColor = {
@@ -154,13 +157,15 @@ const assessCadence = (contact) => {
 
 const isActiveTouchpoint = (touchpoint) => touchpoint.status !== 'deleted';
 
-const touchpointIsInPeriod = (touchpoint, period) => {
+const touchpointIsInPeriod = (touchpoint, period, reportingPeriod) => {
   const date = safeDate(touchpoint.date);
   if (period === 'day') return touchpoint.date === '2026-06-23';
   if (period === 'week') return date >= new Date('2026-06-22T00:00:00') && date <= new Date('2026-06-28T23:59:59');
   if (period === 'month') return date.getFullYear() === 2026 && date.getMonth() === 5;
-  if (period === 'quarter') return date.getFullYear() === 2026 && date.getMonth() >= 3 && date.getMonth() <= 5;
-  return date.getFullYear() === 2026;
+  if (period === 'quarter') {
+    return touchpoint.date >= reportingPeriod.start && touchpoint.date <= reportingPeriod.end;
+  }
+  return date.getFullYear() === reportingPeriod.year;
 };
 
 const sortTouchpoints = (items) => (
@@ -176,7 +181,7 @@ const latestTouchpointDate = (contact, touchpoints) => {
   return activeDates[0] || contact.lastTouchpoint;
 };
 
-const emptyEntity = (type) => {
+const emptyEntity = (type, reportingPeriodId) => {
   if (type === 'workplan') {
     return {
       title: '',
@@ -193,7 +198,7 @@ const emptyEntity = (type) => {
 
   return {
     title: '',
-    quarter: 'Q2 2026',
+    reportingPeriodId,
     status: 'Steady',
     target: 3,
     current: 0,
@@ -257,15 +262,20 @@ const buildTeamsCardModel = (touchpoint, partner) => ({
 });
 
 const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiatives }) => {
-  const [form, setForm] = useState(emptyEntity(type || 'workplan'));
+  const { selectedPeriodId, setSelectedPeriodId } = useReportingPeriod();
+  const [form, setForm] = useState(emptyEntity(type || 'workplan', selectedPeriodId));
 
   useEffect(() => {
     if (!open || !type) return;
     const next = item
-      ? { ...item, leadId: item.lead?.id || danaUser.id, ownerId: item.owner?.id || danaUser.id }
-      : emptyEntity(type);
+      ? {
+        ...(type === 'initiative' ? normalizeReportingPeriodRecord(item, selectedPeriodId) : item),
+        leadId: item.lead?.id || danaUser.id,
+        ownerId: item.owner?.id || danaUser.id,
+      }
+      : emptyEntity(type, selectedPeriodId);
     setForm(next);
-  }, [item, open, type]);
+  }, [item, open, selectedPeriodId, type]);
 
   if (!type) return null;
 
@@ -328,7 +338,14 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
           {type === 'initiative' && (
             <>
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                <TextField label="Quarter" value={form.quarter || ''} onChange={update('quarter')} fullWidth />
+                <ReportingPeriodSelect
+                  fullWidth
+                  value={form.reportingPeriodId || selectedPeriodId}
+                  onChange={(event) => {
+                    update('reportingPeriodId')(event);
+                    setSelectedPeriodId(event.target.value);
+                  }}
+                />
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select label="Status" value={form.status || 'Steady'} onChange={update('status')}>
@@ -905,10 +922,13 @@ const AdvocacyDashboard = () => {
   const { user } = useAuth();
   const { addCalendarEvent, updateCalendarEvent } = useCalendarEvents();
   const { weeklyPriorityEntriesByWeek } = useOperatingData();
+  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [period, setPeriod] = useState('month');
   const [contacts, setContacts] = useState(advocacyContacts);
   const [touchpoints, setTouchpoints] = useState(advocacyTouchpoints);
-  const [initiatives, setInitiatives] = useState(advocacyInitiatives);
+  const [initiatives, setInitiatives] = useState(() => (
+    advocacyInitiatives.map((initiative) => normalizeReportingPeriodRecord(initiative))
+  ));
   const [workplans, setWorkplans] = useState(advocacyWorkplans);
   const [selectedPartnerId, setSelectedPartnerId] = useState(advocacyContacts[0]?.id || '');
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
@@ -917,19 +937,39 @@ const AdvocacyDashboard = () => {
 
   const canManageTouchpoints = user.id === danaUser.id || user.id === ninaUser?.id;
   const isDelegatedAdvocacyOperator = user.id === ninaUser?.id;
-  const currentPeriod = periods.find((item) => item.value === period) || periods[2];
+  const basePeriod = periods.find((item) => item.value === period) || periods[2];
+  const currentPeriod = {
+    ...basePeriod,
+    context: period === 'quarter'
+      ? selectedPeriod.label
+      : period === 'year'
+        ? String(selectedPeriod.year)
+        : basePeriod.context,
+  };
 
   const visibleTouchpoints = touchpoints.filter((touchpoint) => (
-    isActiveTouchpoint(touchpoint) && touchpointIsInPeriod(touchpoint, period)
+    isActiveTouchpoint(touchpoint) && touchpointIsInPeriod(touchpoint, period, selectedPeriod)
   ));
+
+  const visibleInitiatives = useMemo(() => initiatives.filter((initiative) => (
+    recordMatchesReportingPeriod(initiative, selectedPeriodId)
+  )), [initiatives, selectedPeriodId]);
+  const visibleInitiativeIds = useMemo(
+    () => new Set(visibleInitiatives.map((initiative) => initiative.id)),
+    [visibleInitiatives],
+  );
+  const visibleWorkplans = useMemo(
+    () => workplans.filter((workplan) => !workplan.initiativeId || visibleInitiativeIds.has(workplan.initiativeId)),
+    [visibleInitiativeIds, workplans],
+  );
 
   const contactsById = useMemo(() => (
     Object.fromEntries(contacts.map((contact) => [contact.id, contact]))
   ), [contacts]);
 
   const initiativesById = useMemo(() => (
-    Object.fromEntries(initiatives.map((initiative) => [initiative.id, initiative]))
-  ), [initiatives]);
+    Object.fromEntries(visibleInitiatives.map((initiative) => [initiative.id, initiative]))
+  ), [visibleInitiatives]);
 
   const touchpointCircleCount = new Set(
     visibleTouchpoints.map((touchpoint) => contactsById[touchpoint.contactId]?.circle).filter(Boolean),
@@ -1104,7 +1144,7 @@ const AdvocacyDashboard = () => {
 
     if (type === 'initiative') {
       const pillar = strategicPillarById[form.strategicPillarId] || strategicPillarById['advocate-change'];
-      const next = {
+      const next = normalizeReportingPeriodRecord({
         ...form,
         id: form.id || `ai-${Date.now()}`,
         owner: danaUser,
@@ -1113,7 +1153,7 @@ const AdvocacyDashboard = () => {
         strategicPlan: strategicPlan2030.name,
         strategicPillarId: pillar.id,
         strategicPillar: pillar.name,
-      };
+      }, selectedPeriodId);
       setInitiatives((current) => (form.id ? current.map((item) => item.id === form.id ? next : item) : [...current, next]));
     }
   };
@@ -1285,7 +1325,7 @@ const AdvocacyDashboard = () => {
           <Box>
             <Typography variant="h4" sx={{ mb: 1 }}>Departmental Workplans</Typography>
             <Stack gap={1}>
-              {workplans.map((workplan) => (
+              {visibleWorkplans.map((workplan) => (
                 <Box key={workplan.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                   <Stack direction="row" justifyContent="space-between" gap={1}>
                     <Typography variant="body1" fontWeight={700}>{workplan.title}</Typography>
@@ -1312,9 +1352,9 @@ const AdvocacyDashboard = () => {
           <Box>
             <Typography variant="h4" sx={{ mb: 1 }}>Quarterly Initiatives</Typography>
             <Stack gap={1}>
-              {initiatives.map((initiative) => {
+              {visibleInitiatives.map((initiative) => {
                 const progress = initiative.target ? Math.min(100, Math.round((initiative.current / initiative.target) * 100)) : 0;
-                const linkedWorkplans = workplans.filter((workplan) => workplan.initiativeId === initiative.id).length;
+                const linkedWorkplans = visibleWorkplans.filter((workplan) => workplan.initiativeId === initiative.id).length;
                 return (
                   <Box key={initiative.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                     <Stack direction="row" justifyContent="space-between" gap={1}>
@@ -1325,7 +1365,7 @@ const AdvocacyDashboard = () => {
                       </Stack>
                     </Stack>
                     <Stack direction="row" gap={1} flexWrap="wrap" sx={{ my: 1 }}>
-                      <Chip label={initiative.quarter} color="primary" size="small" />
+                      <Chip label={getReportingPeriod(initiative).label} color="primary" size="small" />
                       <Chip label={initiative.status} color={statusColor[initiative.status]} size="small" />
                       <Chip label={initiative.strategicPillar || 'No pillar set'} size="small" variant="outlined" />
                       <Chip label={`${linkedWorkplans} workplans`} size="small" variant="outlined" />
@@ -1342,7 +1382,7 @@ const AdvocacyDashboard = () => {
       </Box>
 
       <AdvocacyEntityDialog
-        initiatives={initiatives}
+        initiatives={visibleInitiatives}
         item={dialog.item}
         mode={dialog.mode}
         onClose={closeDialog}

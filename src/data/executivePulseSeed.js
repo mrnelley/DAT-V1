@@ -1,16 +1,16 @@
 export const scorecardStatusOptions = ['On Track', 'Needs Attention', 'Off Track', 'No Data'];
 
 const blankMetric = (id) => ({
-  april: '',
   currentStatus: '',
   dept: '',
   id,
-  june: '',
   kpi: '',
-  may: '',
+  month1: '',
+  month2: '',
+  month3: '',
+  periodResult: '',
+  priorPeriodResult: '',
   progress: '',
-  q1: '',
-  q2: '',
   status: 'No Data',
   target: '',
 });
@@ -40,7 +40,6 @@ export const executivePulseSeed = {
   ],
   enterprisePriorities: [],
   mission: '',
-  period: '',
   preparedFor: '',
   scorecards: [
     scorecardTemplate({

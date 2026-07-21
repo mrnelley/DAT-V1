@@ -21,7 +21,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { q2Roadmap } from '../../data/mockData';
+import { getReportingPeriod } from '../../data/reportingPeriods';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import EmptyState from '../shared/EmptyState';
@@ -148,6 +148,7 @@ const EnterprisePriorityPage = () => {
   }));
 
   const priority = sourcePriority;
+  const reportingPeriod = priority ? getReportingPeriod(priority) : null;
   const weeklyEntries = useMemo(
     () => Object.values(weeklyPriorityEntriesByWeek).flat(),
     [weeklyPriorityEntriesByWeek],
@@ -200,7 +201,7 @@ const EnterprisePriorityPage = () => {
               Organization Dashboard
             </Button>
             <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-              <Chip label={q2Roadmap.quarter} color="primary" />
+              <Chip label={reportingPeriod.label} color="primary" />
               <Chip label={priority.strategicPillar} variant="outlined" />
               <Chip icon={<StatusIcon />} label={meta.label} color={meta.color} />
             </Stack>

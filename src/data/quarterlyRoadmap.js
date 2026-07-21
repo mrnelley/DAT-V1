@@ -1,40 +1,42 @@
-const statusOptions = ['Steady', 'Watch', 'Alert', 'Complete', 'Rolled Into Next Quarter', 'Adopted Into Next Quarter', 'Paused'];
+import { getReportingPeriod } from './reportingPeriods';
 
-const quarterThemes = {
-  '2026-Q2': 'Choose Your Hard',
-  '2026-Q3': 'Elevate & Accelerate',
-};
-
-const toIsoDate = (date) => date.toISOString().slice(0, 10);
+export const roadmapStatusOptions = ['Steady', 'Watch', 'Alert', 'Complete', 'Rolled Into Next Quarter', 'Adopted Into Next Quarter', 'Paused'];
 
 export const getQuarterMeta = (date = new Date()) => {
-  const month = date.getMonth();
-  const quarter = Math.floor(month / 3) + 1;
-  const year = date.getFullYear();
-  const start = new Date(year, (quarter - 1) * 3, 1);
-  const end = new Date(year, quarter * 3, 0);
-  const key = `${year}-Q${quarter}`;
+  const period = getReportingPeriod(`${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`);
 
   return {
-    end: toIsoDate(end),
-    id: key.toLowerCase(),
-    key,
-    quarter: `Q${quarter} ${year}`,
-    quarterNumber: quarter,
-    start: toIsoDate(start),
-    statusOptions,
-    theme: quarterThemes[key] || 'Quarterly operating plan',
-    year,
+    ...period,
+    key: period.id,
+    statusOptions: roadmapStatusOptions,
   };
 };
 
-export const getQuarterTransitionState = (date = new Date()) => {
-  const meta = getQuarterMeta(date);
-  const today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+export const getQuarterTransitionState = (periodOrDate = new Date(), referenceDate = new Date()) => {
+  const meta = periodOrDate instanceof Date
+    ? getQuarterMeta(periodOrDate)
+    : getReportingPeriod(periodOrDate);
+  const today = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate());
   const start = new Date(`${meta.start}T00:00:00`);
   const end = new Date(`${meta.end}T00:00:00`);
   const daysUntilEnd = Math.ceil((end - today) / 86400000);
   const daysSinceStart = Math.floor((today - start) / 86400000);
+
+  if (daysUntilEnd < 0) {
+    return {
+      label: 'Quarter closed',
+      mode: 'closed',
+      guidance: 'Review final results and carry-forward decisions from this completed reporting period.',
+    };
+  }
+
+  if (daysSinceStart < 0) {
+    return {
+      label: 'Planning period',
+      mode: 'planning',
+      guidance: 'Stage priorities, targets, and ownership before this reporting period begins.',
+    };
+  }
 
   if (daysUntilEnd >= 0 && daysUntilEnd <= 14) {
     return {
@@ -58,5 +60,3 @@ export const getQuarterTransitionState = (date = new Date()) => {
     guidance: 'Teams can update priorities, workplans, weekly tasks, and stucks normally.',
   };
 };
-
-export const activeRoadmap = getQuarterMeta();
