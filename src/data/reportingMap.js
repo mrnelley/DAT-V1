@@ -118,6 +118,13 @@ export const departmentWorkProcessMap = [
   },
   {
     dashboard: 'Advocacy Dashboard',
+    department: 'Advocacy',
+    reportsTo: 'Advocacy Dashboard, Department Workplans, Weekly Tracker, Organization Dashboard, and Executive Pulse',
+    source: 'Moves Management Master Sheet, Touch Reports, and Annual Workplan',
+    weeklyProcess: 'Coordinate policy engagement, coalition activity, public-sector relationships, advocacy touch points, and the follow-through required to advance enterprise priorities.',
+  },
+  {
+    dashboard: 'Advocacy Dashboard',
     department: 'Community Relations',
     reportsTo: 'Advocacy Dashboard, Department Workplans, Weekly Tracker, and Executive Pulse',
     source: 'Moves Management Master Sheet, Touch Reports, and Annual Workplan',

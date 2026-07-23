@@ -24,7 +24,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { users } from '../../data/mockData';
+import { departments, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import {
   clampProgress,
@@ -43,7 +43,6 @@ const statusColor = {
   Watch: 'warning',
 };
 
-const departments = Array.from(new Set(users.map((user) => user.department))).sort();
 const projectPlanCompleteOptions = ['', 'Not Started', 'In Progress', 'Complete', 'N/A'];
 
 const formatDate = (date) => date

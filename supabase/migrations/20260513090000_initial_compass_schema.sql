@@ -465,7 +465,7 @@ create table if not exists public.weekly_action_entries (
   carried_from_entry_id uuid references public.weekly_action_entries(id) on delete set null,
   priority_id uuid references public.priorities(id) on delete set null,
   workplan_id uuid references public.workplans(id) on delete set null,
-  stuck_id uuid references public.stucks(id) on delete set null,
+  stuck_id uuid,
   title text not null,
   alignment_type text not null default 'enterprise' check (alignment_type in ('enterprise', 'department', 'both')),
   aligned_priority_label text,
@@ -591,6 +591,10 @@ drop trigger if exists prevent_deleting_referenced_weekly_action_task on public.
 create trigger prevent_deleting_referenced_weekly_action_task
 before delete on public.weekly_action_tasks
 for each row execute function public.prevent_deleting_referenced_stuck_source('weekly_action_item');
+
+alter table public.weekly_action_entries
+  add constraint weekly_action_entries_stuck_id_fkey
+  foreign key (stuck_id) references public.stucks(id) on delete set null;
 
 create table if not exists public.calendar_events (
   id uuid primary key default gen_random_uuid(),

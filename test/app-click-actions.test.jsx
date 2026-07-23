@@ -118,7 +118,7 @@ const { default: TaskViewPage } = await import('../src/components/task-view/Task
 const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 const { default: WorkplansPage } = await import('../src/components/workplans/WorkplansPage.jsx');
-const { users } = await import('../src/data/mockData.js');
+const { departments, users } = await import('../src/data/mockData.js');
 const { getCurrentReportingPeriodId } = await import('../src/data/reportingPeriods.js');
 const { currentWeeklyReport } = await import('../src/data/weeklyTrackerConfig.js');
 
@@ -310,6 +310,18 @@ describe('clickable user actions', () => {
     expect(await screen.findByText(/username or password is incorrect/i)).to.exist;
     expect(screen.getByTestId('location').textContent).to.equal('/');
     expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal(null);
+  });
+
+  it('keeps the configured department and leadership directory precise', () => {
+    expect(departments).to.include('Advocacy');
+    expect(departments).to.have.length(12);
+    expect(users.find((user) => user.name === 'Dana Hanchin').department).to.equal('Executive Office');
+
+    ['Shar', 'Ann', 'Parnell', 'Chris'].forEach((name) => {
+      expect(users.find((user) => user.name === name).workingGroup).to.equal('OLT');
+    });
+
+    expect(users.some((user) => user.name === 'Ibrahim' || user.id === 'u16')).to.equal(false);
   });
 
   it('projects only Tammie-owned current-week priorities onto Tammie personal dashboard', async () => {

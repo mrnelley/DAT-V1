@@ -8,6 +8,7 @@ import { Box, Button, Chip, LinearProgress, Stack, Typography } from '@mui/mater
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  departments,
   metrics,
   users,
 } from '../../data/mockData';
@@ -362,7 +363,7 @@ const UsersPage = () => (
   <>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5, mb: 2 }}>
       <StatTile label="Users" value={users.length} helper="Profiles available" />
-      <StatTile label="Departments" value={new Set(users.map((user) => user.department)).size} helper="Represented in Compass" />
+      <StatTile label="Departments" value={departments.length} helper="Configured in Compass" />
       <StatTile label="Leadership Users" value={users.filter((user) => ['ELT', 'OLT'].includes(user.workingGroup)).length} helper="ELT or OLT lanes" />
     </Box>
     <SectionPanel icon={<GroupsOutlinedIcon />} title="Directory" subtitle="People currently available in Compass.">

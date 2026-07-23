@@ -3,6 +3,7 @@ import { strategicPillarById, strategicPlan2030, users } from '../data/mockData'
 export const workplanStatuses = ['Steady', 'Watch', 'Alert', 'Completed', 'Rescheduled'];
 
 const departmentLeadIds = {
+  Advocacy: 'u1',
   'Community Relations': 'u6',
   Compliance: 'u15',
   'Executive Office': 'u1',
