@@ -1,22 +1,34 @@
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import MicrosoftIcon from '@mui/icons-material/Microsoft';
-import { Box, Button, Chip, Stack, Typography } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
-import { getPrimaryDashboardPath } from '../../utils/dashboardRouting';
-
-const demoNames = ['Dana', 'Nina', 'Admin', 'Sam', 'Shar', 'Ann', 'Kim', 'Chris', 'Jaime', 'Angie', 'Michele', 'Meg', 'Tammie', 'Michael'];
 
 const LoginPage = () => {
-  const { isAuthenticated, primaryDashboardPath, signInByName } = useAuth();
+  const { isAuthenticated, primaryDashboardPath, signIn } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,16 +36,16 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, navigate, primaryDashboardPath]);
 
-  const signInAs = (value) => {
-    const match = signInByName(value);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const match = signIn({ password, username });
 
     if (!match) {
-      setError(`Try one of these demo dashboards: ${demoNames.join(', ')}.`);
+      setError('The username or password is incorrect.');
       return;
     }
 
     setError('');
-    navigate(getPrimaryDashboardPath(match));
   };
 
   return (
@@ -114,31 +126,72 @@ const LoginPage = () => {
             sx={{ width: 118, height: 'auto', display: 'block', mb: 2 }}
           />
           <Typography variant="h2">Sign in</Typography>
-          <Typography variant="body2" sx={{ mt: 0.75, mb: 2 }}>
-            Choose a dashboard for the demo. Microsoft sign-in will use the same landing page once OAuth is wired.
+          <Typography variant="body2" sx={{ mt: 0.75, mb: 2.5 }}>
+            Use your HDC Compass account to continue.
           </Typography>
 
-          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
-            Choose a demo dashboard:
-          </Typography>
-          <Stack direction="row" gap={1} flexWrap="wrap">
-            {demoNames.map((demoName) => (
-              <Chip
-                key={demoName}
-                label={demoName}
-                onClick={() => signInAs(demoName)}
-                onDelete={() => signInAs(demoName)}
-                deleteIcon={<ArrowForwardIcon />}
-                color="primary"
-                variant="outlined"
+          <Box component="form" noValidate onSubmit={handleSubmit}>
+            <Stack gap={2}>
+              <TextField
+                autoComplete="username"
+                autoFocus
+                fullWidth
+                label="Username"
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setError('');
+                }}
+                value={username}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutlineOutlinedIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            ))}
-          </Stack>
-          {error && <Typography variant="body2" color="error" sx={{ mt: 1 }}>{error}</Typography>}
-
-          <Button variant="outlined" startIcon={<MicrosoftIcon />} disabled fullWidth sx={{ mt: 2 }}>
-            Sign in with Microsoft
-          </Button>
+              <TextField
+                autoComplete="current-password"
+                fullWidth
+                label="Password"
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setError('');
+                }}
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        edge="end"
+                        onClick={() => setShowPassword((current) => !current)}
+                      >
+                        {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {error && <Alert severity="error">{error}</Alert>}
+              <Button
+                disabled={!username.trim() || !password}
+                fullWidth
+                size="large"
+                startIcon={<LoginOutlinedIcon />}
+                type="submit"
+                variant="contained"
+              >
+                Sign in
+              </Button>
+            </Stack>
+          </Box>
         </Box>
       </Box>
     </Box>

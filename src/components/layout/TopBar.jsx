@@ -3,7 +3,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-import { AppBar, Avatar, Badge, Box, Button, FormControl, IconButton, InputLabel, Menu, MenuItem, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
+import { AppBar, Avatar, Badge, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ import { quickAddItems, topNavMenus } from '../../navigation/topNav';
 import { brandAssets } from '../../theme/brandAssets';
 
 const TopBar = ({ onMenuClick }) => {
-  const { demoUsers, setUserId, signOut, user, userId } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useNotifications();
@@ -112,18 +112,13 @@ const TopBar = ({ onMenuClick }) => {
             </Badge>
           </IconButton>
         </Tooltip>
-        <FormControl size="small" sx={{ minWidth: 230, display: { xs: 'none', lg: 'block' } }}>
-          <InputLabel>Demo User</InputLabel>
-          <Select label="Demo User" value={userId} onChange={(event) => setUserId(event.target.value)}>
-            {demoUsers.map((demoUser) => (
-              <MenuItem key={demoUser.id} value={demoUser.id}>{demoUser.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box sx={{ display: { xs: 'none', xl: 'block' }, maxWidth: 180, minWidth: 0, textAlign: 'right' }}>
+          <Typography variant="body2" fontWeight={800} noWrap title={user.name}>{user.name}</Typography>
+          <Typography variant="caption" color="text.secondary" noWrap title={user.role}>{user.role}</Typography>
+        </Box>
         <Tooltip title={user.name}>
           <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>
-        <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>{user.organization}</Typography>
         <IconButton title="Sign out" aria-label="Sign out" color="primary" onClick={signOut}>
           <LogoutOutlinedIcon />
         </IconButton>

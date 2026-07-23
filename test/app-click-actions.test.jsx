@@ -215,8 +215,8 @@ const renderWithProviders = (ui, path = '/', userId = 'u1', operatingData = null
   cleanup();
   resetDocumentState();
   window.localStorage.clear();
-  window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
-  window.localStorage.setItem('hdc_compass_demo_user_id', userId);
+  window.localStorage.setItem('hdc_compass_authenticated', 'true');
+  window.localStorage.setItem('hdc_compass_user_id', userId);
   window.localStorage.setItem(`hdc_compass_guided_practice_${userId}`, 'complete');
   if (operatingData) {
     window.localStorage.setItem('hdc_compass_operating_data', JSON.stringify(blankOperatingData(operatingData)));
@@ -284,16 +284,32 @@ describe('clickable user actions', () => {
     expect(screen.getByText(/weekly commitments and their action items live in the weekly tracker/i)).to.exist;
   });
 
-  it('uses the user primary dashboard on demo sign in', async () => {
+  it('routes authenticated users to their assigned dashboard', async () => {
     const { user } = renderLoginFlow();
 
-    await user.click(await screen.findByText('Dana'));
+    await user.type(await screen.findByLabelText(/username/i), 'dana');
+    await user.type(screen.getByLabelText(/^password$/i), 'WelcomeHDC');
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
     expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/organization');
 
     cleanup();
     const next = renderLoginFlow();
-    await next.user.click(await screen.findByText('Michael'));
+    await next.user.type(await screen.findByLabelText(/username/i), 'michael');
+    await next.user.type(screen.getByLabelText(/^password$/i), 'WelcomeHDC');
+    await next.user.click(screen.getByRole('button', { name: /^sign in$/i }));
     expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/me');
+  });
+
+  it('rejects an invalid temporary password', async () => {
+    const { user } = renderLoginFlow();
+
+    await user.type(await screen.findByLabelText(/username/i), 'dana');
+    await user.type(screen.getByLabelText(/^password$/i), 'not-the-password');
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
+
+    expect(await screen.findByText(/username or password is incorrect/i)).to.exist;
+    expect(screen.getByTestId('location').textContent).to.equal('/');
+    expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal(null);
   });
 
   it('projects only Tammie-owned current-week priorities onto Tammie personal dashboard', async () => {
@@ -877,6 +893,9 @@ describe('clickable user actions', () => {
       </>,
       '/task-view',
     );
+
+    expect(screen.queryByRole('combobox', { name: /demo user/i })).to.equal(null);
+    expect(await screen.findByText('Dana Hanchin')).to.exist;
 
     const destinations = [
       ['Strategy', 'Organization Dashboard', '/dashboard/organization'],

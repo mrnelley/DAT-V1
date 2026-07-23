@@ -1,17 +1,20 @@
 import { createContext, createElement, useContext, useMemo, useState } from 'react';
+import { temporaryLoginPassword } from '../config/auth';
 import { users } from '../data/mockData';
 import { getPrimaryDashboardPath } from '../utils/dashboardRouting';
 
 const AuthContext = createContext(null);
+const authenticatedStorageKey = 'hdc_compass_authenticated';
+const userStorageKey = 'hdc_compass_user_id';
 
 const getInitialUserId = () => {
   if (typeof window === 'undefined') return 'u1';
-  return window.localStorage.getItem('hdc_compass_demo_user_id') || 'u1';
+  return window.localStorage.getItem(userStorageKey) || 'u1';
 };
 
 const getInitialAuthState = () => {
   if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem('hdc_compass_demo_authenticated') === 'true';
+  return window.localStorage.getItem(authenticatedStorageKey) === 'true';
 };
 
 const getInitialProfileOverrides = () => {
@@ -41,21 +44,20 @@ export const AuthProvider = ({ children }) => {
   const selectUserId = (nextUserId) => {
     setUserId(nextUserId);
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('hdc_compass_demo_user_id', nextUserId);
+      window.localStorage.setItem(userStorageKey, nextUserId);
     }
   };
 
-  const signInByName = (value) => {
-    const normalized = value.trim().toLowerCase();
-    if (!normalized) return null;
+  const signIn = ({ password, username }) => {
+    const normalized = username.trim().toLowerCase();
+    const localPart = normalized.split('@')[0];
+    if (!normalized || password !== temporaryLoginPassword) return null;
 
     const match = users.find((candidate) => {
-      const [firstName] = candidate.name.toLowerCase().split(' ');
       return (
-        firstName.startsWith(normalized)
-        || candidate.name.toLowerCase().includes(normalized)
-        || candidate.role.toLowerCase().includes(normalized)
-        || candidate.department.toLowerCase().includes(normalized)
+        candidate.username === normalized
+        || candidate.username === localPart
+        || candidate.name.toLowerCase() === normalized
       );
     });
 
@@ -63,7 +65,7 @@ export const AuthProvider = ({ children }) => {
       selectUserId(match.id);
       setIsAuthenticated(true);
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem('hdc_compass_demo_authenticated', 'true');
+        window.localStorage.setItem(authenticatedStorageKey, 'true');
       }
     }
 
@@ -73,7 +75,8 @@ export const AuthProvider = ({ children }) => {
   const signOut = () => {
     setIsAuthenticated(false);
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('hdc_compass_demo_authenticated');
+      window.localStorage.removeItem(authenticatedStorageKey);
+      window.localStorage.removeItem(userStorageKey);
     }
   };
 
@@ -93,13 +96,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = useMemo(() => ({
-    demoUsers: users,
     getToken: async () => 'development-token',
     isAuthenticated,
     primaryDashboardPath: getPrimaryDashboardPath(user),
     resetUserProfile,
-    setUserId: selectUserId,
-    signInByName,
+    signIn,
     signOut,
     updateUserProfile,
     user,

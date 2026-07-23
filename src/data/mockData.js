@@ -225,9 +225,14 @@ const userSeed = [
 
 const defaultPrimaryDashboardFor = (user) => (user.workingGroup === 'ELT' ? 'company' : 'individual');
 
+const usernameOverrides = {
+  u0: 'admin',
+};
+
 export const users = userSeed.map((user) => ({
   ...user,
   primaryDashboard: user.primaryDashboard || defaultPrimaryDashboardFor(user),
+  username: usernameOverrides[user.id] || user.name.split(' ')[0].toLowerCase(),
 }));
 
 export const userById = Object.fromEntries(users.map((user) => [user.id, user]));
