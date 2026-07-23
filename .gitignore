@@ -25,6 +25,8 @@ coverage/
 .vite/
 .eslintcache
 .parcel-cache/
+supabase/.branches/
+supabase/.temp/
 
 # Non-runtime documents and reference artifacts
 docs/

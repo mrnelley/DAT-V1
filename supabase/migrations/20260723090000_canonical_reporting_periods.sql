@@ -119,11 +119,24 @@ begin
 end;
 $$;
 
+drop view public.enterprise_priorities;
+
 alter table public.priorities
   drop column period_label,
   add constraint enterprise_priorities_require_reporting_period
     check (not is_company_priority or reporting_period_id is not null)
     not valid;
+
+create view public.enterprise_priorities
+with (security_invoker = true)
+as
+select *
+from public.priorities
+where is_company_priority = true
+with local check option;
+
+comment on view public.enterprise_priorities is
+  'Canonical Enterprise Priority terminology for organization-level priority records.';
 
 alter table public.checklist_submissions
   add column reporting_period_id uuid
