@@ -237,17 +237,28 @@ export const OperatingDataProvider = ({ children, initialData = null }) => {
   }, [runMutation]);
 
   const saveStrategicPillar = useCallback((pillar) => {
+    const savedPillar = {
+      ...pillar,
+      id: pillar.id || globalThis.crypto.randomUUID(),
+      order: pillar.order ?? Math.max(
+        0,
+        ...state.strategicPlan.pillars.map((item) => Number(item.order) || 0),
+      ) + 1,
+    };
+
     setState((current) => ({
       ...current,
       strategicPlan: {
         ...current.strategicPlan,
-        pillars: current.strategicPlan.pillars.some((item) => item.id === pillar.id)
-          ? current.strategicPlan.pillars.map((item) => (item.id === pillar.id ? pillar : item))
-          : [...current.strategicPlan.pillars, pillar],
+        pillars: current.strategicPlan.pillars.some((item) => item.id === savedPillar.id)
+          ? current.strategicPlan.pillars.map((item) => (
+            item.id === savedPillar.id ? savedPillar : item
+          ))
+          : [...current.strategicPlan.pillars, savedPillar],
       },
     }));
-    runMutation(() => saveStrategicPillarRecord(state.strategicPlan.id, pillar));
-  }, [runMutation, state.strategicPlan.id]);
+    runMutation(() => saveStrategicPillarRecord(state.strategicPlan.id, savedPillar));
+  }, [runMutation, state.strategicPlan]);
 
   const deleteStrategicPillar = useCallback((pillarId) => {
     setState((current) => ({

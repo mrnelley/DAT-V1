@@ -82,7 +82,10 @@ const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackCo
 const { CalendarEventProvider } = await import('../src/context/CalendarEventContext.jsx');
 const { FeatureAccessProvider } = await import('../src/context/FeatureAccessContext.jsx');
 const { NotificationsProvider } = await import('../src/context/NotificationsContext.jsx');
-const { OperatingDataProvider } = await import('../src/context/OperatingDataContext.jsx');
+const {
+  OperatingDataProvider,
+  useOperatingData,
+} = await import('../src/context/OperatingDataContext.jsx');
 const { ReportingPeriodProvider } = await import('../src/context/ReportingPeriodContext.jsx');
 const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
 const { default: ExecutivePulsePage } = await import('../src/components/executive-pulse/ExecutivePulsePage.jsx');
@@ -131,6 +134,24 @@ const resetDocument = () => {
   document.body.removeAttribute('aria-hidden');
   document.body.removeAttribute('style');
   document.body.querySelectorAll('.MuiModal-root, .MuiPopover-root, .MuiPopper-root').forEach((node) => node.remove());
+};
+
+const PillarCreationHarness = () => {
+  const { saveStrategicPillar, strategicPlan: currentPlan } = useOperatingData();
+
+  return (
+    <>
+      <button type="button" onClick={() => saveStrategicPillar({ name: 'Resident Voice' })}>
+        Add Resident Voice
+      </button>
+      <button type="button" onClick={() => saveStrategicPillar({ name: 'Financial Strength' })}>
+        Add Financial Strength
+      </button>
+      <output aria-label="pillar records">
+        {JSON.stringify(currentPlan.pillars)}
+      </output>
+    </>
+  );
 };
 
 const renderWithProviders = (ui, { data = {}, path = '/', userId = 'u1' } = {}) => {
@@ -203,6 +224,23 @@ describe('table-backed application surfaces', () => {
   it('maps a real username to Supabase Auth without exposing an email login', () => {
     expect(normalizeUsername(' Dana ')).to.equal('dana');
     expect(getAuthEmailForUsername('Dana')).to.equal('dana@auth.hdcweb.org');
+  });
+
+  it('creates each new strategic pillar as a distinct ordered record', async () => {
+    const { user } = renderWithProviders(<PillarCreationHarness />);
+
+    await user.click(screen.getByRole('button', { name: 'Add Resident Voice' }));
+    await user.click(screen.getByRole('button', { name: 'Add Financial Strength' }));
+
+    const pillars = JSON.parse(screen.getByLabelText('pillar records').textContent);
+    const created = pillars.slice(-2);
+
+    expect(created.map((pillar) => pillar.name)).to.deep.equal([
+      'Resident Voice',
+      'Financial Strength',
+    ]);
+    expect(created.map((pillar) => pillar.order)).to.deep.equal([3, 4]);
+    expect(created[0].id).to.be.a('string').and.not.equal(created[1].id);
   });
 
   it('lets the administrator preview a user dashboard without changing sessions', async () => {

@@ -129,7 +129,7 @@ export const updateProfileRecord = async (userId, values) => {
 
 export const saveStrategicPillarRecord = async (strategicPlanId, pillar) => {
   const row = insertable({
-    display_order: pillar.order || 0,
+    display_order: pillar.order ?? 0,
     id: pillar.id,
     strategic_plan_id: strategicPlanId,
     title: pillar.name,
