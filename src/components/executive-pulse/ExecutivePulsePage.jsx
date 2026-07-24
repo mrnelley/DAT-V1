@@ -8,7 +8,8 @@ import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import { executivePulseSeed, scorecardStatusOptions } from '../../data/executivePulseSeed';
+import { getExecutivePulseSeed, scorecardStatusOptions } from '../../data/executivePulseSeed';
+import { users } from '../../data/mockData';
 import {
   getPreviousReportingPeriod,
   getReportingPeriod,
@@ -47,7 +48,7 @@ const getEditableMetricFields = (reportingPeriod) => {
 };
 
 const cloneSeed = (reportingPeriodId) => ({
-  ...JSON.parse(JSON.stringify(executivePulseSeed)),
+  ...JSON.parse(JSON.stringify(getExecutivePulseSeed(reportingPeriodId, users))),
   reportingPeriodId,
 });
 
@@ -78,16 +79,41 @@ const normalizeScorecard = (scorecard, reportingPeriodId) => {
   return normalized;
 };
 
+const scorecardHasUserContent = (scorecard) => (
+  Boolean(scorecard?.mission || scorecard?.preparedFor)
+  || (scorecard?.scorecards || []).some((card) => (
+    card.metrics.some((metric) => [
+      metric.currentStatus,
+      metric.dept,
+      metric.kpi,
+      metric.month1,
+      metric.month2,
+      metric.month3,
+      metric.periodResult,
+      metric.priorPeriodResult,
+      metric.progress,
+      metric.target,
+    ].some((value) => value !== undefined && value !== null && String(value).trim()))
+  ))
+);
+
 const readScorecardsByPeriod = () => {
   if (typeof window === 'undefined') return {};
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(storageKey));
     if (stored && typeof stored === 'object') {
-      return Object.fromEntries(Object.entries(stored).map(([reportingPeriodId, scorecard]) => [
-        normalizeReportingPeriodId(reportingPeriodId),
-        normalizeScorecard(scorecard, normalizeReportingPeriodId(reportingPeriodId)),
-      ]));
+      return Object.fromEntries(Object.entries(stored).map(([reportingPeriodId, scorecard]) => {
+        const normalizedPeriodId = normalizeReportingPeriodId(reportingPeriodId);
+        const source = normalizedPeriodId === '2026-Q2' && !scorecardHasUserContent(scorecard)
+          ? cloneSeed(normalizedPeriodId)
+          : scorecard;
+
+        return [
+          normalizedPeriodId,
+          normalizeScorecard(source, normalizedPeriodId),
+        ];
+      }));
     }
 
     const legacy = JSON.parse(window.localStorage.getItem(legacyStorageKey));

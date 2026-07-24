@@ -7,13 +7,14 @@ import {
   strategicPlan2030,
   stucks as seededStucks,
   users,
+  weeklyPriorityEntriesByWeek as seededWeeklyPriorityEntriesByWeek,
 } from '../data/mockData';
 import { normalizeReportingPeriodRecord } from '../data/reportingPeriods';
 import { findWorkplanObjective, normalizeWorkplan } from '../utils/workplans';
 
 const OperatingDataContext = createContext(null);
 const storageKey = 'hdc_compass_operating_data';
-const stateVersion = 5;
+const stateVersion = 6;
 const legacyWeeklyTrackerStorageKey = 'hdc_compass_weekly_tracker_entries';
 
 const groupTasksByOwner = (tasks) => tasks.reduce((groups, task) => ({
@@ -30,6 +31,31 @@ const normalizeEnterprisePriorities = (priorities) => (
   (priorities || []).map(normalizeEnterprisePriority)
 );
 
+const mergeSeededRecords = (seededRecords, currentRecords) => {
+  const currentById = new Map((currentRecords || []).map((record) => [record.id, record]));
+  const seededIds = new Set((seededRecords || []).map((record) => record.id));
+
+  return [
+    ...(seededRecords || []).map((record) => currentById.get(record.id) || record),
+    ...(currentRecords || []).filter((record) => !seededIds.has(record.id)),
+  ];
+};
+
+const mergeSeededWeeklyEntries = (currentEntriesByWeek) => {
+  const weekIds = new Set([
+    ...Object.keys(seededWeeklyPriorityEntriesByWeek),
+    ...Object.keys(currentEntriesByWeek || {}),
+  ]);
+
+  return Object.fromEntries([...weekIds].map((weekId) => [
+    weekId,
+    mergeSeededRecords(
+      seededWeeklyPriorityEntriesByWeek[weekId] || [],
+      currentEntriesByWeek?.[weekId] || [],
+    ),
+  ]));
+};
+
 const sanitizeWeeklyAlignments = (entriesByWeek, workplans, enterprisePriorities) => Object.fromEntries(
   Object.entries(entriesByWeek || {}).map(([weekId, entries]) => [
     weekId,
@@ -45,10 +71,17 @@ const sanitizeWeeklyAlignments = (entriesByWeek, workplans, enterprisePriorities
       const validatedPriority = priority && (!objectiveLink || objectiveLink.objective.enterprisePriorityId === priority.id)
         ? priority
         : null;
+      const canonicalAlignmentLabel = [validatedPriority?.name, objectiveLink?.objective.title]
+        .filter(Boolean)
+        .join(' + ');
       return {
         ...entry,
-        alignedPriorityLabel: [validatedPriority?.name, objectiveLink?.objective.title].filter(Boolean).join(' + '),
-        alignmentType: validatedPriority && objectiveLink ? 'both' : validatedPriority ? 'enterprise' : 'department',
+        alignedPriorityLabel: canonicalAlignmentLabel || entry.sourceAlignmentLabel || entry.alignedPriorityLabel || '',
+        alignmentType: validatedPriority && objectiveLink
+          ? 'both'
+          : validatedPriority
+            ? 'enterprise'
+            : entry.alignmentType || 'department',
         objectiveId: objectiveLink?.objective.id || null,
         priorityId: validatedPriority?.id || null,
         strategicPillarId: objectiveLink?.objective.strategicPillarId || null,
@@ -82,7 +115,7 @@ const buildInitialState = () => ({
   })),
   version: stateVersion,
   weeklyActionItems: [],
-  weeklyPriorityEntriesByWeek: {},
+  weeklyPriorityEntriesByWeek: seededWeeklyPriorityEntriesByWeek,
 });
 
 const mergeSeededHuddles = (currentHuddles = []) => {
@@ -98,13 +131,24 @@ const readState = () => {
     const parsed = JSON.parse(window.localStorage.getItem(storageKey));
     if (!parsed) return buildInitialState();
 
+    const needsQ2WorkbookMigration = parsed.version !== stateVersion;
     const hasCanonicalWeeklyPriorities = Object.prototype.hasOwnProperty.call(parsed, 'weeklyPriorityEntriesByWeek');
+    const currentEnterprisePriorities = parsed.enterprisePriorities
+      || parsed.organizationalPriorities
+      || [];
     const enterprisePriorities = normalizeEnterprisePriorities(
-      parsed.enterprisePriorities || parsed.organizationalPriorities || seededEnterprisePriorities,
+      needsQ2WorkbookMigration
+        ? mergeSeededRecords(seededEnterprisePriorities, currentEnterprisePriorities)
+        : currentEnterprisePriorities,
     );
     const normalizedWorkplans = (parsed.departmentWorkplans || departmentWorkplans)
       .map((workplan) => normalizeWorkplan(workplan, enterprisePriorities));
-    const weeklyPriorityEntriesByWeek = hasCanonicalWeeklyPriorities ? parsed.weeklyPriorityEntriesByWeek || {} : {};
+    const currentWeeklyPriorityEntriesByWeek = hasCanonicalWeeklyPriorities
+      ? parsed.weeklyPriorityEntriesByWeek || {}
+      : {};
+    const weeklyPriorityEntriesByWeek = needsQ2WorkbookMigration
+      ? mergeSeededWeeklyEntries(currentWeeklyPriorityEntriesByWeek)
+      : currentWeeklyPriorityEntriesByWeek;
     return {
       ...buildInitialState(),
       ...parsed,

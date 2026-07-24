@@ -113,6 +113,7 @@ const buildTaskForm = (entry, user) => ({
 });
 
 const buildPriorityForm = (entry, user) => ({
+  desiredResult: entry?.desiredResult || '',
   due: entry?.due || baseReport.weekEnd,
   firstTaskDue: entry?.due || baseReport.weekEnd,
   firstTaskOwnerId: user.id,
@@ -130,6 +131,7 @@ const buildEmptyEntry = (participant, rank, report) => ({
   alignmentType: 'department',
   carriedFromEntryId: null,
   department: participant.department,
+  desiredResult: '',
   due: report.weekEnd,
   id: `wae-${report.id}-${participant.id}-${rank}`,
   owner: participant,
@@ -349,6 +351,7 @@ const WeeklyActionTrackerPage = () => {
           alignedPriorityLabel: [validatedPriority?.name, linkedObjective?.title].filter(Boolean).join(' + '),
           alignmentType: validatedPriority && linkedObjective ? 'both' : validatedPriority ? 'enterprise' : 'department',
           createdAt: entry.createdAt || new Date().toISOString(),
+          desiredResult: priorityForm.desiredResult,
           due: priorityForm.due,
           objectiveId: linkedObjective?.id || null,
           priorityId: validatedPriority?.id || null,
@@ -667,6 +670,11 @@ const WeeklyActionTrackerPage = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                           Aligned to: {entry.alignedPriorityLabel}
                         </Typography>
+                        {entry.desiredResult && (
+                          <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>
+                            Desired result: {entry.desiredResult}
+                          </Typography>
+                        )}
                         {entry.riskSupportNote && (
                           <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>
                             Risk/support: {entry.riskSupportNote}
@@ -772,6 +780,15 @@ const WeeklyActionTrackerPage = () => {
               onChange={updatePriorityForm('title')}
               fullWidth
             />
+            <TextField
+              label="Desired result"
+              value={priorityForm.desiredResult}
+              onChange={updatePriorityForm('desiredResult')}
+              helperText="Describe the specific outcome this priority should produce by the end of the week."
+              minRows={2}
+              multiline
+              fullWidth
+            />
             <TextField label="Priority due date" type="date" value={priorityForm.due} onChange={updatePriorityForm('due')} fullWidth InputLabelProps={{ shrink: true }} />
             {!hasAlignmentSourceOptions && (
               <Box sx={{ border: '1px solid', borderColor: 'warning.main', borderRadius: 1, bgcolor: 'warning.light', color: 'warning.contrastText', p: 1.25 }}>
@@ -870,6 +887,11 @@ const WeeklyActionTrackerPage = () => {
                 <Typography variant="body2" sx={{ mt: 0.75 }}>
                   {selectedEntry.owner.name} - {selectedEntry.department}
                 </Typography>
+              </Box>
+
+              <Box sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Desired result</Typography>
+                <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>{selectedEntry.desiredResult || 'No desired result added'}</Typography>
               </Box>
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>

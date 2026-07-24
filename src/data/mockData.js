@@ -1,3 +1,8 @@
+import {
+  buildQ2EnterprisePriorities,
+  buildQ2WeeklyPriorityEntries,
+} from './q2WorkbookScaffold';
+
 export const departments = [
   'Administration',
   'Advocacy',
@@ -313,10 +318,12 @@ export const strategicPlan2030 = {
 
 export const strategicPillarById = Object.fromEntries(strategicPlan2030.pillars.map((pillar) => [pillar.id, pillar]));
 
-// Operating collections intentionally start empty. Users create the live records.
+// Q2 enterprise and weekly tracker records are scaffolded from the source workbooks.
+// Other operating collections start empty until users create live records.
 export const metrics = [];
-export const priorities = [];
+export const priorities = buildQ2EnterprisePriorities(users);
 export const weeklyPriorities = [];
+export const weeklyPriorityEntriesByWeek = buildQ2WeeklyPriorityEntries(users);
 export const financeWeeklyPriorities = [];
 export const weeklyTrackerParticipants = [];
 export const weeklyActionReports = [];

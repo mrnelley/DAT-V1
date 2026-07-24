@@ -1,3 +1,5 @@
+import { buildQ2ExecutivePulseSeed, q2ReportingPeriodId } from './q2WorkbookScaffold';
+
 export const scorecardStatusOptions = ['On Track', 'Needs Attention', 'Off Track', 'No Data'];
 
 const blankMetric = (id) => ({
@@ -86,3 +88,9 @@ export const executivePulseSeed = {
     }),
   ],
 };
+
+export const getExecutivePulseSeed = (reportingPeriodId, directory = []) => (
+  reportingPeriodId === q2ReportingPeriodId
+    ? buildQ2ExecutivePulseSeed(directory)
+    : executivePulseSeed
+);
