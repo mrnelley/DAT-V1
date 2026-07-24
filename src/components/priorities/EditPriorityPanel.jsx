@@ -9,8 +9,10 @@ import { useReportingPeriod } from '../../context/ReportingPeriodContext';
 import { roadmapStatusOptions } from '../../data/quarterlyRoadmap';
 import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
+const createRecordId = () => globalThis.crypto.randomUUID();
+
 const blankObjective = () => ({
-  id: `objective-${Date.now()}-${Math.random()}`,
+  id: createRecordId(),
   kpi: '',
   owner: null,
   status: 'Steady',
@@ -42,12 +44,12 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
     if (!ready) return;
 
     const pillar = strategicPlan.pillars.find((candidate) => candidate.id === pillarId);
-    const keyObjectives = objectives.map((objective, index) => ({
+    const keyObjectives = objectives.map((objective) => ({
       department: objective.owner.department,
       id: objective.id,
       kpis: [{
         currentLabel: '',
-        id: `kpi-${Date.now()}-${index}`,
+        id: createRecordId(),
         progress: 0,
         status: objective.status,
         target: objective.target.trim(),
@@ -67,7 +69,7 @@ const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
       children: [],
       company: true,
       description: `${selectedPeriod.label} Enterprise Priority aligned to ${pillar?.name || 'the strategic plan'}.`,
-      id: `priority-${Date.now()}`,
+      id: createRecordId(),
       keyObjectives,
       name: name.trim(),
       reportingPeriodId: selectedPeriodId,

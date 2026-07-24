@@ -38,12 +38,13 @@ const getAverageProgress = (items) => {
   return Math.round(items.reduce((total, item) => total + clampProgress(item.progress || item.percent), 0) / items.length);
 };
 
-const getUser = (id) => users.find((candidate) => candidate.id === id) || users[0];
+const createRecordId = () => globalThis.crypto.randomUUID();
 
 const ownershipText = 'Finance-owned workplans can only be created or changed by Finance team members. Assigned collaborators can still complete assigned tasks or respond to stucks tied to the workplan.';
 
 const blankObjectiveDraft = (user) => ({
   id: `objective-draft-${Date.now()}-${Math.random()}`,
+  kpiId: null,
   kpiTarget: '',
   kpiTitle: '',
   ownerId: user.id,
@@ -55,6 +56,7 @@ const objectiveDraftsFromPriority = (priority, user) => (
   priority?.keyObjectives?.length
     ? priority.keyObjectives.map((objective) => ({
       id: objective.id,
+      kpiId: objective.kpis?.[0]?.id || null,
       kpiTarget: objective.kpis?.[0]?.target || '',
       kpiTitle: objective.kpis?.[0]?.title || '',
       ownerId: objective.owner?.id || user.id,
@@ -438,10 +440,10 @@ const StrategicPlanSection = () => {
   const saveEditor = (form) => {
     setEnterprisePriorities((current) => {
       if (form.type === 'priority') {
-        const keyObjectives = form.objectiveDrafts.map((draft, index) => {
-          const owner = getUser(draft.ownerId);
+        const keyObjectives = form.objectiveDrafts.map((draft) => {
+          const owner = users.find((candidate) => candidate.id === draft.ownerId) || users[0];
           return {
-            id: draft.id.startsWith('objective-draft-') ? `objective-${Date.now()}-${index}` : draft.id,
+            id: draft.id.startsWith('objective-draft-') ? createRecordId() : draft.id,
             title: draft.title,
             owner,
             ownerIds: [owner.id],
@@ -452,7 +454,7 @@ const StrategicPlanSection = () => {
             workplanSummary: '',
             notes: '',
             kpis: [{
-              id: `kpi-${Date.now()}-${index}`,
+              id: draft.kpiId || createRecordId(),
               title: draft.kpiTitle,
               target: draft.kpiTarget,
               currentLabel: '',
@@ -462,7 +464,7 @@ const StrategicPlanSection = () => {
           };
         });
         const nextPriority = {
-          id: form.id || `priority-${Date.now()}`,
+          id: form.id || createRecordId(),
           name: form.name,
           type: 'ROLLUP',
           roadmapStatus: roadmapStatusFromObjectives(keyObjectives),
@@ -479,9 +481,9 @@ const StrategicPlanSection = () => {
       }
 
       if (form.type === 'objective') {
-        const owner = getUser(form.ownerId);
+        const owner = users.find((candidate) => candidate.id === form.ownerId) || users[0];
         const objective = {
-          id: form.id || `objective-${Date.now()}`,
+          id: form.id || createRecordId(),
           title: form.title,
           owner,
           ownerIds: Array.from(new Set([owner.id, user.id])),
@@ -492,7 +494,7 @@ const StrategicPlanSection = () => {
           workplanSummary: form.workplanSummary,
           notes: form.notes,
           kpis: [{
-            id: form.kpis?.[0]?.id || `kpi-${Date.now()}`,
+            id: form.kpis?.[0]?.id || createRecordId(),
             title: form.kpiTitle,
             target: form.kpiTarget,
             currentLabel: form.kpis?.[0]?.currentLabel || '',
@@ -509,7 +511,7 @@ const StrategicPlanSection = () => {
       }
 
       const kpi = {
-        id: form.id || `kpi-${Date.now()}`,
+        id: form.id || createRecordId(),
         title: form.title,
         target: form.target,
         currentLabel: form.currentLabel,

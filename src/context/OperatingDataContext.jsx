@@ -145,6 +145,7 @@ export const OperatingDataProvider = ({ children, initialData = null }) => {
       setError('');
       return result;
     } catch (mutationError) {
+      await refresh();
       setError(mutationError.message || 'The change could not be saved.');
       return null;
     }

@@ -71,7 +71,7 @@ const DashboardPage = ({ company = false }) => {
     user: authenticatedUser,
   } = useAuth();
   const user = company ? authenticatedUser : dashboardUser;
-  const { metrics } = useOperatingData();
+  const { error: operatingDataError, metrics } = useOperatingData();
   const {
     error: reportingPeriodError,
     goToNextPeriod,
@@ -235,6 +235,11 @@ const DashboardPage = ({ company = false }) => {
 
   return (
     <PageWrapper>
+      {operatingDataError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          This change was not saved: {operatingDataError}
+        </Alert>
+      )}
       {isDashboardPreview && !company && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Admin preview: viewing {user.name}&apos;s dashboard. Dashboard editing and actions are disabled.

@@ -2,7 +2,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
@@ -19,7 +19,12 @@ import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 const PrioritiesPage = () => {
   const { user } = useAuth();
   const { unavailable } = useActionFeedback();
-  const { enterprisePriorities, saveEnterprisePriority, strategicPlan } = useOperatingData();
+  const {
+    enterprisePriorities,
+    error: operatingDataError,
+    saveEnterprisePriority,
+    strategicPlan,
+  } = useOperatingData();
   const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -40,6 +45,11 @@ const PrioritiesPage = () => {
 
   return (
     <PageWrapper>
+      {operatingDataError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          This change was not saved: {operatingDataError}
+        </Alert>
+      )}
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Stack data-tour-id="priorities-header" direction="row" alignItems="center" gap={1}>
           <Typography variant="h1">Enterprise Priorities</Typography>
