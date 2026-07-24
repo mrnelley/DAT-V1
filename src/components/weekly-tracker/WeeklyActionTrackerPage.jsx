@@ -6,7 +6,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -35,6 +35,7 @@ const statusColors = {
 
 const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over'];
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
+const createRecordId = () => globalThis.crypto.randomUUID();
 
 const defaultParticipantOrderFor = (participants, userId) => {
   const groupRank = { ELT: 0, OLT: 1 };
@@ -108,7 +109,7 @@ const buildEmptyEntry = (participant, rank, report) => ({
   carriedFromEntryId: null,
   department: participant.department,
   due: report.weekEnd,
-  id: `wae-${report.id}-${participant.id}-${rank}`,
+  id: createRecordId(),
   owner: participant,
   previousRank: null,
   rank,
@@ -139,6 +140,7 @@ const WeeklyActionTrackerPage = () => {
     departmentWorkplans,
     getTasksForUser,
     enterprisePriorities,
+    error: operatingDataError,
     currentWeeklyReport,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
@@ -279,9 +281,6 @@ const WeeklyActionTrackerPage = () => {
   }, [entries, searchParams, setSearchParams, user]);
 
   const openPriorityDialog = (entry) => {
-    setCurrentEntries((current) => current.some((candidate) => candidate.id === entry.id)
-      ? current
-      : [...current, entry]);
     setPriorityDialogEntry(entry);
     setPriorityForm(buildPriorityForm(entry, user, report));
   };
@@ -322,7 +321,7 @@ const WeeklyActionTrackerPage = () => {
     const taskOwner = users.find((candidate) => candidate.id === priorityForm.firstTaskOwnerId) || user;
     const firstTask = priorityForm.firstTaskTitle.trim()
       ? [{
-        id: `wat-custom-${Date.now()}`,
+        id: createRecordId(),
         taskItemId: null,
         carriedOver: false,
         createdBy: user,
@@ -333,27 +332,29 @@ const WeeklyActionTrackerPage = () => {
       }]
       : [];
 
-    setCurrentEntries((current) => current.map((entry) => (
-      entry.id === priorityDialogEntry.id
-        ? {
-          ...entry,
-          alignedPriorityLabel: [validatedPriority?.name, linkedObjective?.title].filter(Boolean).join(' + '),
-          alignmentType: validatedPriority && linkedObjective ? 'both' : validatedPriority ? 'enterprise' : 'department',
-          createdAt: entry.createdAt || new Date().toISOString(),
-          due: priorityForm.due,
-          objectiveId: linkedObjective?.id || null,
-          priorityId: validatedPriority?.id || null,
-          riskSupportNote: priorityForm.riskSupportNote,
-          sourceType: 'weekly_priority_entry',
-          status: priorityForm.status,
-          tasks: [...firstTask, ...(entry.tasks || [])],
-          title: priorityForm.title.trim(),
-          updatedAt: new Date().toISOString(),
-          strategicPillarId: linkedObjective?.strategicPillarId || null,
-          workplanId: linkedWorkplan?.id || null,
-        }
-        : entry
-    )));
+    const savedEntry = {
+      ...priorityDialogEntry,
+      alignedPriorityLabel: [validatedPriority?.name, linkedObjective?.title].filter(Boolean).join(' + '),
+      alignmentType: validatedPriority && linkedObjective ? 'both' : validatedPriority ? 'enterprise' : 'department',
+      createdAt: priorityDialogEntry.createdAt || new Date().toISOString(),
+      due: priorityForm.due,
+      objectiveId: linkedObjective?.id || null,
+      priorityId: validatedPriority?.id || null,
+      riskSupportNote: priorityForm.riskSupportNote,
+      sourceType: 'weekly_priority_entry',
+      status: priorityForm.status,
+      tasks: [...firstTask, ...(priorityDialogEntry.tasks || [])],
+      title: priorityForm.title.trim(),
+      updatedAt: new Date().toISOString(),
+      strategicPillarId: linkedObjective?.strategicPillarId || null,
+      workplanId: linkedWorkplan?.id || null,
+    };
+
+    setCurrentEntries((current) => (
+      current.some((entry) => entry.id === savedEntry.id)
+        ? current.map((entry) => (entry.id === savedEntry.id ? savedEntry : entry))
+        : [...current, savedEntry]
+    ));
     firstTask.forEach((task) => registerWeeklyActionItem({
       ...task,
       description: task.title,
@@ -392,7 +393,7 @@ const WeeklyActionTrackerPage = () => {
   const addTask = () => {
     const owner = users.find((candidate) => candidate.id === taskForm.ownerId) || user;
     const task = {
-      id: `wat-custom-${Date.now()}`,
+      id: createRecordId(),
       taskItemId: null,
       carriedOver: false,
       createdBy: user,
@@ -479,6 +480,11 @@ const WeeklyActionTrackerPage = () => {
 
   return (
     <PageWrapper>
+      {operatingDataError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          This change was not saved: {operatingDataError}
+        </Alert>
+      )}
       <Stack direction={{ xs: 'column', lg: 'row' }} alignItems={{ xs: 'flex-start', lg: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 2 }}>
         <Box data-tour-id="weekly-tracker-header">
           <Typography variant="h1">Weekly Tracker</Typography>

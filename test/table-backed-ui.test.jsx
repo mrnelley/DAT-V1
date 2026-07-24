@@ -272,6 +272,31 @@ describe('table-backed application surfaces', () => {
     expect(screen.getByText(currentWeeklyReport.label)).to.exist;
   });
 
+  it('creates a weekly priority from an empty slot and surfaces it in the active week', async () => {
+    const { user } = renderWithProviders(<WeeklyActionTrackerPage />, {
+      data: {
+        enterprisePriorities: [{
+          company: true,
+          id: 'enterprise-priority-test',
+          keyObjectives: [],
+          name: 'Strengthen Resident Voice',
+          reportingPeriodId: '2026-Q3',
+          strategicPillarId: strategicPlan.pillars[0].id,
+        }],
+      },
+      path: '/weekly-tracker',
+      userId: 'u11',
+    });
+
+    await user.click(await screen.findByRole('button', { name: /set my weekly priority/i }));
+    await user.type(screen.getByRole('textbox', { name: /weekly priority/i }), 'Complete resident feedback review');
+    await user.click(screen.getByRole('combobox', { name: 'Enterprise Priority' }));
+    await user.click(await screen.findByRole('option', { name: 'Strengthen Resident Voice' }));
+    await user.click(screen.getByRole('button', { name: /save weekly priority/i }));
+
+    expect(await screen.findByText('Complete resident feedback review')).to.exist;
+  });
+
   it('creates advocacy partners and touch reports without runtime seeds', async () => {
     const { user } = renderWithProviders(<AdvocacyDashboard />, {
       path: '/dashboard/me',

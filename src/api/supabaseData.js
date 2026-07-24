@@ -493,13 +493,22 @@ export const replaceWeeklyEntries = async ({
     reportId = savedReport.id;
   }
 
-  await unwrap(client.from('weekly_action_entries').delete().eq('report_id', reportId));
   for (const [index, entry] of entries.entries()) {
-    const savedEntry = await unwrap(client.from('weekly_action_entries').insert({
+    const existingEntry = await unwrap(
+      client
+        .from('weekly_action_entries')
+        .select('id')
+        .eq('report_id', reportId)
+        .eq('owner_id', entry.owner?.id)
+        .eq('rank', entry.rank || index + 1)
+        .maybeSingle(),
+    );
+    const savedEntry = await unwrap(client.from('weekly_action_entries').upsert(insertable({
       aligned_priority_label: entry.alignedPriorityLabel || null,
       alignment_type: entry.alignmentType || (entry.priorityId ? 'enterprise' : 'department'),
       department_id: entry.owner?.departmentId || null,
       due_on: entry.due || report.weekEnd,
+      id: existingEntry?.id || entry.id,
       key_objective_id: entry.objectiveId || null,
       organization_id: organizationId,
       owner_id: entry.owner?.id,
@@ -511,18 +520,30 @@ export const replaceWeeklyEntries = async ({
       stuck_id: entry.stuckId || null,
       title: entry.title,
       workplan_id: entry.workplanId || null,
-    }).select().single());
+    }), { onConflict: 'id' }).select().single());
 
-    if (entry.tasks?.length) {
-      await unwrap(client.from('weekly_action_tasks').insert(entry.tasks.map((task) => ({
+    const existingTasks = await unwrap(
+      client.from('weekly_action_tasks').select('id').eq('entry_id', savedEntry.id),
+    );
+    const savedTaskIds = [];
+    for (const task of entry.tasks || []) {
+      const savedTask = await unwrap(client.from('weekly_action_tasks').upsert(insertable({
         created_by: userId,
         due_on: task.due || report.weekEnd,
         entry_id: savedEntry.id,
+        id: task.id,
         organization_id: organizationId,
         owner_id: task.owner?.id || entry.owner?.id,
         status: task.status || 'open',
         title: task.title,
-      }))));
+      }), { onConflict: 'id' }).select('id').single());
+      savedTaskIds.push(savedTask.id);
+    }
+    const removedTaskIds = existingTasks
+      .map((task) => task.id)
+      .filter((id) => !savedTaskIds.includes(id));
+    if (removedTaskIds.length) {
+      await unwrap(client.from('weekly_action_tasks').delete().in('id', removedTaskIds));
     }
   }
 
