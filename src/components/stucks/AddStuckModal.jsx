@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 
 const buildForm = (user, initialTask) => ({
   description: '',
@@ -10,6 +10,7 @@ const buildForm = (user, initialTask) => ({
 });
 
 const AddStuckModal = ({ initialTask = null, onClose, onSave, open, tasks, user }) => {
+  const { users } = useOperatingData();
   const [form, setForm] = useState(() => buildForm(user, initialTask));
 
   useEffect(() => {

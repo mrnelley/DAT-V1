@@ -13,8 +13,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
-import { users } from '../../data/mockData';
-import { currentWeeklyReport, weeklyTrackerWeekOptions } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
 import { findWorkplanObjective } from '../../utils/workplans';
 import PageWrapper from '../layout/PageWrapper';
@@ -37,38 +35,17 @@ const statusColors = {
 
 const taskStatuses = ['open', 'in_progress', 'complete', 'blocked', 'cancelled', 'carried_over'];
 const weeklyPriorityStatuses = ['steady', 'watch', 'alert'];
-const baseReport = currentWeeklyReport;
-const weekOptions = weeklyTrackerWeekOptions;
-const weeklyParticipantOrderStoragePrefix = 'hdc_compass_weekly_tracker_participant_order';
-const preferredLeadershipOrder = ['u1', 'u8', 'u2', 'u3', 'u6', 'u4', 'u17', 'u5'];
 
-const defaultParticipantOrderFor = (userId) => {
-  const preferred = preferredLeadershipOrder
-    .map((id) => users.find((candidate) => candidate.id === id))
-    .filter(Boolean);
-  const preferredIds = new Set(preferred.map((participant) => participant.id));
-  const remainingOlt = users.filter((participant) => (
-    participant.workingGroup === 'OLT' && !preferredIds.has(participant.id)
-  )).sort((a, b) => a.name.localeCompare(b.name));
-  const remainingStaff = users.filter((participant) => (
-    !['ELT', 'OLT'].includes(participant.workingGroup) && !preferredIds.has(participant.id)
-  )).sort((a, b) => a.name.localeCompare(b.name));
-  const defaultOrder = [...preferred, ...remainingOlt, ...remainingStaff].map((participant) => participant.id);
+const defaultParticipantOrderFor = (participants, userId) => {
+  const groupRank = { ELT: 0, OLT: 1 };
+  const defaultOrder = [...participants]
+    .sort((a, b) => (
+      (groupRank[a.workingGroup] ?? 2) - (groupRank[b.workingGroup] ?? 2)
+      || a.name.localeCompare(b.name)
+    ))
+    .map((participant) => participant.id);
 
   return [userId, ...defaultOrder.filter((id) => id !== userId)];
-};
-
-const readParticipantOrder = (userId) => {
-  const fallback = defaultParticipantOrderFor(userId);
-  if (typeof window === 'undefined') return fallback;
-
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(`${weeklyParticipantOrderStoragePrefix}_${userId}`));
-    if (!Array.isArray(parsed)) return fallback;
-    return [...parsed.filter((id) => users.some((participant) => participant.id === id)), ...fallback.filter((id) => !parsed.includes(id))];
-  } catch {
-    return fallback;
-  }
 };
 
 const formatDateTime = (value) => new Intl.DateTimeFormat('en-US', {
@@ -104,17 +81,17 @@ const getAlignmentTypeLabel = (entry) => {
   return 'Departmental Priority';
 };
 
-const buildTaskForm = (entry, user) => ({
-  due: entry?.due || baseReport.weekEnd,
+const buildTaskForm = (entry, user, report) => ({
+  due: entry?.due || report.weekEnd,
   entryId: entry?.id || '',
   ownerId: entry?.owner?.id || user.id,
   status: 'open',
   title: '',
 });
 
-const buildPriorityForm = (entry, user) => ({
-  due: entry?.due || baseReport.weekEnd,
-  firstTaskDue: entry?.due || baseReport.weekEnd,
+const buildPriorityForm = (entry, user, report) => ({
+  due: entry?.due || report.weekEnd,
+  firstTaskDue: entry?.due || report.weekEnd,
   firstTaskOwnerId: user.id,
   firstTaskTitle: '',
   objectiveId: entry?.objectiveId || '',
@@ -162,23 +139,28 @@ const WeeklyActionTrackerPage = () => {
     departmentWorkplans,
     getTasksForUser,
     enterprisePriorities,
+    currentWeeklyReport,
     registerWeeklyActionItem,
     removeWeeklyActionItem,
     setWeeklyPriorityEntriesForWeek,
     stucks,
     updateWeeklyActionItem,
     weeklyPriorityEntriesByWeek,
+    weeklyReports,
+    users,
   } = useOperatingData();
+  const baseReport = currentWeeklyReport;
+  const weekOptions = weeklyReports;
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('all');
   const [selectedWeekId, setSelectedWeekId] = useState(baseReport.id);
-  const [priorityForm, setPriorityForm] = useState(buildPriorityForm(null, user));
+  const [priorityForm, setPriorityForm] = useState(buildPriorityForm(null, user, baseReport));
   const [priorityDialogEntry, setPriorityDialogEntry] = useState(null);
   const [selectedEntryId, setSelectedEntryId] = useState(null);
-  const [taskForm, setTaskForm] = useState(buildTaskForm(null, user));
+  const [taskForm, setTaskForm] = useState(buildTaskForm(null, user, baseReport));
   const [taskDialogEntry, setTaskDialogEntry] = useState(null);
   const [stuckTask, setStuckTask] = useState(null);
-  const [participantOrderIds, setParticipantOrderIds] = useState(() => readParticipantOrder(user.id));
+  const [participantOrderIds, setParticipantOrderIds] = useState(() => defaultParticipantOrderFor(users, user.id));
   const [draggedParticipantId, setDraggedParticipantId] = useState(null);
   const [dragOverParticipantId, setDragOverParticipantId] = useState(null);
   const canUseStuckActions = isFeatureEnabled('stuckActions', user);
@@ -236,14 +218,23 @@ const WeeklyActionTrackerPage = () => {
   }, [participantOrderIds, rows, scope, user.id]);
 
   useEffect(() => {
-    setParticipantOrderIds(readParticipantOrder(user.id));
-  }, [user.id]);
+    setParticipantOrderIds((current) => {
+      const fallback = defaultParticipantOrderFor(users, user.id);
+      return [
+        ...current.filter((id) => users.some((participant) => participant.id === id)),
+        ...fallback.filter((id) => !current.includes(id)),
+      ];
+    });
+  }, [user.id, users]);
+
+  useEffect(() => {
+    if (!weekOptions.some((week) => week.id === selectedWeekId)) {
+      setSelectedWeekId(baseReport.id);
+    }
+  }, [baseReport.id, selectedWeekId, weekOptions]);
 
   const saveParticipantOrder = (nextOrder) => {
     setParticipantOrderIds(nextOrder);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(`${weeklyParticipantOrderStoragePrefix}_${user.id}`, JSON.stringify(nextOrder));
-    }
   };
 
   const moveParticipantRow = (participantId, direction) => {
@@ -279,7 +270,7 @@ const WeeklyActionTrackerPage = () => {
 
     if (candidate) {
       setPriorityDialogEntry(candidate);
-      setPriorityForm(buildPriorityForm(candidate, user));
+      setPriorityForm(buildPriorityForm(candidate, user, report));
     }
 
     const nextParams = new URLSearchParams(searchParams);
@@ -292,12 +283,12 @@ const WeeklyActionTrackerPage = () => {
       ? current
       : [...current, entry]);
     setPriorityDialogEntry(entry);
-    setPriorityForm(buildPriorityForm(entry, user));
+    setPriorityForm(buildPriorityForm(entry, user, report));
   };
 
   const closePriorityDialog = () => {
     setPriorityDialogEntry(null);
-    setPriorityForm(buildPriorityForm(null, user));
+    setPriorityForm(buildPriorityForm(null, user, report));
   };
 
   const updatePriorityForm = (field) => (event) => {
@@ -388,12 +379,12 @@ const WeeklyActionTrackerPage = () => {
 
   const openTaskDialog = (entry) => {
     setTaskDialogEntry(entry);
-    setTaskForm(buildTaskForm(entry, user));
+    setTaskForm(buildTaskForm(entry, user, report));
   };
 
   const closeTaskDialog = () => {
     setTaskDialogEntry(null);
-    setTaskForm(buildTaskForm(null, user));
+    setTaskForm(buildTaskForm(null, user, report));
   };
 
   const updateTaskForm = (field) => (event) => setTaskForm((current) => ({ ...current, [field]: event.target.value }));

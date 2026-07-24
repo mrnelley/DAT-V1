@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
-    "test": "tsx node_modules/mocha/bin/mocha.js --timeout 20000 \"test/**/*.test.jsx\""
+    "test": "tsx node_modules/mocha/bin/mocha.js --timeout 20000 \"test/**/*.test.jsx\" --exit"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.23.0",

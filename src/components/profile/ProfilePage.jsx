@@ -1,28 +1,16 @@
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import RestartAltOutlinedIcon from '@mui/icons-material/RestartAltOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { Box, Button, Chip, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import { users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 
-const dashboardFocusOptions = [
-  'advocacy',
-  'advancement',
-  'development',
-  'financials',
-  'hr',
-  'operations',
-  'property_management',
-  'resident_services',
-];
-
-const workingGroupOptions = ['ELT', 'OLT', 'Team Member'];
-
 const ProfilePage = () => {
-  const { resetUserProfile, updateUserProfile, user } = useAuth();
+  const { users } = useOperatingData();
+  const { reloadUserProfile, updateUserProfile, user } = useAuth();
   const [form, setForm] = useState(user);
 
   useEffect(() => {
@@ -42,11 +30,6 @@ const ProfilePage = () => {
     updateUserProfile({
       name: fullName,
       initials: form.initials.trim().toUpperCase(),
-      role: form.role.trim(),
-      department: form.department.trim(),
-      dashboardFocus: form.dashboardFocus,
-      organization: form.organization.trim(),
-      workingGroup: form.workingGroup,
       teams: form.teamsText
         ? form.teamsText.split(',').map((team) => team.trim()).filter(Boolean)
         : form.teams,
@@ -54,7 +37,7 @@ const ProfilePage = () => {
   };
 
   const handleReset = () => {
-    resetUserProfile();
+    reloadUserProfile();
   };
 
   const editableForm = {
@@ -88,20 +71,12 @@ const ProfilePage = () => {
             <TextField label="Full Name" value={editableForm.name || ''} onChange={update('name')} fullWidth />
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
               <TextField label="Initials" value={editableForm.initials || ''} onChange={update('initials')} fullWidth />
-              <TextField label="Organization" value={editableForm.organization || ''} onChange={update('organization')} fullWidth />
+              <TextField label="Organization" value={editableForm.organization || ''} fullWidth disabled />
             </Stack>
-            <TextField label="Role Title" value={editableForm.role || ''} onChange={update('role')} fullWidth />
-            <TextField label="Department" value={editableForm.department || ''} onChange={update('department')} fullWidth />
-            <TextField select label="Working Group" value={editableForm.workingGroup || 'Team Member'} onChange={update('workingGroup')} fullWidth>
-              {workingGroupOptions.map((option) => (
-                <MenuItem key={option} value={option}>{option}</MenuItem>
-              ))}
-            </TextField>
-            <TextField select label="Dashboard Focus" value={editableForm.dashboardFocus || 'operations'} onChange={update('dashboardFocus')} fullWidth>
-              {dashboardFocusOptions.map((option) => (
-                <MenuItem key={option} value={option}>{option.replaceAll('_', ' ')}</MenuItem>
-              ))}
-            </TextField>
+            <TextField label="Role Title" value={editableForm.role || ''} fullWidth disabled />
+            <TextField label="Department" value={editableForm.department || ''} fullWidth disabled />
+            <TextField label="Working Group" value={editableForm.workingGroup || 'Team Member'} fullWidth disabled />
+            <TextField label="Dashboard Focus" value={(editableForm.dashboardFocus || 'operations').replaceAll('_', ' ')} fullWidth disabled />
             <TextField
               label="Teams"
               helperText="Comma-separated team names used for dashboard filters and operational routing."
@@ -113,7 +88,7 @@ const ProfilePage = () => {
             />
             <Stack direction="row" gap={1} flexWrap="wrap">
               <Button variant="contained" startIcon={<SaveOutlinedIcon />} onClick={handleSave}>Save Profile</Button>
-              <Button variant="outlined" startIcon={<RestartAltOutlinedIcon />} onClick={handleReset}>Reset to Seed</Button>
+              <Button variant="outlined" startIcon={<RestartAltOutlinedIcon />} onClick={handleReset}>Reload Profile</Button>
             </Stack>
           </Stack>
         </Box>

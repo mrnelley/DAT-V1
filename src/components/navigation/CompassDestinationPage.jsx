@@ -7,12 +7,6 @@ import TableViewOutlinedIcon from '@mui/icons-material/TableViewOutlined';
 import { Box, Button, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  departments,
-  metrics,
-  users,
-} from '../../data/mockData';
-import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { getWorkplanStatus } from '../../utils/workplans';
@@ -147,7 +141,7 @@ const ActionButtons = ({ actions }) => {
   );
 };
 
-const buildTeamSummaries = () => {
+const buildTeamSummaries = (users) => {
   const teams = new Map();
 
   users.forEach((user) => {
@@ -165,15 +159,18 @@ const buildTeamSummaries = () => {
 };
 
 const TeamHealthPage = () => {
-  const { departmentWorkplans, huddles, queuedTasks, stucks } = useOperatingData();
-  const teamSummaries = useMemo(buildTeamSummaries, []);
+  const { departmentWorkplans, huddles, queuedTasks, stucks, users } = useOperatingData();
+  const teamSummaries = useMemo(() => buildTeamSummaries(users), [users]);
   const openTaskItems = queuedTasks.filter((item) => item.status !== 'Complete').length;
   const visibleWorkplans = departmentWorkplans.filter((workplan) => ['Watch', 'Alert'].includes(getWorkplanStatus(workplan)));
+  const taskProgress = queuedTasks.length ? Math.round(((queuedTasks.length - openTaskItems) / queuedTasks.length) * 100) : 0;
+  const blockerProgress = queuedTasks.length ? Math.max(0, Math.round((1 - (stucks.length / queuedTasks.length)) * 100)) : 0;
+  const workplanProgress = departmentWorkplans.length ? Math.round(((departmentWorkplans.length - visibleWorkplans.length) / departmentWorkplans.length) * 100) : 0;
 
   return (
     <>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <StatTile label="People" value={users.length} helper="Across the demo directory" />
+        <StatTile label="People" value={users.length} helper="Across the organization directory" />
         <StatTile label="Teams" value={teamSummaries.length} helper="Named work groups" />
         <StatTile label="Open Stucks" value={stucks.length} helper="Blockers needing help" />
         <StatTile label="Active Huddles" value={huddles.length} helper="Operating rhythms online" />
@@ -185,9 +182,9 @@ const TeamHealthPage = () => {
           title="Culture Signals"
           subtitle="Fast read on whether the operating system is creating clarity or friction."
         >
-          <SignalRow label="Follow-through load" helper={`${openTaskItems} visible tasks are still open or in progress.`} progress={68} status="Watch" />
-          <SignalRow label="Blocker pressure" helper={`${stucks.length} stucks have named helpers and can be worked in huddle.`} progress={82} status="Steady" />
-          <SignalRow label="Workplan attention" helper={`${visibleWorkplans.length} workplans need focus before the next leadership review.`} progress={54} status="Watch" />
+          <SignalRow label="Follow-through load" helper={`${openTaskItems} visible tasks are still open or in progress.`} progress={taskProgress} status={taskProgress >= 80 ? 'Steady' : 'Watch'} />
+          <SignalRow label="Blocker pressure" helper={`${stucks.length} stucks have named helpers and can be worked in huddle.`} progress={blockerProgress} status={blockerProgress >= 80 ? 'Steady' : 'Watch'} />
+          <SignalRow label="Workplan attention" helper={`${visibleWorkplans.length} workplans need focus before the next leadership review.`} progress={workplanProgress} status={workplanProgress >= 80 ? 'Steady' : 'Watch'} />
         </SectionPanel>
 
         <SectionPanel
@@ -218,7 +215,7 @@ const TeamHealthPage = () => {
 };
 
 const ExecutiveSummaryPage = () => {
-  const { enterprisePriorities } = useOperatingData();
+  const { currentWeeklyReport, enterprisePriorities, metrics } = useOperatingData();
   const priorityCounts = enterprisePriorities.reduce((counts, priority) => {
     const status = priority.roadmapStatus || priority.status || 'No Data';
     return { ...counts, [status]: (counts[status] || 0) + 1 };
@@ -291,7 +288,7 @@ const ExecutiveSummaryPage = () => {
 };
 
 const ExportsPage = () => {
-  const { enterprisePriorities, queuedTasks } = useOperatingData();
+  const { enterprisePriorities, metrics, queuedTasks } = useOperatingData();
   const exportCatalog = [
     {
       description: 'Metric title, owner, current value, target, and source.',
@@ -359,8 +356,10 @@ const ExportsPage = () => {
   );
 };
 
-const UsersPage = () => (
-  <>
+const UsersPage = () => {
+  const { departments, users } = useOperatingData();
+  return (
+    <>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5, mb: 2 }}>
       <StatTile label="Users" value={users.length} helper="Profiles available" />
       <StatTile label="Departments" value={departments.length} helper="Configured in Compass" />
@@ -385,11 +384,13 @@ const UsersPage = () => (
         ))}
       </Box>
     </SectionPanel>
-  </>
-);
+    </>
+  );
+};
 
 const TeamsPage = () => {
-  const teamSummaries = useMemo(buildTeamSummaries, []);
+  const { users } = useOperatingData();
+  const teamSummaries = useMemo(() => buildTeamSummaries(users), [users]);
 
   return (
     <SectionPanel icon={<GroupsOutlinedIcon />} title="Team Map" subtitle="Teams are compiled from the current user profiles.">
@@ -414,6 +415,7 @@ const TeamsPage = () => {
 };
 
 const PermissionsPage = () => {
+  const { users } = useOperatingData();
   const permissionRows = [
     { area: 'ELT', manage: 'Strategic pillars, Enterprise Priorities, KPI targets, and action visibility.', members: users.filter((user) => user.workingGroup === 'ELT') },
     { area: 'OLT', manage: 'Department workplans, weekly action tracker follow-through, and team huddle work.', members: users.filter((user) => user.workingGroup === 'OLT') },

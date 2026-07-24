@@ -1,7 +1,6 @@
 import {
   buildTeamsWebhookMessage,
   buildWeeklyTrackerGoalsCard,
-  weeklyTrackerGoalsRecipientEmail,
 } from '../../src/utils/weeklyTrackerGoalsCard.js';
 
 const getBaseUrl = (request) => (
@@ -66,9 +65,14 @@ export default async function handler(request, response) {
   }
 
   const body = request.method === 'POST' ? await readJsonBody(request) : {};
-  const recipientEmail = body.recipientEmail || url.searchParams.get('recipient') || weeklyTrackerGoalsRecipientEmail;
+  const recipientEmail = body.recipientEmail || url.searchParams.get('recipient') || '';
   const huddleId = body.huddleId || url.searchParams.get('huddleId') || 'monday-weekly-tracker-huddle';
   const huddleName = body.huddleName || url.searchParams.get('huddleName') || 'Monday Morning Weekly Tracker Huddle';
+
+  if (request.method === 'POST' && !recipientEmail) {
+    response.status(400).json({ error: 'A prompt recipient is required.' });
+    return;
+  }
   const card = createCard({
     baseUrl,
     huddleId,

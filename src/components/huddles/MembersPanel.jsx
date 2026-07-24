@@ -1,8 +1,9 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import UserAvatar from '../shared/UserAvatar';
 
 const MembersPanel = ({ memberIds = [] }) => {
+  const { users } = useOperatingData();
   const members = users.filter((user) => memberIds.includes(user.id));
 
   return (

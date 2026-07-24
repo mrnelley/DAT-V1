@@ -3,12 +3,12 @@ import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import { Box, Checkbox, Chip, FormControl, InputLabel, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Box, Checkbox, Chip, FormControl, InputLabel, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import CurbAppealWorkflowPanel from '../curb-appeal/CurbAppealWorkflowPanel';
-import { getPropertyRisk, getPropertyTasks, portfolioProperties, portfolioRegions } from '../../data/propertyPortfolio';
 import UserAvatar from '../shared/UserAvatar';
 
 const statusColor = {
@@ -26,97 +26,23 @@ const markerColor = {
   Inactive: '#6b7280',
 };
 
-const editableStatStorageKey = 'hdc_compass_property_management_dashboard_stats';
+const getPropertyRisk = (property) => {
+  const operations = property.operations || {};
+  if (operations.complianceRisk === 'High' || operations.occupancy < 91 || operations.agedWorkOrders >= 8) return 'Alert';
+  if (operations.openWorkOrders >= 18 || operations.leasingExposure >= 8) return 'Watch';
+  return 'Steady';
+};
 
-const EditableStatCard = ({ field, helper, icon: Icon, label }) => {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(() => {
-    if (typeof window === 'undefined') return '';
-
-    try {
-      return JSON.parse(window.localStorage.getItem(editableStatStorageKey))?.[field] || '';
-    } catch {
-      return '';
-    }
-  });
-
-  const save = (nextValue = value) => {
-    if (typeof window !== 'undefined') {
-      try {
-        const current = JSON.parse(window.localStorage.getItem(editableStatStorageKey)) || {};
-        window.localStorage.setItem(editableStatStorageKey, JSON.stringify({ ...current, [field]: nextValue }));
-      } catch {
-        window.localStorage.setItem(editableStatStorageKey, JSON.stringify({ [field]: nextValue }));
-      }
-    }
-    setEditing(false);
-  };
-
-  return (
-  <Box
-    aria-label={`Edit ${label}`}
-    onClick={() => setEditing(true)}
-    onKeyDown={(event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      setEditing(true);
-    }}
-    role="button"
-    tabIndex={0}
-    title={`Edit ${label}`}
-    sx={{
-      bgcolor: 'background.paper',
-      border: '1px solid',
-      borderColor: editing ? 'primary.main' : 'divider',
-      borderRadius: 1,
-      cursor: 'text',
-      minHeight: 112,
-      p: 1.5,
-      transition: 'border-color 160ms ease, box-shadow 160ms ease',
-      '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
-      '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)' },
-    }}
-  >
+const PortfolioStatCard = ({ helper, icon: Icon, label, value }) => (
+  <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, minHeight: 112, p: 1.5 }}>
     <Stack direction="row" alignItems="center" gap={1}>
       <Icon color="primary" />
       <Typography variant="caption">{label}</Typography>
     </Stack>
-    {editing ? (
-      <TextField
-        autoFocus
-        fullWidth
-        onBlur={() => save()}
-        onChange={(event) => setValue(event.target.value)}
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            save(event.currentTarget.value);
-          }
-        }}
-        placeholder="Add value"
-        value={value}
-        variant="standard"
-        inputProps={{ 'aria-label': label, title: label }}
-        sx={{
-          mt: 0.75,
-          '& input': {
-            color: value ? 'primary.main' : 'text.secondary',
-            fontSize: '1.55rem',
-            fontWeight: 800,
-            p: 0,
-          },
-        }}
-      />
-    ) : (
-      <Typography color={value ? 'primary' : 'text.secondary'} variant="h2" sx={{ my: 0.5 }}>
-        {value || 'Click to add'}
-      </Typography>
-    )}
+    <Typography color="primary" variant="h2" sx={{ my: 0.5 }}>{value}</Typography>
     <Typography variant="body2">{helper}</Typography>
   </Box>
-  );
-};
+);
 
 const MapFocusController = ({ enabled, property }) => {
   const map = useMap();
@@ -133,42 +59,49 @@ const MapFocusController = ({ enabled, property }) => {
 };
 
 const PropertyManagementDashboard = ({ user }) => {
+  const {
+    properties,
+    queuedTasks,
+    updateProperty,
+    updateQueuedTask,
+  } = useOperatingData();
   const [region, setRegion] = useState('All Regions');
-  const [selectedPropertyId, setSelectedPropertyId] = useState(portfolioProperties[0].id);
-  const [completedTaskIds, setCompletedTaskIds] = useState([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [mapFocusEnabled, setMapFocusEnabled] = useState(false);
-  const [portfolioStatusByProperty, setPortfolioStatusByProperty] = useState(() => (
-    Object.fromEntries(portfolioProperties.map((property) => [property.id, property.isActivePortfolio]))
-  ));
-
-  const propertiesWithPortfolioStatus = useMemo(() => (
-    portfolioProperties.map((property) => ({
-      ...property,
-      isActivePortfolio: portfolioStatusByProperty[property.id] ?? property.isActivePortfolio,
-    }))
-  ), [portfolioStatusByProperty]);
+  const portfolioRegions = useMemo(() => [
+    'All Regions',
+    ...new Set(properties.map((property) => property.state).filter(Boolean)),
+  ], [properties]);
 
   const filteredProperties = useMemo(() => (
-    propertiesWithPortfolioStatus.filter((property) => region === 'All Regions' || property.state === region)
-  ), [propertiesWithPortfolioStatus, region]);
+    properties.filter((property) => region === 'All Regions' || property.state === region)
+  ), [properties, region]);
 
-  const selectedProperty = filteredProperties.find((property) => property.id === selectedPropertyId) || filteredProperties[0] || portfolioProperties[0];
-  const selectedTasks = getPropertyTasks(selectedProperty);
+  const selectedProperty = filteredProperties.find((property) => property.id === selectedPropertyId) || filteredProperties[0] || null;
+  const selectedTasks = queuedTasks.filter((task) => task.propertyId === selectedProperty?.id);
   const activeProperties = filteredProperties.filter((property) => property.isActivePortfolio);
-  const allTasks = activeProperties.flatMap((property) => getPropertyTasks(property).map((task) => ({ ...task, property })));
-  const selectedRisk = selectedProperty.isActivePortfolio ? getPropertyRisk(selectedProperty) : 'Inactive';
+  const propertiesById = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
+  const allTasks = queuedTasks
+    .filter((task) => propertiesById.has(task.propertyId))
+    .map((task) => ({ ...task, property: propertiesById.get(task.propertyId) }));
+  const selectedRisk = selectedProperty?.isActivePortfolio ? getPropertyRisk(selectedProperty) : 'Inactive';
+  const portfolioTotals = useMemo(() => activeProperties.reduce((totals, property) => ({
+    alerts: totals.alerts + (getPropertyRisk(property) === 'Alert' ? 1 : 0),
+    openWorkOrders: totals.openWorkOrders + Number(property.operations?.openWorkOrders || 0),
+    units: totals.units + Number(property.estimatedUnits || 0),
+  }), { alerts: 0, openWorkOrders: 0, units: 0 }), [activeProperties]);
 
   const toggleTask = (taskId) => {
-    setCompletedTaskIds((current) => (
-      current.includes(taskId) ? current.filter((id) => id !== taskId) : [...current, taskId]
-    ));
+    const task = queuedTasks.find((item) => item.id === taskId);
+    if (!task) return;
+    updateQueuedTask(taskId, {
+      status: ['complete', 'completed'].includes(String(task.status).toLowerCase()) ? 'open' : 'complete',
+    });
   };
 
   const togglePortfolioStatus = (propertyId) => {
-    setPortfolioStatusByProperty((current) => ({
-      ...current,
-      [propertyId]: !current[propertyId],
-    }));
+    const property = properties.find((item) => item.id === propertyId);
+    if (property) updateProperty(propertyId, { isActivePortfolio: !property.isActivePortfolio });
   };
 
   return (
@@ -191,11 +124,19 @@ const PropertyManagementDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        <EditableStatCard field="activeCommunities" icon={MapOutlinedIcon} label="Active Communities" helper="Raw editable portfolio value." />
-        <EditableStatCard field="activeUnits" icon={HomeWorkOutlinedIcon} label="Active Units" helper="Raw editable portfolio value." />
-        <EditableStatCard field="alerts" icon={WarningAmberOutlinedIcon} label="Alerts" helper="Raw editable portfolio value." />
-        <EditableStatCard field="openWorkOrders" icon={ConstructionOutlinedIcon} label="Open Work Orders" helper="Raw editable portfolio value." />
+        <PortfolioStatCard icon={MapOutlinedIcon} label="Active Communities" value={activeProperties.length} helper="Properties in the active portfolio." />
+        <PortfolioStatCard icon={HomeWorkOutlinedIcon} label="Active Units" value={portfolioTotals.units} helper="Units represented by active properties." />
+        <PortfolioStatCard icon={WarningAmberOutlinedIcon} label="Alerts" value={portfolioTotals.alerts} helper="Active properties with an alert signal." />
+        <PortfolioStatCard icon={ConstructionOutlinedIcon} label="Open Work Orders" value={portfolioTotals.openWorkOrders} helper="Open work orders in current property snapshots." />
       </Box>
+
+      {!selectedProperty ? (
+        <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+          <Typography variant="h3">No properties configured</Typography>
+          <Typography variant="body2">Property records and operating snapshots will appear here after they are added.</Typography>
+        </Box>
+      ) : (
+        <>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.25fr 0.9fr' }, gap: 2, mb: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
@@ -211,7 +152,7 @@ const PropertyManagementDashboard = ({ user }) => {
               <InputLabel>Region</InputLabel>
               <Select label="Region" value={region} onChange={(event) => {
                 setRegion(event.target.value);
-                const nextProperty = propertiesWithPortfolioStatus.find((property) => event.target.value === 'All Regions' || property.state === event.target.value);
+                const nextProperty = properties.find((property) => event.target.value === 'All Regions' || property.state === event.target.value);
                 if (nextProperty) {
                   setSelectedPropertyId(nextProperty.id);
                   setMapFocusEnabled(true);
@@ -229,7 +170,7 @@ const PropertyManagementDashboard = ({ user }) => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              {filteredProperties.map((property) => {
+              {filteredProperties.filter((property) => property.coordinates).map((property) => {
                 const risk = property.isActivePortfolio ? getPropertyRisk(property) : 'Inactive';
                 const selected = property.id === selectedProperty.id;
                 return (
@@ -270,29 +211,33 @@ const PropertyManagementDashboard = ({ user }) => {
           <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 1.5 }}>
             <Chip label={`${selectedProperty.estimatedUnits || 'Unknown'} units`} color="primary" size="small" variant="outlined" />
             <Chip label={selectedProperty.state} size="small" variant="outlined" />
-            <Chip label={selectedProperty.coordinates.quality} size="small" variant="outlined" />
+            {selectedProperty.coordinates?.quality && <Chip label={selectedProperty.coordinates.quality} size="small" variant="outlined" />}
             {selectedProperty.managementType && <Chip label="Third-party management" color="warning" size="small" />}
           </Stack>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 1.5 }}>
             <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1 }}>
               <Typography variant="caption">Occupancy</Typography>
-              <Typography variant="h4">{selectedProperty.operations.occupancy}%</Typography>
+              <Typography variant="h4">{selectedProperty.operations?.occupancy ?? '-'}{selectedProperty.operations?.occupancy != null ? '%' : ''}</Typography>
             </Box>
             <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1 }}>
               <Typography variant="caption">Open Work Orders</Typography>
-              <Typography variant="h4">{selectedProperty.operations.openWorkOrders}</Typography>
+              <Typography variant="h4">{selectedProperty.operations?.openWorkOrders ?? '-'}</Typography>
             </Box>
             <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1 }}>
               <Typography variant="caption">Aged Exceptions</Typography>
-              <Typography variant="h4">{selectedProperty.operations.agedWorkOrders}</Typography>
+              <Typography variant="h4">{selectedProperty.operations?.agedWorkOrders ?? '-'}</Typography>
             </Box>
             <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1 }}>
               <Typography variant="caption">Resident Service Open</Typography>
-              <Typography variant="h4">{selectedProperty.operations.residentServiceOpen}</Typography>
+              <Typography variant="h4">{selectedProperty.operations?.residentServiceOpen ?? '-'}</Typography>
             </Box>
           </Box>
-          <Typography variant="caption">Priority Link</Typography>
-          <Typography variant="body1" fontWeight={700} sx={{ mb: 1 }}>{selectedProperty.priorityLink}</Typography>
+          {selectedProperty.priorityLink && (
+            <>
+              <Typography variant="caption">Priority Link</Typography>
+              <Typography variant="body1" fontWeight={700} sx={{ mb: 1 }}>{selectedProperty.priorityLink}</Typography>
+            </>
+          )}
           <Typography variant="body2" color="text.primary">{selectedProperty.housingType}</Typography>
           <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1 }}>
             {selectedProperty.residentFocus?.map((focus) => <Chip key={focus} label={focus} size="small" variant="outlined" />)}
@@ -375,7 +320,7 @@ const PropertyManagementDashboard = ({ user }) => {
 
           <Stack gap={1.25} sx={{ mb: 2 }}>
             {selectedTasks.map((task) => {
-              const done = completedTaskIds.includes(task.id);
+              const done = ['complete', 'completed'].includes(String(task.status).toLowerCase());
               return (
                 <Box key={task.id} sx={{ border: '1px solid', borderColor: done ? 'success.main' : 'divider', borderRadius: 1, p: 1.25, bgcolor: done ? 'rgba(0, 110, 92, 0.08)' : 'transparent' }}>
                   <Stack direction="row" alignItems="flex-start" gap={1}>
@@ -414,6 +359,8 @@ const PropertyManagementDashboard = ({ user }) => {
           </Table>
         </Box>
       </Box>
+        </>
+      )}
     </Box>
   );
 };

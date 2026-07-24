@@ -1,120 +1,149 @@
-import { createContext, createElement, useContext, useMemo, useState } from 'react';
-import { temporaryLoginPassword } from '../config/auth';
-import { users } from '../data/mockData';
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { updateProfileRecord } from '../api/supabaseData';
+import { profileFromRow } from '../data/recordAdapters';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getPrimaryDashboardPath } from '../utils/dashboardRouting';
 
 const AuthContext = createContext(null);
-const authenticatedStorageKey = 'hdc_compass_authenticated';
-const userStorageKey = 'hdc_compass_user_id';
 
-const getInitialUserId = () => {
-  if (typeof window === 'undefined') return 'u1';
-  return window.localStorage.getItem(userStorageKey) || 'u1';
+const loadProfile = async (userId) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      department:departments!profiles_department_id_fkey(*),
+      organization:organizations!profiles_organization_id_fkey(*)
+    `)
+    .eq('id', userId)
+    .single();
+
+  if (error) throw error;
+  return profileFromRow(
+    data,
+    new Map(data.department ? [[data.department.id, data.department]] : []),
+    new Map(data.organization ? [[data.organization.id, data.organization]] : []),
+  );
 };
 
-const getInitialAuthState = () => {
-  if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem(authenticatedStorageKey) === 'true';
-};
+export const AuthProvider = ({ children, initialUser = null }) => {
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(initialUser);
+  const [isLoading, setIsLoading] = useState(!initialUser);
+  const configurationError = isSupabaseConfigured
+    ? ''
+    : 'Supabase environment variables are not configured.';
 
-const getInitialProfileOverrides = () => {
-  if (typeof window === 'undefined') return {};
-
-  try {
-    return JSON.parse(window.localStorage.getItem('hdc_compass_profile_overrides')) || {};
-  } catch {
-    return {};
-  }
-};
-
-export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(getInitialAuthState);
-  const [profileOverrides, setProfileOverrides] = useState(getInitialProfileOverrides);
-  const [userId, setUserId] = useState(getInitialUserId);
-  const baseUser = users.find((candidate) => candidate.id === userId) || users[0];
-  const user = { ...baseUser, ...(profileOverrides[userId] || {}) };
-
-  const saveProfileOverrides = (nextOverrides) => {
-    setProfileOverrides(nextOverrides);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('hdc_compass_profile_overrides', JSON.stringify(nextOverrides));
+  const hydrateSession = useCallback(async (nextSession) => {
+    setSession(nextSession);
+    if (!nextSession?.user) {
+      setUser(initialUser);
+      setIsLoading(false);
+      return;
     }
-  };
 
-  const selectUserId = (nextUserId) => {
-    setUserId(nextUserId);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(userStorageKey, nextUserId);
+    try {
+      setUser(await loadProfile(nextSession.user.id));
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [initialUser]);
 
-  const signIn = ({ password, username }) => {
-    const normalized = username.trim().toLowerCase();
-    const localPart = normalized.split('@')[0];
-    if (!normalized || password !== temporaryLoginPassword) return null;
+  useEffect(() => {
+    if (initialUser || !supabase) {
+      setIsLoading(false);
+      return undefined;
+    }
 
-    const match = users.find((candidate) => {
-      return (
-        candidate.username === normalized
-        || candidate.username === localPart
-        || candidate.name.toLowerCase() === normalized
-      );
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) hydrateSession(data.session);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (active) hydrateSession(nextSession);
     });
 
-    if (match) {
-      selectUserId(match.id);
-      setIsAuthenticated(true);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(authenticatedStorageKey, 'true');
-      }
-    }
-
-    return match || null;
-  };
-
-  const signOut = () => {
-    setIsAuthenticated(false);
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(authenticatedStorageKey);
-      window.localStorage.removeItem(userStorageKey);
-    }
-  };
-
-  const updateUserProfile = (values) => {
-    const nextUser = {
-      ...profileOverrides[userId],
-      ...values,
-      id: userId,
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
     };
-    saveProfileOverrides({ ...profileOverrides, [userId]: nextUser });
-  };
+  }, [hydrateSession, initialUser]);
 
-  const resetUserProfile = () => {
-    const nextOverrides = { ...profileOverrides };
-    delete nextOverrides[userId];
-    saveProfileOverrides(nextOverrides);
-  };
+  const signIn = useCallback(async ({ password, username }) => {
+    if (!supabase) {
+      return { error: new Error('Supabase is not configured.'), user: null };
+    }
+
+    const email = username.trim().toLowerCase();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error, user: null };
+    await hydrateSession(data.session);
+    return { error: null, user: data.user };
+  }, [hydrateSession]);
+
+  const signOut = useCallback(async () => {
+    if (supabase) await supabase.auth.signOut();
+    setSession(null);
+    setUser(initialUser);
+  }, [initialUser]);
+
+  const updateUserProfile = useCallback(async (values) => {
+    if (!user) return null;
+    const row = await updateProfileRecord(user.id, values);
+    const nextUser = {
+      ...user,
+      avatarUrl: row.avatar_url || '',
+      initials: row.initials || user.initials,
+      name: row.display_name || row.full_name,
+      teams: row.teams || [],
+    };
+    setUser(nextUser);
+    return nextUser;
+  }, [user]);
+
+  const reloadUserProfile = useCallback(async () => {
+    if (!session?.user) return user;
+    const nextUser = await loadProfile(session.user.id);
+    setUser(nextUser);
+    return nextUser;
+  }, [session, user]);
 
   const value = useMemo(() => ({
-    getToken: async () => 'development-token',
-    isAuthenticated,
+    configurationError,
+    getToken: async () => session?.access_token || '',
+    isAuthenticated: Boolean(user && (initialUser || session)),
+    isLoading,
     primaryDashboardPath: getPrimaryDashboardPath(user),
-    resetUserProfile,
+    reloadUserProfile,
     signIn,
     signOut,
     updateUserProfile,
     user,
-    userId,
-  }), [isAuthenticated, profileOverrides, user, userId]);
+    userId: user?.id || null,
+  }), [
+    configurationError,
+    initialUser,
+    isLoading,
+    reloadUserProfile,
+    session,
+    signIn,
+    signOut,
+    updateUserProfile,
+    user,
+  ]);
 
   return createElement(AuthContext.Provider, { value }, children);
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used inside an AuthProvider');
-  }
-
+  if (!context) throw new Error('useAuth must be used inside an AuthProvider');
   return context;
 };

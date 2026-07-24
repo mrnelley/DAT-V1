@@ -8,7 +8,6 @@ import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, I
 import { useState } from 'react';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import { users } from '../../data/mockData';
 import { roadmapStatusOptions } from '../../data/quarterlyRoadmap';
 import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
 import { useAuth } from '../../hooks/useAuth';
@@ -26,8 +25,6 @@ const statusColor = {
   Paused: 'default',
   Rescheduled: 'default',
 };
-
-const eltUserIds = new Set(['u1', 'u2', 'u3', 'u6', 'u8']);
 
 const flattenPriorities = (items) => items.flatMap((priority) => [
   priority,
@@ -379,16 +376,21 @@ const StrategicPlanSection = () => {
     queuedTasks,
     setEnterprisePriorities,
     strategicPlan,
+    users,
   } = useOperatingData();
   const [selectedPillarId, setSelectedPillarId] = useState(null);
   const [editor, setEditor] = useState({ open: false, type: null, mode: 'create', form: {} });
-  const canManageRoadmap = eltUserIds.has(user.id);
+  const canManageRoadmap = user.workingGroup === 'ELT';
 
   const periodPriorities = enterprisePriorities.filter((priority) => (
     recordMatchesReportingPeriod(priority, selectedPeriodId)
   ));
   const flatPriorities = flattenPriorities(periodPriorities);
-  const decoratedWorkplans = departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities));
+  const decoratedWorkplans = departmentWorkplans.map((workplan) => decorateWorkplan(
+    workplan,
+    enterprisePriorities,
+    { strategicPillars: strategicPlan.pillars, users },
+  ));
   const pillarSummaries = strategicPlan.pillars.map((pillar) => {
     const pillarWorkplans = decoratedWorkplans.filter((workplan) => workplan.objectives.some((objective) => objective.strategicPillarId === pillar.id));
     const pillarPriorities = flatPriorities.filter((priority) => priority.strategicPillarId === pillar.id);

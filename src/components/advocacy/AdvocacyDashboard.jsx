@@ -34,26 +34,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import {
-  advocacyContacts,
-  advocacyInitiatives,
-  advocacyTouchpoints,
-  advocacyWorkplans,
-  strategicPillarById,
-  strategicPlan2030,
-  users,
-} from '../../data/mockData';
 import { getReportingPeriod, normalizeReportingPeriodRecord, recordMatchesReportingPeriod } from '../../data/reportingPeriods';
-import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { useAuth } from '../../hooks/useAuth';
 import CurrentWeekPrioritiesSection from '../dashboard/CurrentWeekPrioritiesSection';
 import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 import UserAvatar from '../shared/UserAvatar';
 
 const periods = [
-  { value: 'day', label: 'DAY', title: 'Today', context: 'June 23, 2026' },
-  { value: 'week', label: 'WEEK', title: 'This week', context: 'Week of June 22, 2026' },
-  { value: 'month', label: 'MONTH', title: 'This month', context: 'June 2026' },
+  { value: 'day', label: 'DAY', title: 'Today' },
+  { value: 'week', label: 'WEEK', title: 'This week' },
+  { value: 'month', label: 'MONTH', title: 'This month' },
   { value: 'quarter', label: 'QUARTER', title: 'This quarter', context: '' },
   { value: 'year', label: 'YEAR', title: 'This year', context: '' },
 ];
@@ -76,10 +66,6 @@ const entityLabels = {
   workplan: 'Departmental Workplan',
   initiative: 'Quarterly Initiative',
 };
-
-const danaUser = users.find((candidate) => candidate.id === 'u1') || users[0];
-const ninaUser = users.find((candidate) => candidate.id === 'u19');
-const currentOperatingDate = new Date('2026-06-23T12:00:00');
 
 const cadenceTargets = {
   Coalition: 10,
@@ -129,7 +115,7 @@ const formatAuditTimestamp = (dateString) => {
 
 const daysSince = (dateString) => {
   if (!dateString) return 999;
-  const diff = currentOperatingDate.getTime() - safeDate(dateString).getTime();
+  const diff = Date.now() - safeDate(dateString).getTime();
   return Math.max(0, Math.floor(diff / 86400000));
 };
 
@@ -159,9 +145,16 @@ const isActiveTouchpoint = (touchpoint) => touchpoint.status !== 'deleted';
 
 const touchpointIsInPeriod = (touchpoint, period, reportingPeriod) => {
   const date = safeDate(touchpoint.date);
-  if (period === 'day') return touchpoint.date === '2026-06-23';
-  if (period === 'week') return date >= new Date('2026-06-22T00:00:00') && date <= new Date('2026-06-28T23:59:59');
-  if (period === 'month') return date.getFullYear() === 2026 && date.getMonth() === 5;
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  if (period === 'day') return date.toDateString() === now.toDateString();
+  if (period === 'week') return date >= weekStart && date <= weekEnd;
+  if (period === 'month') return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
   if (period === 'quarter') {
     return touchpoint.date >= reportingPeriod.start && touchpoint.date <= reportingPeriod.end;
   }
@@ -181,17 +174,19 @@ const latestTouchpointDate = (contact, touchpoints) => {
   return activeDates[0] || contact.lastTouchpoint;
 };
 
-const emptyEntity = (type, reportingPeriodId) => {
+const dateInput = (date = new Date()) => date.toISOString().slice(0, 10);
+
+const emptyEntity = (type, reportingPeriodId, leadId = '', pillarId = '') => {
   if (type === 'workplan') {
     return {
       title: '',
-      department: 'Executive Office',
-      leadId: danaUser.id,
+      department: 'Advocacy',
+      leadId,
       initiativeId: '',
       status: 'Steady',
-      due: '2026-06-30',
-      progress: 50,
-      strategicPillarId: 'advocate-change',
+      due: getReportingPeriod(reportingPeriodId)?.end || '',
+      progress: 0,
+      strategicPillarId: pillarId,
       outcome: '',
     };
   }
@@ -200,9 +195,9 @@ const emptyEntity = (type, reportingPeriodId) => {
     title: '',
     reportingPeriodId,
     status: 'Steady',
-    target: 3,
+    target: 0,
     current: 0,
-    strategicPillarId: 'advocate-change',
+    strategicPillarId: pillarId,
     narrative: '',
   };
 };
@@ -215,7 +210,7 @@ const emptyPartner = () => ({
   profileSummary: '',
   relationship: '',
   stage: 'Cultivation',
-  targetCompletionDate: '2026-06-30',
+  targetCompletionDate: '',
 });
 
 const createFollowUpEventValues = (touchpoint, partner) => ({
@@ -225,11 +220,11 @@ const createFollowUpEventValues = (touchpoint, partner) => ({
   rhythm: 'once',
   lifecycle: 'scheduled',
   sourceStatus: 'watch',
-  department: 'Executive Office',
+  department: 'Advocacy',
   property: partner.name,
   source: { type: 'touchpoint', id: touchpoint.id, label: partner.name },
   whyItMatters: `Next step from ${partner.name}'s advocacy touch report.`,
-  whoItImpacts: 'Dana, Nina, and advocacy collaborators',
+  whoItImpacts: 'Advocacy collaborators',
   supportNeeded: touchpoint.nextStep,
   outcomeExpected: touchpoint.nextStep,
 });
@@ -255,27 +250,27 @@ const buildTeamsCardModel = (touchpoint, partner) => ({
       ],
     },
   ],
-  actions: [
-    { type: 'Action.OpenUrl', title: 'Open Partner Profile', url: 'https://hdc-compass.example/advocacy/partners' },
-    { type: 'Action.OpenUrl', title: 'Open Dana Calendar', url: 'https://hdc-compass.example/dashboard/me?calendar=1' },
-  ],
+  actions: [],
 });
 
 const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiatives }) => {
+  const { departmentRecords, strategicPlan, users } = useOperatingData();
   const { selectedPeriodId, setSelectedPeriodId } = useReportingPeriod();
-  const [form, setForm] = useState(emptyEntity(type || 'workplan', selectedPeriodId));
+  const defaultLeadId = departmentRecords.find((department) => department.name === 'Advocacy')?.lead?.id || users[0]?.id || '';
+  const defaultPillarId = strategicPlan.pillars[0]?.id || '';
+  const [form, setForm] = useState(emptyEntity(type || 'workplan', selectedPeriodId, defaultLeadId, defaultPillarId));
 
   useEffect(() => {
     if (!open || !type) return;
     const next = item
       ? {
         ...(type === 'initiative' ? normalizeReportingPeriodRecord(item, selectedPeriodId) : item),
-        leadId: item.lead?.id || danaUser.id,
-        ownerId: item.owner?.id || danaUser.id,
+        leadId: item.lead?.id || defaultLeadId,
+        ownerId: item.owner?.id || defaultLeadId,
       }
-      : emptyEntity(type, selectedPeriodId);
+      : emptyEntity(type, selectedPeriodId, defaultLeadId, defaultPillarId);
     setForm(next);
-  }, [item, open, selectedPeriodId, type]);
+  }, [defaultLeadId, defaultPillarId, item, open, selectedPeriodId, type]);
 
   if (!type) return null;
 
@@ -306,7 +301,7 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                 <FormControl fullWidth>
                   <InputLabel>Lead</InputLabel>
-                  <Select label="Lead" value={form.leadId || danaUser.id} onChange={update('leadId')}>
+                  <Select label="Lead" value={form.leadId || defaultLeadId} onChange={update('leadId')}>
                     {users.map((candidate) => <MenuItem key={candidate.id} value={candidate.id}>{candidate.name}</MenuItem>)}
                   </Select>
                 </FormControl>
@@ -327,8 +322,8 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
               </FormControl>
               <FormControl fullWidth>
                 <InputLabel>Strategic Pillar</InputLabel>
-                <Select label="Strategic Pillar" value={form.strategicPillarId || 'advocate-change'} onChange={update('strategicPillarId')}>
-                  {strategicPlan2030.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
+                <Select label="Strategic Pillar" value={form.strategicPillarId || defaultPillarId} onChange={update('strategicPillarId')}>
+                  {strategicPlan.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
                 </Select>
               </FormControl>
               <TextField label="Outcome" value={form.outcome || ''} onChange={update('outcome')} multiline minRows={2} />
@@ -359,8 +354,8 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
               </Stack>
               <FormControl fullWidth>
                 <InputLabel>Strategic Pillar</InputLabel>
-                <Select label="Strategic Pillar" value={form.strategicPillarId || 'advocate-change'} onChange={update('strategicPillarId')}>
-                  {strategicPlan2030.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
+                <Select label="Strategic Pillar" value={form.strategicPillarId || defaultPillarId} onChange={update('strategicPillarId')}>
+                  {strategicPlan.pillars.map((pillar) => <MenuItem key={pillar.id} value={pillar.id}>{pillar.name}</MenuItem>)}
                 </Select>
               </FormControl>
               <TextField label="Narrative" value={form.narrative || ''} onChange={update('narrative')} multiline minRows={3} />
@@ -379,10 +374,10 @@ const AdvocacyEntityDialog = ({ item, mode, onClose, onSave, open, type, initiat
 const TouchpointDialog = ({ contacts, initialContactId, item, onClose, onSave, open }) => {
   const [form, setForm] = useState({
     contactId: initialContactId || contacts[0]?.id || '',
-    date: '2026-06-23',
+    date: dateInput(),
     note: '',
     nextStep: '',
-    targetCompletionDate: '2026-06-30',
+    targetCompletionDate: '',
     type: 'Call',
   });
 
@@ -393,10 +388,10 @@ const TouchpointDialog = ({ contacts, initialContactId, item, onClose, onSave, o
       contactId: item.contactId || initialContactId || contacts[0]?.id || '',
     } : {
       contactId: initialContactId || contacts[0]?.id || '',
-      date: '2026-06-23',
+      date: dateInput(),
       note: '',
       nextStep: '',
-      targetCompletionDate: '2026-06-30',
+      targetCompletionDate: '',
       type: 'Call',
     });
   }, [contacts, initialContactId, item, open]);
@@ -731,7 +726,7 @@ const TouchReportsPanel = ({ canManage, contacts, contactsById, onDelete, onEdit
         <Stack direction="row" gap={1} flexWrap="wrap" alignItems="center">
           <Chip
             icon={<ManageAccountsOutlinedIcon />}
-            label={canManage ? 'Touch reports editable' : 'Touch report CRUD is Dana/Nina only'}
+            label={canManage ? 'Touch reports editable' : 'Touch reports are read only'}
             color={canManage ? 'success' : 'default'}
             variant={canManage ? 'filled' : 'outlined'}
           />
@@ -921,31 +916,62 @@ const TeamsAdaptiveCardPreview = ({ contactsById, touchpoints }) => {
 const AdvocacyDashboard = () => {
   const { user } = useAuth();
   const { addCalendarEvent, updateCalendarEvent } = useCalendarEvents();
-  const { weeklyPriorityEntriesByWeek } = useOperatingData();
+  const {
+    contacts,
+    currentWeeklyReport,
+    deleteDepartmentWorkplan,
+    deleteInitiative,
+    deleteTouchpoint: persistDeleteTouchpoint,
+    departmentRecords,
+    departmentWorkplans,
+    initiatives: allInitiatives,
+    saveContact,
+    saveDepartmentWorkplan,
+    saveInitiative,
+    saveTouchpoint: persistTouchpoint,
+    strategicPlan,
+    touchpoints,
+    users,
+    weeklyPriorityEntriesByWeek,
+  } = useOperatingData();
   const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [period, setPeriod] = useState('month');
-  const [contacts, setContacts] = useState(advocacyContacts);
-  const [touchpoints, setTouchpoints] = useState(advocacyTouchpoints);
-  const [initiatives, setInitiatives] = useState(() => (
-    advocacyInitiatives.map((initiative) => normalizeReportingPeriodRecord(initiative))
-  ));
-  const [workplans, setWorkplans] = useState(advocacyWorkplans);
-  const [selectedPartnerId, setSelectedPartnerId] = useState(advocacyContacts[0]?.id || '');
+  const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const [dialog, setDialog] = useState({ open: false, type: null, mode: 'create', item: null });
   const [partnerDialog, setPartnerDialog] = useState({ open: false, item: null });
   const [touchpointDialog, setTouchpointDialog] = useState({ open: false, item: null, contactId: null });
 
-  const canManageTouchpoints = user.id === danaUser.id || user.id === ninaUser?.id;
-  const isDelegatedAdvocacyOperator = user.id === ninaUser?.id;
+  const advocacyDepartment = departmentRecords.find((department) => department.name === 'Advocacy');
+  const advocacyLead = advocacyDepartment?.lead || user;
+  const canManageTouchpoints = ['ELT', 'OLT'].includes(user.workingGroup)
+    || user.department === 'Advocacy'
+    || user.role === 'Administrator';
+  const initiatives = allInitiatives.filter((initiative) => initiative.department === 'Advocacy');
+  const workplans = departmentWorkplans.filter((workplan) => workplan.department === 'Advocacy');
   const basePeriod = periods.find((item) => item.value === period) || periods[2];
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const currentContext = period === 'day'
+    ? today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : period === 'week'
+      ? `Week of ${monday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+      : today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const currentPeriod = {
     ...basePeriod,
     context: period === 'quarter'
       ? selectedPeriod.label
       : period === 'year'
         ? String(selectedPeriod.year)
-        : basePeriod.context,
+        : currentContext,
   };
+
+  useEffect(() => {
+    if (!selectedPartnerId && contacts.length) setSelectedPartnerId(contacts[0].id);
+    if (selectedPartnerId && !contacts.some((contact) => contact.id === selectedPartnerId)) {
+      setSelectedPartnerId(contacts[0]?.id || '');
+    }
+  }, [contacts, selectedPartnerId]);
 
   const visibleTouchpoints = touchpoints.filter((touchpoint) => (
     isActiveTouchpoint(touchpoint) && touchpointIsInPeriod(touchpoint, period, selectedPeriod)
@@ -976,7 +1002,7 @@ const AdvocacyDashboard = () => {
   ).size;
 
   const currentWeeklyPriorities = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
-  const dashboardSubject = isDelegatedAdvocacyOperator ? danaUser : user;
+  const dashboardSubject = advocacyLead;
   const cadenceAssessments = useMemo(() => (
     contacts.map((contact) => ({ contact, assessment: assessCadence(contact) }))
   ), [contacts]);
@@ -1038,41 +1064,34 @@ const AdvocacyDashboard = () => {
   const closeTouchpointDialog = () => setTouchpointDialog({ open: false, item: null, contactId: null });
 
   const updatePartnerFromTouchpoint = (touchpoint) => {
-    setContacts((current) => current.map((contact) => (
-      contact.id === touchpoint.contactId
-        ? {
-          ...contact,
-          lastTouchpoint: touchpoint.date,
-          nextStep: touchpoint.nextStep,
-          targetCompletionDate: touchpoint.targetCompletionDate,
-          stage: contact.stage === 'New' ? 'Active Conversation' : contact.stage,
-        }
-        : contact
-    )));
+    const contact = contacts.find((candidate) => candidate.id === touchpoint.contactId);
+    if (!contact) return;
+    saveContact({
+      ...contact,
+      lastTouchpoint: touchpoint.date,
+      nextStep: touchpoint.nextStep,
+      targetCompletionDate: touchpoint.targetCompletionDate,
+      stage: contact.stage === 'New' ? 'Active Conversation' : contact.stage,
+    });
   };
 
   const savePartner = (form) => {
     if (!canManageTouchpoints) return;
-    const partnerId = form.id || `partner-${Date.now()}`;
+    const partnerId = form.id || crypto.randomUUID();
     const partner = {
       ...form,
-      contextHistory: '',
+      contextHistory: form.contextHistory || '',
       id: partnerId,
       lastTouchpoint: form.lastTouchpoint || '',
-      lead: danaUser,
+      lead: advocacyLead,
       organizationName: form.name,
-      profileGoals: [],
+      profileGoals: form.profileGoals || [],
       profileSummary: form.profileSummary || '',
-      profileUrl: `#${partnerId}`,
-      support: [ninaUser].filter(Boolean),
+      profileUrl: form.profileUrl || '',
+      support: form.support || [],
     };
 
-    setContacts((current) => {
-      const nextContacts = form.id
-        ? current.map((contact) => (contact.id === form.id ? partner : contact))
-        : [partner, ...current];
-      return nextContacts;
-    });
+    saveContact(partner);
     setSelectedPartnerId(partner.id);
   };
 
@@ -1086,7 +1105,7 @@ const AdvocacyDashboard = () => {
     const baseTouchpoint = {
       ...existing,
       ...form,
-      id: existing?.id || `touch-${Date.now()}`,
+      id: existing?.id || crypto.randomUUID(),
       period,
       status: 'active',
       createdBy: existing?.createdBy || user,
@@ -1102,70 +1121,66 @@ const AdvocacyDashboard = () => {
       if (calendarEventId) {
         updateCalendarEvent(calendarEventId, eventValues);
       } else {
-        const event = addCalendarEvent(eventValues, 'personal', danaUser);
+        const event = addCalendarEvent(eventValues, 'personal', advocacyLead);
         calendarEventId = event.id;
       }
     }
 
     const savedTouchpoint = { ...baseTouchpoint, calendarEventId };
-    setTouchpoints((current) => (
-      existing
-        ? current.map((touchpoint) => touchpoint.id === savedTouchpoint.id ? savedTouchpoint : touchpoint)
-        : [savedTouchpoint, ...current]
-    ));
+    persistTouchpoint(savedTouchpoint);
     updatePartnerFromTouchpoint(savedTouchpoint);
     setSelectedPartnerId(savedTouchpoint.contactId);
   };
 
   const deleteTouchpoint = (touchpointId) => {
     if (!canManageTouchpoints) return;
-    const now = new Date().toISOString();
-    setTouchpoints((current) => current.map((touchpoint) => (
-      touchpoint.id === touchpointId
-        ? { ...touchpoint, status: 'deleted', deletedBy: user, deletedAt: now, updatedBy: user, updatedAt: now }
-        : touchpoint
-    )));
+    persistDeleteTouchpoint(touchpointId);
   };
 
   const saveEntity = (type, form) => {
     if (type === 'workplan') {
-      const pillar = strategicPillarById[form.strategicPillarId] || strategicPillarById['advocate-change'];
+      const pillar = strategicPlan.pillars.find((candidate) => candidate.id === form.strategicPillarId);
       const next = {
         ...form,
-        id: form.id || `aw-${Date.now()}`,
-        lead: users.find((candidate) => candidate.id === form.leadId) || danaUser,
+        department: 'Advocacy',
+        id: form.id || crypto.randomUUID(),
+        lead: users.find((candidate) => candidate.id === form.leadId) || advocacyLead,
+        objectives: form.objectives || [],
         progress: Number(form.progress || 0),
-        strategicPlan: strategicPlan2030.name,
-        strategicPillarId: pillar.id,
-        strategicPillar: pillar.name,
+        strategicPlan: strategicPlan.name,
+        strategicPillarId: pillar?.id || '',
+        strategicPillar: pillar?.name || '',
       };
-      setWorkplans((current) => (form.id ? current.map((item) => item.id === form.id ? next : item) : [...current, next]));
+      saveDepartmentWorkplan(next);
     }
 
     if (type === 'initiative') {
-      const pillar = strategicPillarById[form.strategicPillarId] || strategicPillarById['advocate-change'];
+      const pillar = strategicPlan.pillars.find((candidate) => candidate.id === form.strategicPillarId);
       const next = normalizeReportingPeriodRecord({
         ...form,
-        id: form.id || `ai-${Date.now()}`,
-        owner: danaUser,
+        department: 'Advocacy',
+        id: form.id || crypto.randomUUID(),
+        owner: advocacyLead,
         current: Number(form.current || 0),
         target: Number(form.target || 0),
-        strategicPlan: strategicPlan2030.name,
-        strategicPillarId: pillar.id,
-        strategicPillar: pillar.name,
+        strategicPlan: strategicPlan.name,
+        strategicPillarId: pillar?.id || '',
+        strategicPillar: pillar?.name || '',
       }, selectedPeriodId);
-      setInitiatives((current) => (form.id ? current.map((item) => item.id === form.id ? next : item) : [...current, next]));
+      saveInitiative(next);
     }
   };
 
   const deleteEntity = (type, id) => {
     if (type === 'workplan') {
-      setWorkplans((current) => current.filter((item) => item.id !== id));
+      deleteDepartmentWorkplan(id);
     }
 
     if (type === 'initiative') {
-      setInitiatives((current) => current.filter((item) => item.id !== id));
-      setWorkplans((current) => current.map((workplan) => workplan.initiativeId === id ? { ...workplan, initiativeId: '' } : workplan));
+      workplans
+        .filter((workplan) => workplan.initiativeId === id)
+        .forEach((workplan) => saveDepartmentWorkplan({ ...workplan, initiativeId: '' }));
+      deleteInitiative(id);
     }
   };
 
@@ -1173,13 +1188,13 @@ const AdvocacyDashboard = () => {
     <Box sx={{ mb: 3 }}>
       <Stack direction={{ xs: 'column', lg: 'row' }} justifyContent="space-between" alignItems={{ lg: 'center' }} gap={2} sx={{ mb: 2 }}>
         <Stack direction="row" gap={1.5} alignItems="center">
-          <UserAvatar user={danaUser} size="xl" />
+          <UserAvatar user={advocacyLead} size="xl" />
           <Box>
             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800, textTransform: 'uppercase' }}>
-              Primary Advocate - Chief Executive Officer
+              Advocacy Lead - {advocacyLead.role}
             </Typography>
             <Typography variant="h1" sx={{ lineHeight: 1.05 }}>Advocacy Command Center</Typography>
-            <Typography variant="body2">Advocacy activity layer for Dana's partner touchpoints - June 2026</Typography>
+            <Typography variant="body2">Partner touchpoints and follow-through for {currentPeriod.context}</Typography>
           </Box>
         </Stack>
 
@@ -1192,7 +1207,7 @@ const AdvocacyDashboard = () => {
           </Box>
           <Chip
             icon={<ManageAccountsOutlinedIcon />}
-            label={isDelegatedAdvocacyOperator ? 'Signed in as Nina: delegated touch-report access' : canManageTouchpoints ? 'Dana can manage her advocacy records' : 'Dana and Nina manage touch reports'}
+            label={canManageTouchpoints ? 'Touch-report access enabled' : 'Touch reports are read only'}
             color={canManageTouchpoints ? 'success' : 'default'}
             variant={canManageTouchpoints ? 'filled' : 'outlined'}
           />

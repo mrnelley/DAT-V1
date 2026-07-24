@@ -4,8 +4,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Autocomplete, Box, Button, Drawer, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import { users } from '../../data/mockData';
 import { roadmapStatusOptions } from '../../data/quarterlyRoadmap';
 import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
@@ -19,6 +19,7 @@ const blankObjective = () => ({
 });
 
 const EditPriorityPanel = ({ open, onClose, onSave, strategicPlan }) => {
+  const { users } = useOperatingData();
   const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const [name, setName] = useState('');
   const [pillarId, setPillarId] = useState(strategicPlan.pillars[0]?.id || '');

@@ -1,23 +1,25 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  deleteFeatureOverrides,
+  loadFeatureOverrides,
+  saveFeatureOverride,
+} from '../api/supabaseData';
 import { baseFeatureKeys, featureCatalog, featureCatalogByKey } from '../data/featureCatalog';
 import { useAuth } from '../hooks/useAuth';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 const FeatureAccessContext = createContext(null);
 
-const storageKey = 'hdc_compass_feature_rollout';
 const adminGroups = ['ELT'];
 const adminRoles = ['Administrator', 'CEO'];
 const defaultOffFeatureKeys = ['taskView'];
-
-const readStoredOverrides = () => {
-  if (typeof window === 'undefined') return {};
-
-  try {
-    return JSON.parse(window.localStorage.getItem(storageKey)) || {};
-  } catch {
-    return {};
-  }
-};
 
 const userCanAdminister = (user) => adminRoles.includes(user.role) || adminGroups.includes(user.workingGroup);
 
@@ -28,16 +30,22 @@ const defaultEnabledFor = (featureKey, user) => {
   return true;
 };
 
-export const FeatureAccessProvider = ({ children }) => {
-  const { user } = useAuth();
-  const [overrides, setOverrides] = useState(readStoredOverrides);
+const groupOverrides = (rows) => rows.reduce((grouped, row) => ({
+  ...grouped,
+  [row.profile_id]: {
+    ...(grouped[row.profile_id] || {}),
+    [row.feature_key]: row.enabled,
+  },
+}), {});
 
-  const saveOverrides = useCallback((nextOverrides) => {
-    setOverrides(nextOverrides);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(storageKey, JSON.stringify(nextOverrides));
-    }
-  }, []);
+export const FeatureAccessProvider = ({ children, initialOverrides = null }) => {
+  const { user } = useAuth();
+  const [overrides, setOverrides] = useState(initialOverrides || {});
+
+  useEffect(() => {
+    if (initialOverrides || !isSupabaseConfigured || !user) return;
+    loadFeatureOverrides().then((rows) => setOverrides(groupOverrides(rows))).catch(() => setOverrides({}));
+  }, [initialOverrides, user]);
 
   const isFeatureEnabled = useCallback((featureKey, userOverride = user) => {
     if (!featureKey) return true;
@@ -46,20 +54,32 @@ export const FeatureAccessProvider = ({ children }) => {
   }, [overrides, user]);
 
   const setUserFeature = useCallback((userId, featureKey, enabled) => {
-    saveOverrides({
-      ...overrides,
+    setOverrides((current) => ({
+      ...current,
       [userId]: {
-        ...(overrides[userId] || {}),
+        ...(current[userId] || {}),
         [featureKey]: enabled,
       },
-    });
-  }, [overrides, saveOverrides]);
+    }));
+    if (isSupabaseConfigured) {
+      saveFeatureOverride({
+        enabled,
+        featureKey,
+        organizationId: user.organizationId,
+        setBy: user.id,
+        userId,
+      }).catch(() => {});
+    }
+  }, [user]);
 
   const resetUserFeatures = useCallback((userId) => {
-    const nextOverrides = { ...overrides };
-    delete nextOverrides[userId];
-    saveOverrides(nextOverrides);
-  }, [overrides, saveOverrides]);
+    setOverrides((current) => {
+      const next = { ...current };
+      delete next[userId];
+      return next;
+    });
+    if (isSupabaseConfigured) deleteFeatureOverrides(userId).catch(() => {});
+  }, []);
 
   const getUserFeatureConfig = useCallback((targetUser) => (
     Object.fromEntries(featureCatalog.map((feature) => [

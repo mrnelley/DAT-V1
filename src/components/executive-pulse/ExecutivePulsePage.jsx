@@ -7,19 +7,20 @@ import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { loadBoardReport, saveBoardReport } from '../../api/supabaseData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import { executivePulseSeed, scorecardStatusOptions } from '../../data/executivePulseSeed';
+import { useAuth } from '../../hooks/useAuth';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import {
   getPreviousReportingPeriod,
   getReportingPeriod,
   getReportingPeriodMonths,
-  normalizeReportingPeriodId,
 } from '../../data/reportingPeriods';
 import PageWrapper from '../layout/PageWrapper';
 import ReportingPeriodSelect from '../shared/ReportingPeriodSelect';
 
-const storageKey = 'hdc_compass_executive_pulse_scorecards_v3';
-const legacyStorageKey = 'hdc_compass_executive_pulse_scorecard_v2';
+const scorecardStatusOptions = ['On Track', 'Needs Attention', 'Off Track', 'No Data'];
 
 const statusMeta = {
   'On Track': { color: 'success', fill: '#006e5c', soft: 'rgba(0, 110, 92, 0.09)', tone: 'success.main' },
@@ -46,9 +47,12 @@ const getEditableMetricFields = (reportingPeriod) => {
   ];
 };
 
-const cloneSeed = (reportingPeriodId) => ({
-  ...JSON.parse(JSON.stringify(executivePulseSeed)),
+const blankScorecard = (reportingPeriodId) => ({
+  discussionQuestions: [],
+  mission: '',
+  preparedFor: '',
   reportingPeriodId,
+  scorecards: [],
 });
 
 const normalizeMetric = (metric) => {
@@ -64,48 +68,20 @@ const normalizeMetric = (metric) => {
   return normalized;
 };
 
-const normalizeScorecard = (scorecard, reportingPeriodId) => {
+const normalizeScorecard = (scorecard = {}, reportingPeriodId) => {
   const normalized = {
+    ...blankScorecard(reportingPeriodId),
     ...scorecard,
     reportingPeriodId,
-    scorecards: scorecard.scorecards.map((card) => ({
+    discussionQuestions: scorecard.discussionQuestions || [],
+    scorecards: (scorecard.scorecards || []).map((card) => ({
       ...card,
-      metrics: card.metrics.map(normalizeMetric),
+      metrics: (card.metrics || []).map(normalizeMetric),
     })),
   };
   delete normalized.period;
   delete normalized.quarter;
   return normalized;
-};
-
-const readScorecardsByPeriod = () => {
-  if (typeof window === 'undefined') return {};
-
-  try {
-    const stored = JSON.parse(window.localStorage.getItem(storageKey));
-    if (stored && typeof stored === 'object') {
-      return Object.fromEntries(Object.entries(stored).map(([reportingPeriodId, scorecard]) => [
-        normalizeReportingPeriodId(reportingPeriodId),
-        normalizeScorecard(scorecard, normalizeReportingPeriodId(reportingPeriodId)),
-      ]));
-    }
-
-    const legacy = JSON.parse(window.localStorage.getItem(legacyStorageKey));
-    if (!legacy?.scorecards) return {};
-
-    const reportingPeriodId = normalizeReportingPeriodId(legacy);
-    const migrated = normalizeScorecard(legacy, reportingPeriodId);
-    window.localStorage.removeItem(legacyStorageKey);
-    return { [reportingPeriodId]: migrated };
-  } catch {
-    return {};
-  }
-};
-
-const saveScorecardsByPeriod = (scorecardsByPeriod) => {
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(storageKey, JSON.stringify(scorecardsByPeriod));
-  }
 };
 
 const parseProgress = (value) => {
@@ -297,16 +273,53 @@ const ExecutiveScorecardCard = ({ card, onOpen, reportingPeriod }) => {
 };
 
 const ExecutivePulsePage = () => {
-  const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
-  const [scorecardsByPeriod, setScorecardsByPeriod] = useState(readScorecardsByPeriod);
+  const { user } = useAuth();
+  const { organizationId } = useOperatingData();
+  const { selectedPeriod, selectedPeriodId, selectedPeriodRecordId } = useReportingPeriod();
+  const [scorecard, setScorecard] = useState(() => blankScorecard(selectedPeriodId));
+  const [isHydrated, setIsHydrated] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState(null);
-  const scorecard = scorecardsByPeriod[selectedPeriodId] || cloneSeed(selectedPeriodId);
   const selectedCard = scorecard.scorecards.find((card) => card.id === selectedCardId);
   const editableMetricFields = useMemo(() => getEditableMetricFields(selectedPeriod), [selectedPeriod]);
 
   useEffect(() => {
     setSelectedCardId(null);
-  }, [selectedPeriodId]);
+    setIsHydrated(false);
+    if (!isSupabaseConfigured || !organizationId || !selectedPeriodRecordId) {
+      setScorecard(blankScorecard(selectedPeriodId));
+      setIsHydrated(true);
+      return;
+    }
+
+    let active = true;
+    loadBoardReport(organizationId, selectedPeriodRecordId)
+      .then((record) => {
+        if (active) setScorecard(normalizeScorecard(record?.content, selectedPeriodId));
+      })
+      .catch(() => {
+        if (active) setScorecard(blankScorecard(selectedPeriodId));
+      })
+      .finally(() => {
+        if (active) setIsHydrated(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId, selectedPeriodId, selectedPeriodRecordId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !isHydrated || !organizationId || !selectedPeriodRecordId) return undefined;
+    const timeout = window.setTimeout(() => {
+      saveBoardReport({
+        content: scorecard,
+        organizationId,
+        reportingPeriodRecordId: selectedPeriodRecordId,
+        userId: user.id,
+      }).catch(() => {});
+    }, 400);
+    return () => window.clearTimeout(timeout);
+  }, [isHydrated, organizationId, scorecard, selectedPeriodRecordId, user.id]);
+
   const scorecardSummary = useMemo(() => {
     const metrics = scorecard.scorecards.flatMap((card) => card.metrics);
     return {
@@ -318,14 +331,11 @@ const ExecutivePulsePage = () => {
   }, [scorecard]);
 
   const updateScorecard = (updater) => {
-    setScorecardsByPeriod((current) => {
-      const currentScorecard = current[selectedPeriodId] || cloneSeed(selectedPeriodId);
-      const nextScorecard = { ...updater(currentScorecard), reportingPeriodId: selectedPeriodId };
+    setScorecard((current) => {
+      const nextScorecard = { ...updater(current), reportingPeriodId: selectedPeriodId };
       delete nextScorecard.period;
       delete nextScorecard.quarter;
-      const nextScorecardsByPeriod = { ...current, [selectedPeriodId]: nextScorecard };
-      saveScorecardsByPeriod(nextScorecardsByPeriod);
-      return nextScorecardsByPeriod;
+      return nextScorecard;
     });
   };
 
@@ -385,6 +395,34 @@ const ExecutivePulsePage = () => {
     }),
   }));
 
+  const addScorecard = () => {
+    const cardId = crypto.randomUUID();
+    updateScorecard((current) => ({
+      ...current,
+      scorecards: [
+        ...current.scorecards,
+        {
+          accent: '#006e5c',
+          id: cardId,
+          metrics: [],
+          orgPriority: '',
+          status: 'No Data',
+          strategicGoal: '',
+          title: 'Untitled Scorecard',
+        },
+      ],
+    }));
+    setSelectedCardId(cardId);
+  };
+
+  const addDiscussionQuestion = () => updateScorecard((current) => ({
+    ...current,
+    discussionQuestions: [
+      ...current.discussionQuestions,
+      { id: crypto.randomUUID(), prompt: '', response: '' },
+    ],
+  }));
+
   const exportScorecard = () => downloadCsv(`executive-pulse-${selectedPeriodId}.csv`, flattenScorecardRows(scorecard));
 
   return (
@@ -419,6 +457,7 @@ const ExecutivePulsePage = () => {
                   <TextField label="Prepared for" value={scorecard.preparedFor} onChange={(event) => updateRootField('preparedFor', event.target.value)} fullWidth size="small" />
                 </Stack>
                 <Stack data-tour-id="executive-pulse-export-actions" direction={{ xs: 'column', sm: 'row' }} gap={1} justifyContent="flex-end">
+                  <Button startIcon={<AddOutlinedIcon />} variant="outlined" onClick={addScorecard}>Add Scorecard</Button>
                   <Button startIcon={<PrintOutlinedIcon />} variant="outlined" onClick={() => window.print()}>Print / Save PDF</Button>
                   <Button startIcon={<DownloadOutlinedIcon />} variant="contained" onClick={exportScorecard}>Export CSV</Button>
                 </Stack>
@@ -440,15 +479,25 @@ const ExecutivePulsePage = () => {
           {scorecard.scorecards.map((card) => (
             <ExecutiveScorecardCard key={card.id} card={card} onOpen={() => setSelectedCardId(card.id)} reportingPeriod={selectedPeriod} />
           ))}
+          {!scorecard.scorecards.length && (
+            <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+              <Typography variant="h3">No scorecards for this reporting period</Typography>
+              <Typography variant="body2" sx={{ mb: 1.5 }}>Create the first scorecard to begin the board report.</Typography>
+              <Button startIcon={<AddOutlinedIcon />} variant="contained" onClick={addScorecard}>Add Scorecard</Button>
+            </Box>
+          )}
         </Box>
 
         <Box data-tour-id="executive-pulse-board-questions" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-          <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
-            <AssessmentOutlinedIcon color="primary" />
-            <Box>
-              <Typography variant="h3">Board Discussion Questions</Typography>
-              <Typography variant="body2">Editable prompts and responses for the board-level pulse conversation.</Typography>
-            </Box>
+          <Stack direction="row" gap={1} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+            <Stack direction="row" gap={1} alignItems="center">
+              <AssessmentOutlinedIcon color="primary" />
+              <Box>
+                <Typography variant="h3">Board Discussion Questions</Typography>
+                <Typography variant="body2">Editable prompts and responses for the board-level pulse conversation.</Typography>
+              </Box>
+            </Stack>
+            <Button startIcon={<AddOutlinedIcon />} variant="outlined" onClick={addDiscussionQuestion}>Add Question</Button>
           </Stack>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 1 }}>
             {scorecard.discussionQuestions.map((question) => (

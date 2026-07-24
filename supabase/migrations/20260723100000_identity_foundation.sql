@@ -47,8 +47,9 @@ periods as (
       + interval '3 months'
       - interval '1 day'
     )::date as ends_on
-  from generate_series(2025, 2028) as year_value
+  from generate_series(2026, 2028) as year_value
   cross join generate_series(1, 4) as quarter_value
+  where year_value > 2026 or quarter_value >= 2
 )
 insert into public.reporting_periods (
   organization_id,
@@ -58,8 +59,7 @@ insert into public.reporting_periods (
   quarter,
   starts_on,
   ends_on,
-  status,
-  theme
+  status
 )
 select
   organization.id,
@@ -69,12 +69,7 @@ select
   'Q' || periods.quarter_value::text,
   periods.starts_on,
   periods.ends_on,
-  'draft',
-  case
-    when periods.year_value = 2026 and periods.quarter_value = 2 then 'Choose Your Hard'
-    when periods.year_value = 2026 and periods.quarter_value = 3 then 'Elevate & Accelerate'
-    else 'Quarterly operating plan'
-  end
+  'draft'
 from organization
 cross join periods
 on conflict (organization_id, code) do update
@@ -83,8 +78,7 @@ set
   year = excluded.year,
   quarter = excluded.quarter,
   starts_on = excluded.starts_on,
-  ends_on = excluded.ends_on,
-  theme = excluded.theme;
+  ends_on = excluded.ends_on;
 
 alter table public.profiles
   add column must_reset_password boolean not null default true;

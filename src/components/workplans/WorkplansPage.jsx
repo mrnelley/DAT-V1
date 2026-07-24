@@ -24,7 +24,6 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { departments, users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import {
   clampProgress,
@@ -68,8 +67,8 @@ const blankObjective = (user, strategicPlan) => ({
   yearEndTarget: '',
 });
 
-const defaultForm = (user, strategicPlan) => {
-  const lead = getDepartmentLead(user.department, user);
+const defaultForm = (user, strategicPlan, users, departmentRecords) => {
+  const lead = getDepartmentLead(user.department, user, users, departmentRecords);
   return {
     department: user.department,
     id: '',
@@ -79,8 +78,8 @@ const defaultForm = (user, strategicPlan) => {
   };
 };
 
-const toForm = (workplan, user, strategicPlan) => {
-  if (!workplan) return defaultForm(user, strategicPlan);
+const toForm = (workplan, user, strategicPlan, users, departmentRecords) => {
+  if (!workplan) return defaultForm(user, strategicPlan, users, departmentRecords);
   return {
     department: workplan.department,
     id: workplan.id,
@@ -105,18 +104,33 @@ const StatTile = ({ helper, label, value }) => (
   </Box>
 );
 
-const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, strategicPlan, user }) => {
-  const [form, setForm] = useState(() => toForm(item, user, strategicPlan));
+const WorkplanDialog = ({
+  departmentRecords,
+  departments,
+  enterprisePriorities,
+  item,
+  onClose,
+  onSave,
+  open,
+  strategicPlan,
+  user,
+  users,
+}) => {
+  const [form, setForm] = useState(() => toForm(item, user, strategicPlan, users, departmentRecords));
 
   useEffect(() => {
-    if (open) setForm(toForm(item, user, strategicPlan));
-  }, [item, open, strategicPlan, user]);
+    if (open) setForm(toForm(item, user, strategicPlan, users, departmentRecords));
+  }, [departmentRecords, item, open, strategicPlan, user, users]);
 
   const update = (field) => (event) => {
     const value = event.target.value;
     setForm((current) => {
       if (field !== 'department') return { ...current, [field]: value };
-      return { ...current, department: value, leadId: getDepartmentLead(value, user).id };
+      return {
+        ...current,
+        department: value,
+        leadId: getDepartmentLead(value, user, users, departmentRecords)?.id || user.id,
+      };
     });
   };
   const updateObjective = (id, field) => (event) => setForm((current) => ({
@@ -140,7 +154,7 @@ const WorkplanDialog = ({ enterprisePriorities, item, onClose, onSave, open, str
 
   const save = () => {
     if (!ready) return;
-    const lead = getDepartmentLead(form.department, user);
+    const lead = getDepartmentLead(form.department, user, users, departmentRecords);
     onSave({
       department: form.department,
       id: form.id,
@@ -345,18 +359,25 @@ const WorkplanCard = ({ canManage, enterprisePriorities, onDelete, onEdit, strat
 const WorkplansPage = () => {
   const { user } = useAuth();
   const {
+    departmentRecords,
+    departments,
     deleteDepartmentWorkplan,
     departmentWorkplans,
     enterprisePriorities,
     saveDepartmentWorkplan,
     strategicPlan,
+    users,
   } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [dialog, setDialog] = useState({ item: null, open: false });
   const [scope, setScope] = useState('all');
   const decoratedWorkplans = useMemo(
-    () => departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities)),
-    [departmentWorkplans, enterprisePriorities],
+    () => departmentWorkplans.map((workplan) => decorateWorkplan(workplan, enterprisePriorities, {
+      departmentRecords,
+      strategicPillars: strategicPlan.pillars,
+      users,
+    })),
+    [departmentRecords, departmentWorkplans, enterprisePriorities, strategicPlan.pillars, users],
   );
 
   useEffect(() => {
@@ -415,6 +436,8 @@ const WorkplansPage = () => {
         )}
       </Stack>
       <WorkplanDialog
+        departmentRecords={departmentRecords}
+        departments={departments}
         enterprisePriorities={enterprisePriorities}
         item={dialog.item}
         onClose={() => setDialog({ item: null, open: false })}
@@ -422,6 +445,7 @@ const WorkplansPage = () => {
         open={dialog.open}
         strategicPlan={strategicPlan}
         user={user}
+        users={users}
       />
     </PageWrapper>
   );

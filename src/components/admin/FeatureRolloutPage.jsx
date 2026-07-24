@@ -1,31 +1,18 @@
 import RestartAltOutlinedIcon from '@mui/icons-material/RestartAltOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, Stack, Switch, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { featureCategories } from '../../data/featureCatalog';
-import { users } from '../../data/mockData';
-import { portfolioProperties } from '../../data/propertyPortfolio';
 import UserAvatar from '../shared/UserAvatar';
-
-const governanceStorageKey = 'hdc_compass_property_governance_assignments';
-
-const readGovernanceAssignments = () => {
-  if (typeof window === 'undefined') return {};
-
-  try {
-    return JSON.parse(window.localStorage.getItem(governanceStorageKey)) || {};
-  } catch {
-    return {};
-  }
-};
 
 const FeatureRolloutPage = () => {
   const { featureCatalog, getUserFeatureConfig, resetUserFeatures, setUserFeature } = useFeatureAccess();
-  const [selectedUserId, setSelectedUserId] = useState(users[0].id);
-  const [governanceAssignments, setGovernanceAssignments] = useState(readGovernanceAssignments);
+  const { properties, savePropertyAssignment, users } = useOperatingData();
+  const [selectedUserId, setSelectedUserId] = useState('');
   const selectedUser = users.find((user) => user.id === selectedUserId) || users[0];
-  const featureConfig = getUserFeatureConfig(selectedUser);
+  const featureConfig = selectedUser ? getUserFeatureConfig(selectedUser) : {};
   const enabledCount = Object.values(featureConfig).filter(Boolean).length;
   const propertyManagers = users.filter((user) => (
     ['Property Management', 'Operations'].includes(user.department)
@@ -38,20 +25,6 @@ const FeatureRolloutPage = () => {
     || user.role.toLowerCase().includes('community')
   ));
 
-  const updateGovernanceAssignment = (propertyId, field, value) => {
-    const nextAssignments = {
-      ...governanceAssignments,
-      [propertyId]: {
-        ...(governanceAssignments[propertyId] || {}),
-        [field]: value,
-      },
-    };
-    setGovernanceAssignments(nextAssignments);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(governanceStorageKey, JSON.stringify(nextAssignments));
-    }
-  };
-
   const featuresByCategory = useMemo(() => (
     featureCategories
       .map((category) => ({
@@ -60,6 +33,14 @@ const FeatureRolloutPage = () => {
       }))
       .filter((group) => group.features.length)
   ), [featureCatalog]);
+
+  useEffect(() => {
+    if (!selectedUserId && users.length) setSelectedUserId(users[0].id);
+  }, [selectedUserId, users]);
+
+  if (!selectedUser) {
+    return <Typography variant="body2">No active user profiles are available.</Typography>;
+  }
 
   return (
     <Stack gap={2}>
@@ -73,8 +54,8 @@ const FeatureRolloutPage = () => {
             </Box>
           </Stack>
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>User</InputLabel>
-            <Select label="User" value={selectedUserId} onChange={(event) => setSelectedUserId(event.target.value)}>
+            <InputLabel id="feature-rollout-user-label">User</InputLabel>
+            <Select label="User" labelId="feature-rollout-user-label" value={selectedUserId} onChange={(event) => setSelectedUserId(event.target.value)}>
               {users.map((user) => (
                 <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
               ))}
@@ -141,10 +122,9 @@ const FeatureRolloutPage = () => {
           </Box>
         </Stack>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'repeat(2, 1fr)' }, gap: 1.25, mt: 1.5 }}>
-          {portfolioProperties.map((property) => {
-            const assignment = governanceAssignments[property.id] || {};
-            const managerId = assignment.propertyManagerId || propertyManagers[0]?.id || '';
-            const residentServicesLeadId = assignment.residentServicesLeadId || residentServicesLeads[0]?.id || '';
+          {properties.map((property) => {
+            const managerId = property.assignments?.find((assignment) => assignment.role === 'property_manager')?.profile?.id || '';
+            const residentServicesLeadId = property.assignments?.find((assignment) => assignment.role === 'resident_services_lead')?.profile?.id || '';
             return (
               <Box key={property.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
                 <Typography variant="body1" fontWeight={800}>{property.propertyName}</Typography>
@@ -155,7 +135,7 @@ const FeatureRolloutPage = () => {
                     <Select
                       label="Community Manager"
                       value={managerId}
-                      onChange={(event) => updateGovernanceAssignment(property.id, 'propertyManagerId', event.target.value)}
+                      onChange={(event) => savePropertyAssignment(property.id, 'property_manager', event.target.value)}
                     >
                       {propertyManagers.map((manager) => (
                         <MenuItem key={manager.id} value={manager.id}>{manager.name} - {manager.role}</MenuItem>
@@ -167,7 +147,7 @@ const FeatureRolloutPage = () => {
                     <Select
                       label="Resident Services Lead"
                       value={residentServicesLeadId}
-                      onChange={(event) => updateGovernanceAssignment(property.id, 'residentServicesLeadId', event.target.value)}
+                      onChange={(event) => savePropertyAssignment(property.id, 'resident_services_lead', event.target.value)}
                     >
                       {residentServicesLeads.map((lead) => (
                         <MenuItem key={lead.id} value={lead.id}>{lead.name} - {lead.role}</MenuItem>

@@ -43,7 +43,7 @@ const CurbAppealSubmissionPage = () => {
     if (submission) setResponses(submission.responses);
   }, [submission]);
 
-  if (!submission) {
+  if (!submission || !checklistTemplate) {
     return (
       <PageWrapper>
         <Typography variant="h1">Checklist Not Found</Typography>
@@ -65,6 +65,8 @@ const CurbAppealSubmissionPage = () => {
   const answeredCount = responses.filter((response) => response.value).length;
   const totalCount = checklistTemplate.sections.reduce((sum, section) => sum + section.items.length, 0);
   const needsCorrection = responses.filter((response) => response.value === 'needs_correction').length;
+  const propertyManagerName = submission.propertyManager?.name || 'Unassigned property manager';
+  const reviewerName = submission.reviewer?.name || 'the assigned reviewer';
 
   const submit = () => {
     submitChecklist(submission.id, responses);
@@ -82,8 +84,8 @@ const CurbAppealSubmissionPage = () => {
         <Stack direction="row" alignItems="center" gap={1}>
           <UserAvatar user={submission.propertyManager} size="md" />
           <Box>
-            <Typography variant="body1" fontWeight={700}>{submission.propertyManager.name}</Typography>
-            <Typography variant="caption">{submission.propertyManager.role}</Typography>
+            <Typography variant="body1" fontWeight={700}>{propertyManagerName}</Typography>
+            <Typography variant="caption">{submission.propertyManager?.role || 'Property manager'}</Typography>
           </Box>
         </Stack>
       </Stack>
@@ -104,7 +106,7 @@ const CurbAppealSubmissionPage = () => {
           </Box>
           <Typography variant="h4" sx={{ mt: 2, mb: 0.75 }}>After Submit</Typography>
           <Typography variant="body2">
-            Compass records this as pending review and sends Jaime her own approval card. The checklist does not credit her priority until she approves it.
+            Compass records this as pending review and sends {reviewerName} an approval request. The checklist does not credit the linked priority until it is approved.
           </Typography>
         </Box>
 
@@ -164,7 +166,7 @@ const CurbAppealSubmissionPage = () => {
               onClick={submit}
               disabled={answeredCount < totalCount}
             >
-              Submit to Jaime for Review
+              Submit for Review
             </Button>
           </Stack>
         </Stack>

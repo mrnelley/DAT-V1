@@ -23,7 +23,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
 
 const LoginPage = () => {
-  const { isAuthenticated, primaryDashboardPath, signIn } = useAuth();
+  const { configurationError, isAuthenticated, isLoading, primaryDashboardPath, signIn } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [password, setPassword] = useState('');
@@ -36,16 +36,15 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, navigate, primaryDashboardPath]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const match = signIn({ password, username });
+    setError('');
+    const result = await signIn({ password, username });
 
-    if (!match) {
-      setError('The username or password is incorrect.');
+    if (result.error) {
+      setError(result.error.message || 'The email address or password is incorrect.');
       return;
     }
-
-    setError('');
   };
 
   return (
@@ -133,10 +132,10 @@ const LoginPage = () => {
           <Box component="form" noValidate onSubmit={handleSubmit}>
             <Stack gap={2}>
               <TextField
-                autoComplete="username"
+                autoComplete="email"
                 autoFocus
                 fullWidth
-                label="Username"
+                label="Email address"
                 onChange={(event) => {
                   setUsername(event.target.value);
                   setError('');
@@ -179,9 +178,10 @@ const LoginPage = () => {
                   ),
                 }}
               />
+              {configurationError && <Alert severity="error">{configurationError}</Alert>}
               {error && <Alert severity="error">{error}</Alert>}
               <Button
-                disabled={!username.trim() || !password}
+                disabled={isLoading || Boolean(configurationError) || !username.trim() || !password}
                 fullWidth
                 size="large"
                 startIcon={<LoginOutlinedIcon />}

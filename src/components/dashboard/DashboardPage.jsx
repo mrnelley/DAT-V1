@@ -8,8 +8,8 @@ import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Sta
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
-import { metrics } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import AdvocacyDashboard from '../advocacy/AdvocacyDashboard';
 import CalendarPanel from '../calendar/CalendarPanel';
@@ -66,6 +66,7 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 
 const DashboardPage = ({ company = false }) => {
   const { user } = useAuth();
+  const { metrics } = useOperatingData();
   const {
     goToNextPeriod,
     goToPreviousPeriod,
@@ -73,7 +74,7 @@ const DashboardPage = ({ company = false }) => {
     hasPreviousPeriod,
   } = useReportingPeriod();
   const teamOptions = company ? [] : user.teams;
-  const opensCalendarFirst = !company && ['u1', 'u19'].includes(user.id);
+  const opensCalendarFirst = !company && user.dashboardFocus === 'advocacy';
   const [team, setTeam] = useState(teamOptions[0] || 'All Teams');
   const [edit, setEdit] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(opensCalendarFirst);
@@ -83,7 +84,6 @@ const DashboardPage = ({ company = false }) => {
     approveCalendarEvent,
     canCreateOrganizationCalendarEvent,
     declineCalendarEvent,
-    events,
     isAdmin,
     organizationCalendarEvents,
     personalCalendarEvents,
@@ -129,9 +129,7 @@ const DashboardPage = ({ company = false }) => {
     onSendToOrg: sendToOrg,
     onUpdateCalendarEvent: updateCalendarEvent,
   };
-  const delegatedAdvocacyCalendarEvents = user.id === 'u19'
-    ? events.filter((event) => event.scope === 'personal' && event.owner?.id === 'u1')
-    : personalCalendarEvents;
+  const delegatedAdvocacyCalendarEvents = personalCalendarEvents;
 
   const renderWidget = (widgetId) => {
     if (widgetId === 'focus') {

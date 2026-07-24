@@ -2,26 +2,27 @@ import { Box, Button, Checkbox, FormControlLabel, MenuItem, Stack, TextField, Ty
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOperatingData } from '../../context/OperatingDataContext';
-import { users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 
+const today = () => new Date().toISOString().slice(0, 10);
+
 const buildForm = (user, huddle) => ({
-  date: huddle?.date || '2026-06-09',
+  date: huddle?.date || today(),
   description: huddle?.description || '',
   memberIds: huddle?.memberIds || [user.id],
   name: huddle?.name || '',
   recurrence: huddle?.recurrence || 'Weekly',
   teamsLink: huddle?.teamsLink || '',
   weeklyTrackerPromptEnabled: Boolean(huddle?.weeklyTrackerPrompt),
-  weeklyTrackerPromptRecipient: huddle?.weeklyTrackerPrompt?.recipientEmail || 'pkelley@hdcweb.org',
+  weeklyTrackerPromptRecipient: huddle?.weeklyTrackerPrompt?.recipientEmail || '',
 });
 
 const HuddleFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addHuddle, getHuddle, updateHuddle } = useOperatingData();
+  const { addHuddle, getHuddle, updateHuddle, users } = useOperatingData();
   const existing = id ? getHuddle(id) : null;
   const [form, setForm] = useState(() => buildForm(user, existing));
 
@@ -42,7 +43,7 @@ const HuddleFormPage = () => {
       weeklyTrackerPrompt: form.weeklyTrackerPromptEnabled
         ? {
           cardEndpoint: '/api/teams/weekly-tracker-goals-card',
-          recipientEmail: form.weeklyTrackerPromptRecipient || 'pkelley@hdcweb.org',
+          recipientEmail: form.weeklyTrackerPromptRecipient.trim(),
         }
         : null,
     };
@@ -56,11 +57,11 @@ const HuddleFormPage = () => {
     const huddleId = `huddle-${Date.now()}`;
     addHuddle({
       ...huddleValues,
-      agenda: ['Review current signals', 'Discuss stucks and owner follow-up', 'Confirm next commitments'],
+      agenda: [],
       id: huddleId,
       items: [],
       ownerId: user.id,
-      when: form.date === '2026-06-09' ? 'today' : 'future',
+      when: form.date === today() ? 'today' : 'future',
     });
     navigate(`/huddles/${huddleId}`);
   };
@@ -106,7 +107,17 @@ const HuddleFormPage = () => {
           )}
           <Stack direction="row" gap={1}>
             <Button onClick={() => navigate(existing ? `/huddles/${existing.id}` : '/huddles')}>Cancel</Button>
-            <Button variant="contained" onClick={save} disabled={!form.name.trim() || !form.memberIds.length}>Save Huddle</Button>
+            <Button
+              variant="contained"
+              onClick={save}
+              disabled={
+                !form.name.trim()
+                || !form.memberIds.length
+                || (form.weeklyTrackerPromptEnabled && !form.weeklyTrackerPromptRecipient.trim())
+              }
+            >
+              Save Huddle
+            </Button>
           </Stack>
         </Stack>
       </Box>

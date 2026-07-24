@@ -75,7 +75,11 @@ const HuddlesPage = () => {
 
   const sendWeeklyGoalsCard = async () => {
     if (!huddle.weeklyTrackerPrompt) return;
-    const recipientEmail = huddle.weeklyTrackerPrompt.recipientEmail || 'pkelley@hdcweb.org';
+    const recipientEmail = huddle.weeklyTrackerPrompt.recipientEmail;
+    if (!recipientEmail) {
+      setCardDispatchError('Add a prompt recipient in Huddle Settings before sending the Teams card.');
+      return;
+    }
     const cardEndpoint = huddle.weeklyTrackerPrompt.cardEndpoint || '/api/teams/weekly-tracker-goals-card';
     setCardDispatchError('');
     setCardDispatchSending(true);

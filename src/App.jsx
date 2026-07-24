@@ -1,4 +1,4 @@
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { Box, CircularProgress, CssBaseline, ThemeProvider } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
@@ -118,19 +118,27 @@ const isPracticeEntryPath = (pathname) => [
 ].includes(pathname.toLowerCase());
 
 const ProtectedApp = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+        <CircularProgress aria-label="Loading application" />
+      </Box>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
   return (
-    <CurbAppealProvider>
+    <OperatingDataProvider>
       <FeatureAccessProvider>
         <NotificationsProvider>
-          <OperatingDataProvider>
-            <CalendarEventProvider>
+          <CalendarEventProvider>
+            <CurbAppealProvider>
               <GuidedPracticeProvider>
                 {isPracticeEntryPath(location.pathname) ? (
                   <PracticeEntryRoutes />
@@ -140,11 +148,11 @@ const ProtectedApp = () => {
                   </AppShell>
                 )}
               </GuidedPracticeProvider>
-            </CalendarEventProvider>
-          </OperatingDataProvider>
+            </CurbAppealProvider>
+          </CalendarEventProvider>
         </NotificationsProvider>
       </FeatureAccessProvider>
-    </CurbAppealProvider>
+    </OperatingDataProvider>
   );
 };
 

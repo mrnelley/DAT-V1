@@ -4,12 +4,10 @@ import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { Box, Chip, LinearProgress, Stack, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useReportingPeriod } from '../../context/ReportingPeriodContext';
 import { recordMatchesReportingPeriod } from '../../data/reportingPeriods';
-import { currentWeeklyReport } from '../../data/weeklyTrackerConfig';
 import { decorateWorkplan } from '../../utils/workplans';
 import UserAvatar from '../shared/UserAvatar';
 import CurrentWeekPrioritiesSection, { getOwnedWeeklyPriorities } from './CurrentWeekPrioritiesSection';
@@ -49,13 +47,6 @@ const profiles = {
   },
 };
 
-const financeStatDefaults = [
-  ['cashPosition', 'Cash Position'],
-  ['budgetVariance', 'Budget Variance'],
-  ['grantReceivables', 'Grant Receivables'],
-  ['debtService', 'Debt Service'],
-];
-
 const statusColor = {
   alert: 'error',
   Steady: 'success',
@@ -76,19 +67,9 @@ const statusOrder = {
   Completed: 3,
 };
 
-const weeklyPriorityLeadershipLanes = {
-  u2: { label: 'Finance', departments: ['Finance'] },
-  u3: { label: 'Real Estate Development', departments: ['Real Estate Development'] },
-  u4: { label: 'Property Management', departments: ['Property Management', 'Property Management & Compliance'] },
-  u5: { label: 'HR', departments: ['Human Resources'] },
-  u6: { label: 'Impact and Advancement', departments: ['Impact and Advancement', 'Community Relations'] },
-  u8: { label: 'Operations', departments: ['Operations', 'Resident Services'] },
-};
-
 const getLaneDepartments = (user) => new Set([
   user.department,
   ...(user.teams || []),
-  ...(weeklyPriorityLeadershipLanes[user.id]?.departments || []),
 ]);
 
 const isOpenStatus = (status) => !['complete', 'completed', 'cancelled', 'resolved'].includes(String(status || '').toLowerCase());
@@ -134,101 +115,14 @@ const StatCard = ({ helper, label, value }) => (
   </Box>
 );
 
-const EditableStatCard = ({ field, label, storageKey }) => {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(() => {
-    if (typeof window === 'undefined') return '';
-
-    try {
-      return JSON.parse(window.localStorage.getItem(storageKey))?.[field] || '';
-    } catch {
-      return '';
-    }
-  });
-
-  const save = (nextValue = value) => {
-    if (typeof window !== 'undefined') {
-      try {
-        const current = JSON.parse(window.localStorage.getItem(storageKey)) || {};
-        window.localStorage.setItem(storageKey, JSON.stringify({ ...current, [field]: nextValue }));
-      } catch {
-        window.localStorage.setItem(storageKey, JSON.stringify({ [field]: nextValue }));
-      }
-    }
-    setEditing(false);
-  };
-
-  return (
-    <Box
-      aria-label={`Edit ${label}`}
-      onClick={() => setEditing(true)}
-      onKeyDown={(event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
-        event.preventDefault();
-        setEditing(true);
-      }}
-      role="button"
-      tabIndex={0}
-      title={`Edit ${label}`}
-      sx={{
-        bgcolor: 'background.paper',
-        border: '1px solid',
-        borderColor: editing ? 'primary.main' : 'divider',
-        borderRadius: 1,
-        cursor: 'text',
-        minHeight: 104,
-        p: 1.5,
-        transition: 'border-color 160ms ease, box-shadow 160ms ease',
-        '&:focus-visible': { outline: '3px solid', outlineColor: 'secondary.main', outlineOffset: 2 },
-        '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 18px rgba(31, 79, 86, 0.13)' },
-      }}
-    >
-      <Typography variant="caption">{label}</Typography>
-      {editing ? (
-        <TextField
-          autoFocus
-          fullWidth
-          onBlur={() => save()}
-          onChange={(event) => setValue(event.target.value)}
-          onClick={(event) => event.stopPropagation()}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              save(event.currentTarget.value);
-            }
-          }}
-          placeholder="Add value"
-          value={value}
-          variant="standard"
-          inputProps={{ 'aria-label': label, title: label }}
-          sx={{
-            mt: 0.75,
-            '& input': {
-              color: value ? 'primary.main' : 'text.secondary',
-              fontSize: '1.55rem',
-              fontWeight: 800,
-              p: 0,
-            },
-          }}
-        />
-      ) : (
-        <Typography color={value ? 'primary' : 'text.secondary'} variant="h2" sx={{ my: 0.5 }}>
-          {value || 'Click to add'}
-        </Typography>
-      )}
-      <Typography variant="body2">Raw editable value</Typography>
-    </Box>
-  );
-};
-
-const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, reportingPeriod, reportingPeriodId, user, workplans }) => {
+const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, reportingPeriod, reportingPeriodId, strategicPillars, user, users, workplans }) => {
   const departments = getLaneDepartments(user);
   const periodPriorityIds = new Set(enterprisePriorities
     .filter((priority) => recordMatchesReportingPeriod(priority, reportingPeriodId))
     .map((priority) => priority.id));
   const visibleWorkplans = workplans
     .filter((workplan) => isWorkplanRelevantToUser(workplan, user, departments))
-    .map((workplan) => decorateWorkplan(workplan, enterprisePriorities))
+    .map((workplan) => decorateWorkplan(workplan, enterprisePriorities, { strategicPillars, users }))
     .filter((workplan) => workplan.enterprisePriorityIds.some((priorityId) => periodPriorityIds.has(priorityId)))
     .sort((a, b) => (
       (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4)
@@ -299,7 +193,17 @@ const DepartmentWorkplanAlignmentSection = ({ enterprisePriorities, reportingPer
 };
 
 const FocusedDashboard = ({ user }) => {
-  const { departmentWorkplans, enterprisePriorities, queuedTasks, stucks, weeklyPriorityEntriesByWeek } = useOperatingData();
+  const {
+    currentWeeklyReport,
+    departmentWorkplans,
+    enterprisePriorities,
+    metrics,
+    queuedTasks,
+    strategicPlan,
+    stucks,
+    users,
+    weeklyPriorityEntriesByWeek,
+  } = useOperatingData();
   const { selectedPeriod, selectedPeriodId } = useReportingPeriod();
   const weeklyTrackerEntries = weeklyPriorityEntriesByWeek[currentWeeklyReport.id] || [];
   const liveStats = buildLiveStats({
@@ -309,12 +213,15 @@ const FocusedDashboard = ({ user }) => {
     user,
     weeklyEntries: weeklyTrackerEntries,
   });
+  const relevantMetrics = metrics.filter((metric) => (
+    metric.owner?.id === user.id || metric.owner?.department === user.department
+  ));
 
   if (user.dashboardFocus === 'property_management') {
     return (
       <Box sx={{ mb: 3 }}>
         <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
-        <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} user={user} workplans={departmentWorkplans} />
+        <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} strategicPillars={strategicPlan.pillars} user={user} users={users} workplans={departmentWorkplans} />
         <PropertyManagementDashboard user={user} />
       </Box>
     );
@@ -323,7 +230,13 @@ const FocusedDashboard = ({ user }) => {
   const profile = profiles[user.dashboardFocus];
   if (!profile) return null;
   const Icon = profile.icon;
-  const financeStats = user.dashboardFocus === 'financials';
+  const displayedStats = relevantMetrics.length
+    ? relevantMetrics.slice(0, 4).map((metric) => [
+      metric.title,
+      `${metric.current ?? 0}${metric.unit || ''}`,
+      `Target ${metric.target ?? 0}${metric.unit || ''}`,
+    ])
+    : liveStats;
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -345,15 +258,13 @@ const FocusedDashboard = ({ user }) => {
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5, mb: 2 }}>
-        {financeStats ? financeStatDefaults.map(([field, label]) => (
-          <EditableStatCard key={field} field={field} label={label} storageKey="hdc_compass_finance_dashboard_stats" />
-        )) : liveStats.map(([label, value, helper]) => (
+        {displayedStats.map(([label, value, helper]) => (
           <StatCard key={label} label={label} value={value} helper={helper} />
         ))}
       </Box>
 
       <CurrentWeekPrioritiesSection entries={weeklyTrackerEntries} user={user} />
-      <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} user={user} workplans={departmentWorkplans} />
+      <DepartmentWorkplanAlignmentSection enterprisePriorities={enterprisePriorities} reportingPeriod={selectedPeriod} reportingPeriodId={selectedPeriodId} strategicPillars={strategicPlan.pillars} user={user} users={users} workplans={departmentWorkplans} />
 
       {user.dashboardFocus === 'resident_services' && <ResidentServicesMap />}
     </Box>

@@ -14,21 +14,29 @@ import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useOperatingData } from '../../context/OperatingDataContext';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
-import { users } from '../../data/mockData';
 import { useAuth } from '../../hooks/useAuth';
 import PageWrapper from '../layout/PageWrapper';
 import UserAvatar from '../shared/UserAvatar';
 import AddStuckModal from '../stucks/AddStuckModal';
 
+const toLocalDate = (date) => [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, '0'),
+  String(date.getDate()).padStart(2, '0'),
+].join('-');
+
+const endOfCurrentWeek = (date = new Date()) => {
+  const end = new Date(date);
+  end.setDate(date.getDate() + (7 - date.getDay()) % 7);
+  return toLocalDate(end);
+};
+
 const chipColor = (due) => {
-  const today = '2026-05-13';
+  const today = toLocalDate(new Date());
   if (due < today) return 'error';
   if (due === today) return 'warning';
   return 'default';
 };
-
-const today = '2026-05-13';
-const weekEnd = '2026-05-19';
 
 const visibilityLabels = {
   private: 'Assigned and created by',
@@ -46,7 +54,7 @@ const normalizeStatus = (status) => String(status || '').toLowerCase().replaceAl
 const isActiveStatus = (status) => !['complete', 'completed', 'cancelled'].includes(normalizeStatus(status));
 
 const buildAssignmentForm = (item) => ({
-  due: item?.due || '2026-05-19',
+  due: item?.due || endOfCurrentWeek(),
   note: '',
   ownerId: item?.owner?.id || '',
   status: item?.status || 'Open',
@@ -74,7 +82,7 @@ const TaskViewPage = () => {
   const { user } = useAuth();
   const { isFeatureEnabled } = useFeatureAccess();
   const { addNotification } = useNotifications();
-  const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, reorderQueuedTasks, updateQueuedTask } = useOperatingData();
+  const { addQueuedTask: persistQueuedTask, addStuck, getTasksForUser, queuedTasks, reorderQueuedTasks, updateQueuedTask, users } = useOperatingData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('Assigned to Me');
   const [statusFilter, setStatusFilter] = useState('Active');
@@ -88,6 +96,8 @@ const TaskViewPage = () => {
   const [dragOverTaskId, setDragOverTaskId] = useState(null);
   const canUseStuckActions = isFeatureEnabled('stuckActions', user);
   const queueInputRef = useRef(null);
+  const today = toLocalDate(new Date());
+  const weekEnd = endOfCurrentWeek();
   const visibleItems = queuedTasks.filter((item) => {
     if (!canViewTask(item, user)) return false;
     const matchesStatus = statusFilter === 'All'

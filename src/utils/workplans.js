@@ -1,20 +1,4 @@
-import { strategicPillarById, strategicPlan2030, users } from '../data/mockData';
-
 export const workplanStatuses = ['Steady', 'Watch', 'Alert', 'Completed', 'Rescheduled'];
-
-const departmentLeadIds = {
-  Advocacy: 'u1',
-  'Community Relations': 'u6',
-  Compliance: 'u15',
-  'Executive Office': 'u1',
-  Finance: 'u2',
-  'Human Resources': 'u5',
-  'Impact and Advancement': 'u6',
-  Operations: 'u8',
-  'Property Management': 'u4',
-  'Real Estate Development': 'u3',
-  'Resident Services': 'u17',
-};
 
 const statusRank = {
   Alert: 0,
@@ -26,8 +10,13 @@ const statusRank = {
 
 export const clampProgress = (value) => Math.min(100, Math.max(0, Number(value) || 0));
 
-export const getDepartmentLead = (department, fallbackUser = users[0]) => (
-  users.find((user) => user.id === departmentLeadIds[department])
+export const getDepartmentLead = (
+  department,
+  fallbackUser,
+  users = [],
+  departmentRecords = [],
+) => (
+  departmentRecords.find((record) => record.name === department)?.lead
   || users.find((user) => user.department === department && ['ELT', 'OLT'].includes(user.workingGroup))
   || users.find((user) => user.department === department)
   || fallbackUser
@@ -68,17 +57,19 @@ export const findWorkplanObjective = (workplans, objectiveId) => {
   return null;
 };
 
-const normalizeObjective = (objective, workplan, index, enterprisePriorities) => {
+const normalizeObjective = (objective, workplan, index, enterprisePriorities, options) => {
+  const { departmentRecords = [], strategicPillars = [], users = [] } = options;
   const priorityIdsFromNames = (workplan.priorityLinks || [])
     .map((name) => enterprisePriorities.find((priority) => priority.name === name)?.id)
     .filter(Boolean);
   const strategicPillarId = objective.strategicPillarId
     || workplan.strategicPillarId
-    || strategicPlan2030.pillars[0].id;
+    || strategicPillars[0]?.id
+    || null;
   const owner = objective.owner
     || users.find((user) => user.id === objective.ownerId)
     || workplan.lead
-    || getDepartmentLead(workplan.department);
+    || getDepartmentLead(workplan.department, users[0], users, departmentRecords);
 
   return {
     description: objective.description || objective.outcome || '',
@@ -101,10 +92,11 @@ const normalizeObjective = (objective, workplan, index, enterprisePriorities) =>
   };
 };
 
-export const normalizeWorkplan = (workplan, enterprisePriorities = []) => {
+export const normalizeWorkplan = (workplan, enterprisePriorities = [], options = {}) => {
+  const { departmentRecords = [], users = [] } = options;
   const year = String(workplan.year || new Date().getFullYear());
   const department = workplan.department || workplan.scope || 'Department';
-  const lead = workplan.lead || getDepartmentLead(department);
+  const lead = workplan.lead || getDepartmentLead(department, users[0], users, departmentRecords);
   const sourceObjectives = workplan.objectives?.length ? workplan.objectives : [workplan];
 
   return {
@@ -114,12 +106,18 @@ export const normalizeWorkplan = (workplan, enterprisePriorities = []) => {
     ownerIds: Array.from(new Set([lead.id, ...(workplan.ownerIds || [])])),
     title: `${year} ${department.toUpperCase()} WORKPLAN`,
     year,
-    objectives: sourceObjectives.map((objective, index) => normalizeObjective(objective, workplan, index, enterprisePriorities)),
+    objectives: sourceObjectives.map((objective, index) => normalizeObjective(
+      objective,
+      workplan,
+      index,
+      enterprisePriorities,
+      options,
+    )),
   };
 };
 
-export const decorateWorkplan = (workplan, enterprisePriorities = []) => {
-  const normalized = normalizeWorkplan(workplan, enterprisePriorities);
+export const decorateWorkplan = (workplan, enterprisePriorities = [], options = {}) => {
+  const normalized = normalizeWorkplan(workplan, enterprisePriorities, options);
   const pillarIds = getWorkplanPillarIds(normalized);
   return {
     ...normalized,
@@ -127,6 +125,8 @@ export const decorateWorkplan = (workplan, enterprisePriorities = []) => {
     enterprisePriorityIds: getWorkplanEnterprisePriorityIds(normalized),
     progress: getWorkplanProgress(normalized),
     status: getWorkplanStatus(normalized),
-    strategicPillars: pillarIds.map((id) => strategicPillarById[id]?.name).filter(Boolean),
+    strategicPillars: pillarIds
+      .map((id) => options.strategicPillars?.find((pillar) => pillar.id === id)?.name)
+      .filter(Boolean),
   };
 };

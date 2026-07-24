@@ -2,24 +2,27 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { Autocomplete, Box, Button, Checkbox, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useActionFeedback } from '../../context/ActionFeedbackContext';
-import { users } from '../../data/mockData';
+import { useOperatingData } from '../../context/OperatingDataContext';
 
 const FilterPanel = ({ open }) => {
   const { unavailable } = useActionFeedback();
+  const { departments, enterprisePriorities, users } = useOperatingData();
+  const tags = [...new Set(enterprisePriorities.flatMap((priority) => priority.tags || []))];
   if (!open) return null;
   return (
     <Box component={motion.div} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} sx={{ overflow: 'hidden', mb: 2 }}>
       <Box sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 2, boxShadow: 1 }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
           <Autocomplete multiple options={users} getOptionLabel={(option) => option.name} renderInput={(params) => <TextField {...params} label="Filter People" />} />
-          <Autocomplete options={['Lease-Up', 'Maintenance', 'Compliance']} renderInput={(params) => <TextField {...params} label="Filter Priorities" />} />
+          <Autocomplete options={enterprisePriorities} getOptionLabel={(option) => option.name} renderInput={(params) => <TextField {...params} label="Filter Priorities" />} />
           <FormControl>
             <InputLabel>Filter Teams</InputLabel>
-            <Select label="Filter Teams" defaultValue="All Hands on Deck">
-              {['All Hands on Deck', 'Leadership', 'Operations', 'Resident Services'].map((team) => <MenuItem key={team} value={team}>{team}</MenuItem>)}
+            <Select label="Filter Teams" defaultValue="">
+              <MenuItem value="">All departments</MenuItem>
+              {departments.map((department) => <MenuItem key={department} value={department}>{department}</MenuItem>)}
             </Select>
           </FormControl>
-          <Autocomplete multiple freeSolo options={['Q2', 'Enterprise', 'Compliance']} renderInput={(params) => <TextField {...params} label="Filter Tags" />} />
+          <Autocomplete multiple freeSolo options={tags} renderInput={(params) => <TextField {...params} label="Filter Tags" />} />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
           <Checkbox />

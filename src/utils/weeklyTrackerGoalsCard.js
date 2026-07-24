@@ -1,12 +1,10 @@
-export const weeklyTrackerGoalsRecipientEmail = 'pkelley@hdcweb.org';
-
 export const buildWeeklyTrackerGoalsCard = ({
   baseUrl = '',
   huddleId = 'monday-weekly-tracker-huddle',
   huddleName = 'Monday Morning Weekly Tracker Huddle',
   includeInputs = true,
   includeSubmitAction = true,
-  recipientEmail = weeklyTrackerGoalsRecipientEmail,
+  recipientEmail = '',
   version = '1.5',
 } = {}) => {
   const weeklyTrackerUrl = `${baseUrl}/weekly-tracker?new=priority`;
@@ -33,7 +31,7 @@ export const buildWeeklyTrackerGoalsCard = ({
     {
       type: 'FactSet',
       facts: [
-        { title: 'Recipient', value: recipientEmail },
+        { title: 'Recipient', value: recipientEmail || 'Not assigned' },
         { title: 'Huddle', value: huddleName },
         { title: 'Destination', value: 'Weekly Tracker' },
       ],

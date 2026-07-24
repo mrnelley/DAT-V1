@@ -50,6 +50,16 @@ const CurbAppealWorkflowPanel = () => {
   const pendingReviews = submissions.filter((submission) => submission.status === 'submitted_pending_review');
   const needsFollowUp = submissions.filter((submission) => submission.status === 'needs_follow_up');
   const reviewCard = pendingReviews[0] || needsFollowUp[0] || submissions[0];
+  const reviewerName = reviewCard?.reviewer?.name;
+
+  if (!checklistTemplate || !submissions.length) {
+    return (
+      <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
+        <Typography variant="h3">Curb Appeal Checklist Workflow</Typography>
+        <Typography variant="body2">Checklist templates and scheduled submissions will appear here after they are configured.</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
@@ -60,7 +70,7 @@ const CurbAppealWorkflowPanel = () => {
             <Typography variant="h3">Curb Appeal Checklist Workflow</Typography>
           </Stack>
           <Typography variant="body2" sx={{ mt: 0.5 }}>
-            Quarterly Teams prompts go to PMs, submissions create Jaime review requests, and approvals credit the linked priority.
+            Quarterly Teams prompts go to property managers, submissions create review requests, and approvals credit the linked priority.
           </Typography>
         </Box>
         <Chip label={`${checklistTemplate.cadence} - ${checklistTemplate.dueLabel}`} color="primary" variant="outlined" />
@@ -75,12 +85,12 @@ const CurbAppealWorkflowPanel = () => {
         <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1.25 }}>
           <Typography variant="caption">Approved</Typography>
           <Typography variant="h3">{summary.approved}/{summary.expected}</Typography>
-          <Typography variant="body2">Credited to Jaime</Typography>
+          <Typography variant="body2">Credited after approval</Typography>
         </Box>
         <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1.25 }}>
           <Typography variant="caption">Pending Review</Typography>
           <Typography variant="h3">{summary.pendingReview}</Typography>
-          <Typography variant="body2">Waiting on Jaime</Typography>
+          <Typography variant="body2">Waiting on reviewer</Typography>
         </Box>
         <Box sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1.25 }}>
           <Typography variant="caption">Follow-up Needed</Typography>
@@ -117,7 +127,7 @@ const CurbAppealWorkflowPanel = () => {
           </TeamsCard>
 
           <TeamsCard
-            eyebrow="Teams card to Jaime"
+            eyebrow={reviewerName ? `Teams card to ${reviewerName}` : 'Teams card to assigned reviewer'}
             title={`${reviewCard.propertyName} review request`}
             actions={[
               <Button
@@ -146,14 +156,14 @@ const CurbAppealWorkflowPanel = () => {
               <Chip label={curbAppealStatusLabels[reviewCard.status]} color={curbAppealStatusColors[reviewCard.status]} size="small" />
               <Chip label={`${getNeedsCorrectionCount(reviewCard)} correction flags`} size="small" variant="outlined" />
             </Stack>
-            <Typography variant="body2" sx={{ mt: 1 }}>Submitted by {reviewCard.propertyManager.name}. Approval is required before this counts toward priority progress.</Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>Submitted by {reviewCard.propertyManager?.name || 'the assigned property manager'}. Approval is required before this counts toward priority progress.</Typography>
           </TeamsCard>
         </Stack>
 
         <Box>
           <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
             <RateReviewOutlinedIcon color="primary" />
-            <Typography variant="h4">Jaime Review Requests</Typography>
+            <Typography variant="h4">{reviewerName ? `${reviewerName} Review Requests` : 'Checklist Review Requests'}</Typography>
           </Stack>
           <Table aria-label="Curb appeal review requests" size="small">
             <TableHead>
@@ -171,7 +181,7 @@ const CurbAppealWorkflowPanel = () => {
                     <Typography variant="body2" color="text.primary" fontWeight={700}>{submission.propertyName}</Typography>
                     <Typography variant="caption">Due {formatDate(submission.dueDate)}</Typography>
                   </TableCell>
-                  <TableCell>{submission.propertyManager.name}</TableCell>
+                  <TableCell>{submission.propertyManager?.name || 'Unassigned'}</TableCell>
                   <TableCell>
                     <Chip label={curbAppealStatusLabels[submission.status]} color={curbAppealStatusColors[submission.status]} size="small" />
                   </TableCell>
