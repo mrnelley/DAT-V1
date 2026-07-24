@@ -82,20 +82,6 @@ export const mapLoadedRecords = (records) => {
   const usersById = new Map(users.map((user) => [user.id, user]));
   const periodsById = new Map(records.reportingPeriods.map((row) => [row.id, row]));
   const pillarsById = new Map(records.strategicPillars.map((row) => [row.id, row]));
-  const successMetricsByPillar = records.strategicSuccessMetrics.reduce((groups, row) => {
-    const current = groups.get(row.strategic_pillar_id) || [];
-    current.push({
-      currentValue: row.current_value,
-      id: row.id,
-      label: row.title,
-      source: row.source,
-      target: row.target_label,
-      targetValue: row.target_value,
-      unit: row.unit,
-    });
-    groups.set(row.strategic_pillar_id, current);
-    return groups;
-  }, new Map());
   const objectiveKpisByObjective = records.objectiveKpis.reduce((groups, row) => {
     const current = groups.get(row.key_objective_id) || [];
     current.push({
@@ -167,11 +153,9 @@ export const mapLoadedRecords = (records) => {
         .filter((row) => row.strategic_plan_id === strategicPlanRow.id)
         .sort((a, b) => a.display_order - b.display_order)
         .map((row) => ({
-          description: row.description || '',
           id: row.id,
           name: row.title,
           order: row.display_order,
-          successMetrics: successMetricsByPillar.get(row.id) || [],
         })),
       timeframe: [strategicPlanRow.starts_on?.slice(0, 4), strategicPlanRow.ends_on?.slice(0, 4)]
         .filter(Boolean)

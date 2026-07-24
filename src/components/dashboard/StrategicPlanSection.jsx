@@ -557,7 +557,6 @@ const StrategicPlanSection = () => {
           </Box>
           <Stack direction="row" gap={1} flexWrap="wrap" alignItems="flex-start">
             <Chip icon={<AccountTreeOutlinedIcon />} label={`${strategicPlan.pillars.length} pillars`} color="primary" />
-            <Chip label={`${strategicPlan.pillars.reduce((total, pillar) => total + pillar.successMetrics.length, 0)} success metrics`} variant="outlined" />
             <Chip icon={<FlagOutlinedIcon />} label={`${departmentWorkplans.length} workplans`} variant="outlined" />
             <Chip icon={<TaskAltOutlinedIcon />} label={`${queuedTasks.length} queued tasks`} variant="outlined" />
           </Stack>
@@ -606,18 +605,6 @@ const StrategicPlanSection = () => {
                 ) : (
                   <Chip label={`No ${selectedPeriod.label} Enterprise Priority set`} size="small" variant="outlined" />
                 )}
-              </Stack>
-            </Box>
-
-            <Box sx={{ mt: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>Success Metrics</Typography>
-              <Stack gap={0.75} sx={{ mt: 0.75 }}>
-                {pillar.successMetrics.slice(0, 3).map((metric) => (
-                  <Stack key={`${metric.label}-${metric.target}`} direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
-                    <Typography variant="body2" color="text.primary">{metric.label}</Typography>
-                    <Chip label={metric.target} color="secondary" size="small" variant="outlined" sx={{ flexShrink: 0 }} />
-                  </Stack>
-                ))}
               </Stack>
             </Box>
 

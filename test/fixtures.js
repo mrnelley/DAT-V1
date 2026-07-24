@@ -84,8 +84,8 @@ export const strategicPlan = {
   name: 'Test Strategic Plan',
   owner: 'HDC MidAtlantic',
   pillars: [
-    { description: '', id: 'advocate-change', name: 'Advocate for Change', order: 1, successMetrics: [] },
-    { description: '', id: 'agility-capacity', name: 'Agility & Capability', order: 2, successMetrics: [] },
+    { id: 'advocate-change', name: 'Advocate for Change', order: 1 },
+    { id: 'agility-capacity', name: 'Agility & Capability', order: 2 },
   ],
   timeframe: '2026-2030',
 };

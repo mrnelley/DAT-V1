@@ -339,31 +339,13 @@ const PillarPulseFlow = ({ amplitude, count, pillarName, status }) => {
   );
 };
 
-const blankSuccessMetric = () => ({ id: `metric-${Date.now()}-${Math.random()}`, label: '', target: '' });
-
 const PillarEditorDialog = ({ editor, onClose, onSave }) => {
-  const [form, setForm] = useState(() => {
-    if (!editor.pillar) return { description: '', name: '', successMetrics: [blankSuccessMetric()] };
-    return {
-      ...editor.pillar,
-      successMetrics: editor.pillar.successMetrics.map((metric, index) => ({
-        ...metric,
-        id: metric.id || `metric-${editor.pillar.id}-${index}`,
-      })),
-    };
-  });
+  const [form, setForm] = useState(() => ({
+    id: editor.pillar?.id,
+    name: editor.pillar?.name || '',
+    order: editor.pillar?.order,
+  }));
   const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
-  const updateMetric = (metricId, field) => (event) => setForm((current) => ({
-    ...current,
-    successMetrics: current.successMetrics.map((metric) => (
-      metric.id === metricId ? { ...metric, [field]: event.target.value } : metric
-    )),
-  }));
-  const removeMetric = (metricId) => setForm((current) => ({
-    ...current,
-    successMetrics: current.successMetrics.filter((metric) => metric.id !== metricId),
-  }));
-  const validMetrics = form.successMetrics.filter((metric) => metric.label.trim() && metric.target.trim());
 
   return (
     <Dialog aria-labelledby="pillar-editor-title" open onClose={onClose} fullWidth maxWidth="sm">
@@ -371,37 +353,13 @@ const PillarEditorDialog = ({ editor, onClose, onSave }) => {
       <DialogContent>
         <Stack gap={1.5} sx={{ pt: 1 }}>
           <TextField label="Pillar Name" value={form.name} onChange={update('name')} required fullWidth />
-          <TextField label="Reference Description" value={form.description} onChange={update('description')} multiline minRows={2} fullWidth />
-          <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
-            <Box>
-              <Typography variant="h3">Success metrics</Typography>
-              <Typography variant="body2">Long-range measurements preserved with this pillar.</Typography>
-            </Box>
-            <Button
-              startIcon={<AddIcon />}
-              onClick={() => setForm((current) => ({ ...current, successMetrics: [...current.successMetrics, blankSuccessMetric()] }))}
-            >
-              Add Metric
-            </Button>
-          </Stack>
-          {form.successMetrics.map((metric, index) => (
-            <Stack key={metric.id || `${metric.label}-${index}`} direction={{ xs: 'column', sm: 'row' }} gap={1} alignItems={{ sm: 'center' }}>
-              <TextField label="Success Metric" value={metric.label} onChange={updateMetric(metric.id, 'label')} fullWidth />
-              <TextField label="Target" value={metric.target} onChange={updateMetric(metric.id, 'target')} fullWidth />
-              <Tooltip title={`Remove success metric ${index + 1}`}>
-                <IconButton aria-label={`Remove success metric ${index + 1}`} onClick={() => removeMetric(metric.id)}>
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          ))}
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
-          disabled={!form.name.trim() || !validMetrics.length}
-          onClick={() => onSave({ ...form, successMetrics: validMetrics })}
+          disabled={!form.name.trim()}
+          onClick={() => onSave({ ...form, name: form.name.trim() })}
           variant="contained"
         >
           Save Pillar
@@ -516,7 +474,6 @@ const PillarDetailDialog = ({ detail, onClose, reportingPeriod }) => {
 
   return (
     <Dialog
-      aria-describedby="pillar-detail-description"
       aria-labelledby="pillar-detail-title"
       open={open}
       onClose={onClose}
@@ -536,20 +493,6 @@ const PillarDetailDialog = ({ detail, onClose, reportingPeriod }) => {
       <DialogContent>
         {pillar && (
           <Stack gap={2} sx={{ py: 1 }}>
-            <Typography id="pillar-detail-description" variant="body1" color="text.primary">{pillar.description}</Typography>
-
-            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
-              <Typography variant="h3" sx={{ mb: 1 }}>Success metrics</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 1 }}>
-                {pillar.successMetrics.map((metric) => (
-                  <Box key={`${metric.label}-${metric.target}`} sx={{ bgcolor: 'background.default', borderRadius: 1, p: 1 }}>
-                    <Typography variant="body2" color="text.primary" fontWeight={800}>{metric.label}</Typography>
-                    <Typography variant="h3" color="primary" sx={{ mt: 0.35 }}>{metric.target}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-
             <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
                 <Box>

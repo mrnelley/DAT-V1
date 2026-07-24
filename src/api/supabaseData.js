@@ -26,7 +26,6 @@ export const loadOperatingData = async () => {
     reportingPeriods,
     strategicPlans,
     strategicPillars,
-    strategicSuccessMetrics,
     initiatives,
     workplans,
     priorities,
@@ -53,7 +52,6 @@ export const loadOperatingData = async () => {
     unwrap(client.from('reporting_periods').select('*').gte('starts_on', '2026-04-01').order('starts_on')),
     unwrap(client.from('strategic_plans').select('*').order('starts_on', { ascending: false })),
     unwrap(client.from('strategic_pillars').select('*').order('display_order')),
-    unwrap(client.from('strategic_success_metrics').select('*').order('display_order')),
     unwrap(client.from('initiatives').select('*').order('created_at', { ascending: false })),
     unwrap(client.from('workplans').select('*').order('created_at', { ascending: false })),
     unwrap(client.from('priorities').select('*').order('created_at', { ascending: false })),
@@ -95,7 +93,6 @@ export const loadOperatingData = async () => {
     reportingPeriods,
     strategicPillars,
     strategicPlans,
-    strategicSuccessMetrics,
     stucks,
     touchpoints,
     weeklyActionEntries,
@@ -132,7 +129,6 @@ export const updateProfileRecord = async (userId, values) => {
 
 export const saveStrategicPillarRecord = async (strategicPlanId, pillar) => {
   const row = insertable({
-    description: pillar.description || null,
     display_order: pillar.order || 0,
     id: pillar.id,
     strategic_plan_id: strategicPlanId,
