@@ -1,26 +1,39 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CheckIcon from '@mui/icons-material/Check';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-import { AppBar, Avatar, Badge, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
+import SwitchAccountOutlinedIcon from '@mui/icons-material/SwitchAccountOutlined';
+import { AppBar, Avatar, Badge, Box, Button, Chip, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationsContext';
 import { useFeatureAccess } from '../../context/FeatureAccessContext';
+import { useOperatingData } from '../../context/OperatingDataContext';
 import { useAuth } from '../../hooks/useAuth';
 import { quickAddItems, topNavMenus } from '../../navigation/topNav';
 import { brandAssets } from '../../theme/brandAssets';
 
 const TopBar = ({ onMenuClick }) => {
-  const { signOut, user } = useAuth();
+  const {
+    clearDashboardPreview,
+    dashboardUser,
+    isDashboardPreview,
+    primaryDashboardPath,
+    signOut,
+    user,
+    viewDashboardAs,
+  } = useAuth();
+  const { users } = useOperatingData();
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useNotifications();
   const { isFeatureEnabled } = useFeatureAccess();
   const [anchor, setAnchor] = useState(null);
   const [quickAnchor, setQuickAnchor] = useState(null);
+  const [viewAsAnchor, setViewAsAnchor] = useState(null);
   const [menu, setMenu] = useState('');
 
   const openMenu = (event, label) => {
@@ -31,6 +44,7 @@ const TopBar = ({ onMenuClick }) => {
   const closeMenus = () => {
     setAnchor(null);
     setQuickAnchor(null);
+    setViewAsAnchor(null);
   };
 
   const goTo = (path) => {
@@ -46,6 +60,21 @@ const TopBar = ({ onMenuClick }) => {
     .filter((navMenu) => navMenu.items.length);
   const visibleQuickAddItems = quickAddItems.filter((item) => isFeatureEnabled(item.featureKey));
   const currentMenu = visibleTopNavMenus.find((candidate) => candidate.label === menu);
+  const dashboardDirectory = [...users]
+    .filter((candidate) => candidate.isActive && candidate.id !== user.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const selectDashboardUser = (targetUser) => {
+    viewDashboardAs(targetUser);
+    setViewAsAnchor(null);
+    navigate('/dashboard/me');
+  };
+
+  const returnToAdmin = () => {
+    clearDashboardPreview();
+    setViewAsAnchor(null);
+    navigate(primaryDashboardPath);
+  };
 
   return (
     <AppBar
@@ -71,9 +100,14 @@ const TopBar = ({ onMenuClick }) => {
         },
       }}
     >
-      <Toolbar sx={{ minHeight: 64, gap: 1.5 }}>
+      <Toolbar sx={{ minHeight: 64, gap: { xs: 0.5, sm: 1, md: 1.5 }, px: { xs: 1, sm: 2 } }}>
         <IconButton title="Toggle navigation menu" aria-label="Toggle navigation menu" onClick={onMenuClick} color="primary"><MenuIcon /></IconButton>
-        <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 2, minWidth: 0 }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          gap={1}
+          sx={{ flex: { xs: 1, md: '0 1 auto' }, mr: { xs: 0, md: 2 }, minWidth: 0 }}
+        >
           <Box
             component="img"
             src={brandAssets.logoIcon}
@@ -81,7 +115,7 @@ const TopBar = ({ onMenuClick }) => {
             aria-hidden="true"
             sx={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
           />
-          <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
+          <Typography variant="h3" color="primary" sx={{ display: { xs: 'none', sm: 'block' }, whiteSpace: 'nowrap' }}>HDC Compass</Typography>
         </Stack>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flex: 1 }}>
           {visibleTopNavMenus.map((navMenu) => {
@@ -104,6 +138,28 @@ const TopBar = ({ onMenuClick }) => {
         </Box>
         {visibleQuickAddItems.length > 0 && (
           <IconButton title="Open quick add menu" aria-label="Open quick add menu" color="primary" onClick={(event) => setQuickAnchor(event.currentTarget)}><AddCircleOutlineIcon /></IconButton>
+        )}
+        {user.isAdmin && (
+          <>
+            {isDashboardPreview && (
+              <Chip
+                color="secondary"
+                label={`Viewing ${dashboardUser.name}`}
+                onDelete={returnToAdmin}
+                size="small"
+                sx={{ display: { xs: 'none', lg: 'flex' }, maxWidth: 190 }}
+              />
+            )}
+            <Tooltip title="View another user's dashboard">
+              <IconButton
+                aria-label="View another user's dashboard"
+                color={isDashboardPreview ? 'secondary' : 'primary'}
+                onClick={(event) => setViewAsAnchor(event.currentTarget)}
+              >
+                <SwitchAccountOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+          </>
         )}
         <Tooltip title="Notifications">
           <IconButton aria-label="Open notifications inbox" color="primary" onClick={() => navigate('/notifications')}>
@@ -146,6 +202,35 @@ const TopBar = ({ onMenuClick }) => {
               ))}
             </Box>
           </AnimatePresence>
+        </Menu>
+        <Menu
+          anchorEl={viewAsAnchor}
+          open={Boolean(viewAsAnchor)}
+          onClose={() => setViewAsAnchor(null)}
+          MenuListProps={{ 'aria-label': 'Dashboard user selector' }}
+          PaperProps={{ sx: { maxHeight: 480, minWidth: 280 } }}
+        >
+          <MenuItem onClick={returnToAdmin}>
+            <ListItemIcon>
+              {!isDashboardPreview && <CheckIcon fontSize="small" />}
+            </ListItemIcon>
+            <Box>
+              <Typography variant="body2" fontWeight={700}>Compass Admin</Typography>
+              <Typography variant="caption">Return to admin dashboard</Typography>
+            </Box>
+          </MenuItem>
+          <Divider />
+          {dashboardDirectory.map((candidate) => (
+            <MenuItem key={candidate.id} onClick={() => selectDashboardUser(candidate)}>
+              <ListItemIcon>
+                {dashboardUser.id === candidate.id && <CheckIcon fontSize="small" />}
+              </ListItemIcon>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={700} noWrap>{candidate.name}</Typography>
+                <Typography variant="caption" color="text.secondary" noWrap>{candidate.department} - {candidate.role}</Typography>
+              </Box>
+            </MenuItem>
+          ))}
         </Menu>
       </Toolbar>
     </AppBar>

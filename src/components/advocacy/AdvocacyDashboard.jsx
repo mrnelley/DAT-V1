@@ -913,8 +913,9 @@ const TeamsAdaptiveCardPreview = ({ contactsById, touchpoints }) => {
   );
 };
 
-const AdvocacyDashboard = () => {
-  const { user } = useAuth();
+const AdvocacyDashboard = ({ readOnly = false, userOverride = null }) => {
+  const { user: authenticatedUser } = useAuth();
+  const user = userOverride || authenticatedUser;
   const { addCalendarEvent, updateCalendarEvent } = useCalendarEvents();
   const {
     contacts,
@@ -943,9 +944,9 @@ const AdvocacyDashboard = () => {
 
   const advocacyDepartment = departmentRecords.find((department) => department.name === 'Advocacy');
   const advocacyLead = advocacyDepartment?.lead || user;
-  const canManageTouchpoints = ['ELT', 'OLT'].includes(user.workingGroup)
+  const canManageTouchpoints = !readOnly && (['ELT', 'OLT'].includes(user.workingGroup)
     || user.department === 'Advocacy'
-    || user.role === 'Administrator';
+    || user.role === 'Administrator');
   const initiatives = allInitiatives.filter((initiative) => initiative.department === 'Advocacy');
   const workplans = departmentWorkplans.filter((workplan) => workplan.department === 'Advocacy');
   const basePeriod = periods.find((item) => item.value === period) || periods[2];

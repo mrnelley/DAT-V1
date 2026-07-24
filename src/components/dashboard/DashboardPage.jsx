@@ -4,7 +4,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useCalendarEvents } from '../../context/CalendarEventContext';
@@ -65,13 +65,21 @@ const DashboardWidget = ({ children, edit, isFirst, isLast, onMoveDown, onMoveUp
 );
 
 const DashboardPage = ({ company = false }) => {
-  const { user } = useAuth();
+  const {
+    dashboardUser,
+    isDashboardPreview,
+    user: authenticatedUser,
+  } = useAuth();
+  const user = company ? authenticatedUser : dashboardUser;
   const { metrics } = useOperatingData();
   const {
+    error: reportingPeriodError,
     goToNextPeriod,
     goToPreviousPeriod,
     hasNextPeriod,
     hasPreviousPeriod,
+    isLoading: isReportingPeriodLoading,
+    selectedPeriod,
   } = useReportingPeriod();
   const teamOptions = company ? [] : user.teams;
   const opensCalendarFirst = !company && user.dashboardFocus === 'advocacy';
@@ -111,6 +119,26 @@ const DashboardPage = ({ company = false }) => {
     }
   }, [layoutStorageKey, widgetOrder]);
 
+  if (isReportingPeriodLoading) {
+    return (
+      <PageWrapper>
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 320 }}>
+          <CircularProgress aria-label="Loading dashboard" />
+        </Stack>
+      </PageWrapper>
+    );
+  }
+
+  if (reportingPeriodError || !selectedPeriod) {
+    return (
+      <PageWrapper>
+        <Alert severity="error">
+          {reportingPeriodError || 'No reporting periods are available for this organization.'}
+        </Alert>
+      </PageWrapper>
+    );
+  }
+
   const moveWidget = (widgetId, direction) => {
     setWidgetOrder((current) => {
       const index = current.indexOf(widgetId);
@@ -133,7 +161,9 @@ const DashboardPage = ({ company = false }) => {
 
   const renderWidget = (widgetId) => {
     if (widgetId === 'focus') {
-      return user.dashboardFocus === 'advocacy' ? <AdvocacyDashboard /> : <FocusedDashboard user={user} />;
+      return user.dashboardFocus === 'advocacy'
+        ? <AdvocacyDashboard readOnly={isDashboardPreview} userOverride={user} />
+        : <FocusedDashboard user={user} />;
     }
 
     if (widgetId === 'strategicPlan') {
@@ -147,7 +177,7 @@ const DashboardPage = ({ company = false }) => {
     if (widgetId === 'kpis') {
       return (
         <MyKpisSection
-          metrics={metrics.filter((metric) => metric.owner.id === user.id).length ? metrics.filter((metric) => metric.owner.id === user.id) : metrics.slice(0, 2)}
+          metrics={metrics.filter((metric) => metric.owner?.id === user.id).length ? metrics.filter((metric) => metric.owner?.id === user.id) : metrics.slice(0, 2)}
           onMetricClick={setSelectedMetric}
         />
       );
@@ -205,6 +235,15 @@ const DashboardPage = ({ company = false }) => {
 
   return (
     <PageWrapper>
+      {isDashboardPreview && !company && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Admin preview: viewing {user.name}&apos;s dashboard. Dashboard editing and actions are disabled.
+        </Alert>
+      )}
+      <Box
+        aria-disabled={isDashboardPreview && !company ? 'true' : undefined}
+        sx={{ pointerEvents: isDashboardPreview && !company ? 'none' : 'auto' }}
+      >
       <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" gap={2} sx={{ mb: 3 }}>
         <Box data-tour-id={company ? 'organization-dashboard-header' : 'personal-dashboard-header'}>
           <Typography variant="h1">{dashboardTitle}</Typography>
@@ -271,6 +310,7 @@ const DashboardPage = ({ company = false }) => {
         </Box>
       )}
       <KpiDetailModal metric={selectedMetric} open={Boolean(selectedMetric)} onClose={() => setSelectedMetric(null)} />
+      </Box>
     </PageWrapper>
   );
 };

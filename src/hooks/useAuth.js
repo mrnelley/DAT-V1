@@ -10,6 +10,7 @@ import {
 import { updateProfileRecord } from '../api/supabaseData';
 import { profileFromRow } from '../data/recordAdapters';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { getAuthEmailForUsername, normalizeUsername } from '../utils/authIdentity';
 import { getPrimaryDashboardPath } from '../utils/dashboardRouting';
 
 const AuthContext = createContext(null);
@@ -35,7 +36,8 @@ const loadProfile = async (userId) => {
 
 export const AuthProvider = ({ children, initialUser = null }) => {
   const [session, setSession] = useState(null);
-  const [user, setUser] = useState(initialUser);
+  const [authenticatedUser, setAuthenticatedUser] = useState(initialUser);
+  const [dashboardPreviewUser, setDashboardPreviewUser] = useState(null);
   const [isLoading, setIsLoading] = useState(!initialUser);
   const configurationError = isSupabaseConfigured
     ? ''
@@ -44,13 +46,15 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   const hydrateSession = useCallback(async (nextSession) => {
     setSession(nextSession);
     if (!nextSession?.user) {
-      setUser(initialUser);
+      setAuthenticatedUser(initialUser);
+      setDashboardPreviewUser(null);
       setIsLoading(false);
       return;
     }
 
     try {
-      setUser(await loadProfile(nextSession.user.id));
+      setAuthenticatedUser(await loadProfile(nextSession.user.id));
+      setDashboardPreviewUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +85,10 @@ export const AuthProvider = ({ children, initialUser = null }) => {
       return { error: new Error('Supabase is not configured.'), user: null };
     }
 
-    const email = username.trim().toLowerCase();
+    const normalizedUsername = normalizeUsername(username);
+    const email = normalizedUsername.includes('@')
+      ? normalizedUsername
+      : getAuthEmailForUsername(normalizedUsername);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error, user: null };
     await hydrateSession(data.session);
@@ -91,52 +98,88 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut();
     setSession(null);
-    setUser(initialUser);
+    setAuthenticatedUser(initialUser);
+    setDashboardPreviewUser(null);
   }, [initialUser]);
 
   const updateUserProfile = useCallback(async (values) => {
-    if (!user) return null;
-    const row = await updateProfileRecord(user.id, values);
+    if (!authenticatedUser) return null;
+    const row = await updateProfileRecord(authenticatedUser.id, values);
     const nextUser = {
-      ...user,
+      ...authenticatedUser,
       avatarUrl: row.avatar_url || '',
-      initials: row.initials || user.initials,
-      name: row.display_name || row.full_name,
+      email: row.email || '',
+      firstName: row.first_name,
+      initials: row.initials || authenticatedUser.initials,
+      lastName: row.last_name || '',
+      name: row.display_name || row.full_name || row.first_name,
       teams: row.teams || [],
+      username: row.username,
     };
-    setUser(nextUser);
+    setAuthenticatedUser(nextUser);
     return nextUser;
-  }, [user]);
+  }, [authenticatedUser]);
 
   const reloadUserProfile = useCallback(async () => {
-    if (!session?.user) return user;
+    if (!session?.user) return authenticatedUser;
     const nextUser = await loadProfile(session.user.id);
-    setUser(nextUser);
+    setAuthenticatedUser(nextUser);
     return nextUser;
-  }, [session, user]);
+  }, [authenticatedUser, session]);
+
+  const viewDashboardAs = useCallback((targetUser) => {
+    if (
+      !authenticatedUser?.isAdmin
+      || !targetUser?.id
+      || targetUser.organizationId !== authenticatedUser.organizationId
+    ) {
+      return false;
+    }
+
+    setDashboardPreviewUser(
+      targetUser.id === authenticatedUser.id ? null : targetUser,
+    );
+    return true;
+  }, [authenticatedUser]);
+
+  const clearDashboardPreview = useCallback(() => {
+    setDashboardPreviewUser(null);
+  }, []);
+
+  const dashboardUser = dashboardPreviewUser || authenticatedUser;
+  const isDashboardPreview = Boolean(dashboardPreviewUser);
 
   const value = useMemo(() => ({
+    authenticatedUser,
+    clearDashboardPreview,
     configurationError,
+    dashboardUser,
     getToken: async () => session?.access_token || '',
-    isAuthenticated: Boolean(user && (initialUser || session)),
+    isAuthenticated: Boolean(authenticatedUser && (initialUser || session)),
+    isDashboardPreview,
     isLoading,
-    primaryDashboardPath: getPrimaryDashboardPath(user),
+    primaryDashboardPath: getPrimaryDashboardPath(authenticatedUser),
     reloadUserProfile,
     signIn,
     signOut,
     updateUserProfile,
-    user,
-    userId: user?.id || null,
+    user: authenticatedUser,
+    userId: authenticatedUser?.id || null,
+    viewDashboardAs,
   }), [
+    authenticatedUser,
+    clearDashboardPreview,
     configurationError,
+    dashboardUser,
     initialUser,
+    isDashboardPreview,
     isLoading,
     reloadUserProfile,
     session,
     signIn,
     signOut,
     updateUserProfile,
-    user,
+    viewDashboardAs,
   ]);
 
   return createElement(AuthContext.Provider, { value }, children);

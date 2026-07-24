@@ -17,19 +17,21 @@ const ProfilePage = () => {
     setForm(user);
   }, [user]);
 
-  const firstName = useMemo(() => form.name?.split(' ')[0] || form.name || 'User', [form.name]);
+  const firstName = useMemo(() => form.firstName || form.name?.split(' ')[0] || 'User', [form.firstName, form.name]);
 
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
   };
 
   const handleSave = () => {
-    const fullName = form.name.trim();
-    if (!fullName) return;
+    const requiredFirstName = form.firstName.trim();
+    if (!requiredFirstName) return;
 
     updateUserProfile({
-      name: fullName,
+      email: form.email,
+      firstName: requiredFirstName,
       initials: form.initials.trim().toUpperCase(),
+      lastName: form.lastName,
       teams: form.teamsText
         ? form.teamsText.split(',').map((team) => team.trim()).filter(Boolean)
         : form.teams,
@@ -68,7 +70,12 @@ const ProfilePage = () => {
         <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
           <Typography variant="h3" sx={{ mb: 2 }}>Profile Details</Typography>
           <Stack gap={2}>
-            <TextField label="Full Name" value={editableForm.name || ''} onChange={update('name')} fullWidth />
+            <TextField label="Username" value={editableForm.username || ''} fullWidth disabled />
+            <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
+              <TextField label="First Name" value={editableForm.firstName || ''} onChange={update('firstName')} fullWidth required />
+              <TextField label="Last Name" value={editableForm.lastName || ''} onChange={update('lastName')} fullWidth />
+            </Stack>
+            <TextField label="Contact Email" type="email" value={editableForm.email || ''} onChange={update('email')} fullWidth />
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
               <TextField label="Initials" value={editableForm.initials || ''} onChange={update('initials')} fullWidth />
               <TextField label="Organization" value={editableForm.organization || ''} fullWidth disabled />

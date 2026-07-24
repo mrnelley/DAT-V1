@@ -20,6 +20,7 @@ import EnterprisePriorityPage from './components/priorities/EnterprisePriorityPa
 import PrioritiesPage from './components/priorities/PrioritiesPage';
 import MetricsPage from './components/metrics/MetricsPage';
 import FeatureGate from './components/shared/FeatureGate';
+import AppErrorBoundary from './components/shared/AppErrorBoundary';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 import StucksPage from './components/stucks/StucksPage';
 import TaskViewPage from './components/task-view/TaskViewPage';
@@ -167,15 +168,17 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <AuthProvider>
-          <ReportingPeriodProvider>
-            <ActionFeedbackProvider>
-              <AppRoutes />
-            </ActionFeedbackProvider>
-          </ReportingPeriodProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <AppErrorBoundary>
+        <BrowserRouter>
+          <AuthProvider>
+            <ReportingPeriodProvider>
+              <ActionFeedbackProvider>
+                <AppRoutes />
+              </ActionFeedbackProvider>
+            </ReportingPeriodProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </AppErrorBoundary>
     </ThemeProvider>
   </QueryClientProvider>
 );

@@ -21,7 +21,11 @@ export const toSignal = (value) => signalValues[value] || value?.toLowerCase?.()
 
 export const profileFromRow = (row, departmentsById = new Map(), organizationsById = new Map()) => {
   if (!row) return null;
-  const fullName = row.display_name || row.full_name || row.email || 'Compass user';
+  const fullName = row.display_name
+    || row.full_name
+    || [row.first_name, row.last_name].filter(Boolean).join(' ')
+    || row.username
+    || 'Compass user';
   const workingGroup = row.working_group || 'Team Member';
 
   return {
@@ -30,10 +34,12 @@ export const profileFromRow = (row, departmentsById = new Map(), organizationsBy
     department: departmentsById.get(row.department_id)?.name || 'Unassigned',
     departmentId: row.department_id,
     email: row.email || '',
+    firstName: row.first_name || fullName.split(/\s+/)[0] || '',
     id: row.id,
     initials: row.initials || fullName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
     isActive: row.is_active,
     isAdmin: row.is_admin,
+    lastName: row.last_name || '',
     mustResetPassword: row.must_reset_password,
     name: fullName,
     organization: organizationsById.get(row.organization_id)?.name || 'HDC MidAtlantic',
@@ -41,6 +47,7 @@ export const profileFromRow = (row, departmentsById = new Map(), organizationsBy
     primaryDashboard: row.primary_dashboard || (workingGroup === 'ELT' ? 'company' : 'individual'),
     role: row.role_title || 'Team Member',
     teams: row.teams || [],
+    username: row.username || '',
     workingGroup,
   };
 };

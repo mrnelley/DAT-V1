@@ -42,7 +42,7 @@ const LoginPage = () => {
     const result = await signIn({ password, username });
 
     if (result.error) {
-      setError(result.error.message || 'The email address or password is incorrect.');
+      setError(result.error.message || 'The username or password is incorrect.');
       return;
     }
   };
@@ -132,10 +132,10 @@ const LoginPage = () => {
           <Box component="form" noValidate onSubmit={handleSubmit}>
             <Stack gap={2}>
               <TextField
-                autoComplete="email"
+                autoComplete="username"
                 autoFocus
                 fullWidth
-                label="Email address"
+                label="Username"
                 onChange={(event) => {
                   setUsername(event.target.value);
                   setError('');

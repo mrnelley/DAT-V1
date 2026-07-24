@@ -87,10 +87,13 @@ const { ReportingPeriodProvider } = await import('../src/context/ReportingPeriod
 const { default: AdvocacyDashboard } = await import('../src/components/advocacy/AdvocacyDashboard.jsx');
 const { default: ExecutivePulsePage } = await import('../src/components/executive-pulse/ExecutivePulsePage.jsx');
 const { default: FeatureRolloutPage } = await import('../src/components/admin/FeatureRolloutPage.jsx');
+const { default: TopBar } = await import('../src/components/layout/TopBar.jsx');
 const { default: ProfilePage } = await import('../src/components/profile/ProfilePage.jsx');
 const { default: TaskViewPage } = await import('../src/components/task-view/TaskViewPage.jsx');
 const { default: WeeklyActionTrackerPage } = await import('../src/components/weekly-tracker/WeeklyActionTrackerPage.jsx');
 const { default: theme } = await import('../src/theme/index.js');
+const { getAuthEmailForUsername, normalizeUsername } = await import('../src/utils/authIdentity.js');
+const { compassUserDirectory } = await import('../scripts/compass-user-directory.mjs');
 const {
   currentWeeklyReport,
   departmentRecords,
@@ -169,6 +172,49 @@ describe('table-backed application surfaces', () => {
   it('defines no historical reporting period before Q2 2026', () => {
     expect(reportingPeriods.every((period) => period.start >= '2026-04-01')).to.equal(true);
     expect(reportingPeriods[0].id).to.equal('2026-Q2');
+  });
+
+  it('defines the requested unique Auth directory and one administrator', () => {
+    const expectedContactEmails = {
+      angie: 'aruhle@hdcweb.org',
+      dana: 'dhanchin@hdcweb.org',
+      jaime: 'jshillady@hdcweb.org',
+      kelly: 'kcook@hdcweb.org',
+      kim: 'kkrauter@hdcweb.org',
+      meg: 'mstruck@hdcweb.org',
+      michele: 'mstauffer@hdcweb.org',
+      parnell: 'pkelley@hdcweb.org',
+      sam: 'sjordan@hdcweb.org',
+      tammie: 'tfitzpatrick@hdcweb.org',
+    };
+
+    expect(compassUserDirectory).to.have.length(15);
+    expect(new Set(compassUserDirectory.map((entry) => entry.username)).size).to.equal(15);
+    expect(compassUserDirectory.filter((entry) => entry.isAdmin)).to.have.length(1);
+    expect(compassUserDirectory.some((entry) => !entry.lastName)).to.equal(true);
+    expect(compassUserDirectory.some((entry) => !entry.email)).to.equal(true);
+    expect(Object.fromEntries(
+      compassUserDirectory
+        .filter((entry) => entry.email)
+        .map((entry) => [entry.username, entry.email]),
+    )).to.deep.equal(expectedContactEmails);
+  });
+
+  it('maps a real username to Supabase Auth without exposing an email login', () => {
+    expect(normalizeUsername(' Dana ')).to.equal('dana');
+    expect(getAuthEmailForUsername('Dana')).to.equal('dana@auth.hdcweb.org');
+  });
+
+  it('lets the administrator preview a user dashboard without changing sessions', async () => {
+    const { user } = renderWithProviders(<TopBar onMenuClick={() => {}} />, {
+      userId: 'u0',
+    });
+
+    await user.click(await screen.findByRole('button', { name: /view another user's dashboard/i }));
+    await user.click(await screen.findByRole('menuitem', { name: /dana hanchin/i }));
+
+    expect(await screen.findByText('Viewing Dana Hanchin')).to.exist;
+    expect(screen.getAllByText('Compass Admin').length).to.be.greaterThan(0);
   });
 
   it('renders an empty task surface and creates a transient optimistic task', async () => {

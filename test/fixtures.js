@@ -15,12 +15,13 @@ export const departments = [
 
 const baseUser = {
   avatarUrl: '',
+  isActive: true,
   organization: 'HDC MidAtlantic',
   organizationId: 'org-test',
 };
 
 export const users = [
-  { id: 'u0', name: 'Compass Admin', initials: 'CA', role: 'Administrator', workingGroup: 'Administration', department: 'Administration', dashboardFocus: 'operations', teams: ['Administration'], primaryDashboard: 'company' },
+  { id: 'u0', name: 'Compass Admin', initials: 'CA', role: 'Administrator', workingGroup: 'Administration', department: 'Administration', dashboardFocus: 'operations', teams: ['Administration'], primaryDashboard: 'company', isAdmin: true },
   { id: 'u1', name: 'Dana Hanchin', initials: 'DH', role: 'CEO', workingGroup: 'ELT', department: 'Executive Office', dashboardFocus: 'advocacy', teams: ['Executive Leadership', 'Advocacy'], primaryDashboard: 'company' },
   { id: 'u2', name: 'Sam Jordan', initials: 'SJ', role: 'CFO', workingGroup: 'ELT', department: 'Finance', dashboardFocus: 'financials', teams: ['Finance'], primaryDashboard: 'company' },
   { id: 'u8', name: 'Tammie Fitzpatrick', initials: 'TF', role: 'VP & COO', workingGroup: 'ELT', department: 'Operations', dashboardFocus: 'operations', teams: ['Operations'], primaryDashboard: 'company' },
@@ -30,7 +31,17 @@ export const users = [
   { id: 'u13', name: 'Chris', initials: 'CH', role: 'Development Team Member', workingGroup: 'OLT', department: 'Real Estate Development', dashboardFocus: 'development', teams: ['Real Estate Development'], primaryDashboard: 'individual' },
   { id: 'u18', name: 'Gigi Lopez', initials: 'GL', role: 'Marketing and Lease Up Manager', workingGroup: 'Team Member', department: 'Property Management', dashboardFocus: 'property_management', teams: ['Property Management'], primaryDashboard: 'individual' },
   { id: 'u19', name: 'Nina', initials: 'NI', role: 'Advocacy Operations Coordinator', workingGroup: 'Team Member', department: 'Advocacy', dashboardFocus: 'advocacy', teams: ['Advocacy'], primaryDashboard: 'individual' },
-].map((user) => ({ ...baseUser, ...user }));
+].map((user) => {
+  const [firstName, ...lastNameParts] = user.name.split(' ');
+  return {
+    ...baseUser,
+    email: '',
+    firstName,
+    lastName: lastNameParts.join(' '),
+    username: firstName.toLowerCase(),
+    ...user,
+  };
+});
 
 export const reportingPeriods = [
   {

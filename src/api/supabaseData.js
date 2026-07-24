@@ -106,11 +106,17 @@ export const loadOperatingData = async () => {
 };
 
 export const updateProfileRecord = async (userId, values) => {
+  const firstName = values.firstName.trim();
+  const lastName = values.lastName?.trim() || null;
+  const fullName = [firstName, lastName].filter(Boolean).join(' ');
   const payload = {
     avatar_url: values.avatarUrl,
-    display_name: values.name,
-    full_name: values.name,
+    display_name: fullName,
+    email: values.email?.trim().toLowerCase() || null,
+    first_name: firstName,
+    full_name: fullName,
     initials: values.initials,
+    last_name: lastName,
     teams: values.teams || [],
   };
 
