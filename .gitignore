@@ -26,6 +26,11 @@ coverage/
 .eslintcache
 .parcel-cache/
 
+# Supabase CLI local state
+supabase/.temp/
+supabase/.temp-*/
+supabase/.branches/
+
 # Non-runtime documents and reference artifacts
 docs/
 deliverables/
