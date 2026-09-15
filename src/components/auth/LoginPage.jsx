@@ -2,50 +2,21 @@ import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import {
-  Alert,
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { useEffect, useState } from 'react';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { brandAssets } from '../../theme/brandAssets';
+import { users } from '../../data/mockData';
+import { getPrimaryDashboardPath } from '../../utils/dashboardRouting';
 
 const LoginPage = () => {
-  const { isAuthenticated, primaryDashboardPath, signIn } = useAuth();
+  const { selectDemoUser } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(primaryDashboardPath, { replace: true });
-    }
-  }, [isAuthenticated, navigate, primaryDashboardPath]);
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const match = signIn({ password, username });
-
-    if (!match) {
-      setError('The username or password is incorrect.');
-      return;
-    }
-
-    setError('');
+  const openDashboard = (userId) => {
+    const match = selectDemoUser(userId);
+    if (match) navigate(getPrimaryDashboardPath(match));
   };
 
   return (
@@ -98,7 +69,7 @@ const LoginPage = () => {
             The operating rhythm for HDC priorities, workplans, and commitments.
           </Typography>
           <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.84)', maxWidth: 620, mt: 2, fontSize: '1rem' }}>
-            Sign in to see the dashboard built around your lane of work.
+            Choose a person to explore the dashboard built around their work.
           </Typography>
         </Box>
 
@@ -125,73 +96,28 @@ const LoginPage = () => {
             alt="HDC MidAtlantic"
             sx={{ width: 118, height: 'auto', display: 'block', mb: 2 }}
           />
-          <Typography variant="h2">Sign in</Typography>
+          <Typography variant="overline" color="primary">Strategy demo</Typography>
+          <Typography variant="h2">Choose a dashboard</Typography>
           <Typography variant="body2" sx={{ mt: 0.75, mb: 2.5 }}>
-            Use your HDC Compass account to continue.
+            Select a name to explore Compass. Use Switch dashboard in the top bar to move between people.
           </Typography>
-
-          <Box component="form" noValidate onSubmit={handleSubmit}>
-            <Stack gap={2}>
-              <TextField
-                autoComplete="username"
-                autoFocus
-                fullWidth
-                label="Username"
-                onChange={(event) => {
-                  setUsername(event.target.value);
-                  setError('');
-                }}
-                value={username}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonOutlineOutlinedIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                autoComplete="current-password"
-                fullWidth
-                label="Password"
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  setError('');
-                }}
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockOutlinedIcon color="action" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        edge="end"
-                        onClick={() => setShowPassword((current) => !current)}
-                      >
-                        {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {error && <Alert severity="error">{error}</Alert>}
+          <Stack gap={1}>
+            {users.map((person) => (
               <Button
-                disabled={!username.trim() || !password}
-                fullWidth
-                size="large"
-                startIcon={<LoginOutlinedIcon />}
-                type="submit"
-                variant="contained"
+                key={person.id}
+                variant="outlined"
+                endIcon={<ArrowForwardIcon />}
+                onClick={() => openDashboard(person.id)}
+                aria-label={`View ${person.name}'s dashboard`}
+                sx={{ justifyContent: 'space-between', textAlign: 'left', px: 2, py: 1 }}
               >
-                Sign in
+                <Box>
+                  <Typography component="span" display="block" fontWeight={700}>{person.name}</Typography>
+                  <Typography component="span" variant="caption" color="text.secondary">{person.role} · {person.department}</Typography>
+                </Box>
               </Button>
-            </Stack>
-          </Box>
+            ))}
+          </Stack>
         </Box>
       </Box>
     </Box>

@@ -118,7 +118,7 @@ const isPracticeEntryPath = (pathname) => [
 ].includes(pathname.toLowerCase());
 
 const ProtectedApp = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userId } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -126,7 +126,7 @@ const ProtectedApp = () => {
   }
 
   return (
-    <CurbAppealProvider>
+    <CurbAppealProvider key={userId}>
       <FeatureAccessProvider>
         <NotificationsProvider>
           <OperatingDataProvider>

@@ -1,6 +1,7 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { AppBar, Avatar, Badge, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
@@ -12,9 +13,11 @@ import { useFeatureAccess } from '../../context/FeatureAccessContext';
 import { useAuth } from '../../hooks/useAuth';
 import { quickAddItems, topNavMenus } from '../../navigation/topNav';
 import { brandAssets } from '../../theme/brandAssets';
+import { users } from '../../data/mockData';
+import { getPrimaryDashboardPath } from '../../utils/dashboardRouting';
 
 const TopBar = ({ onMenuClick }) => {
-  const { signOut, user } = useAuth();
+  const { selectDemoUser, signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useNotifications();
@@ -22,6 +25,7 @@ const TopBar = ({ onMenuClick }) => {
   const [anchor, setAnchor] = useState(null);
   const [quickAnchor, setQuickAnchor] = useState(null);
   const [menu, setMenu] = useState('');
+  const [personAnchor, setPersonAnchor] = useState(null);
 
   const openMenu = (event, label) => {
     setAnchor(event.currentTarget);
@@ -119,6 +123,44 @@ const TopBar = ({ onMenuClick }) => {
         <Tooltip title={user.name}>
           <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
         </Tooltip>
+        <Button
+          aria-label="Switch dashboard"
+          aria-controls={personAnchor ? 'dashboard-person-menu' : undefined}
+          aria-haspopup="menu"
+          aria-expanded={Boolean(personAnchor)}
+          endIcon={<ArrowDropDownIcon />}
+          onClick={(event) => setPersonAnchor(event.currentTarget)}
+          title="Switch dashboard"
+          sx={{ flexShrink: 0, minWidth: { xs: 36, sm: 64 }, '& .MuiButton-endIcon': { display: { xs: 'none', sm: 'inherit' } } }}
+        >
+          <SwapHorizIcon sx={{ display: { xs: 'block', sm: 'none' } }} />
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Switch dashboard</Box>
+        </Button>
+        <Menu
+          id="dashboard-person-menu"
+          anchorEl={personAnchor}
+          open={Boolean(personAnchor)}
+          onClose={() => setPersonAnchor(null)}
+          PaperProps={{ sx: { maxHeight: 440, maxWidth: 'calc(100vw - 32px)' } }}
+        >
+          {users.map((person) => (
+            <MenuItem
+              key={person.id}
+              selected={person.id === user.id}
+              onClick={() => {
+                const match = selectDemoUser(person.id);
+                setPersonAnchor(null);
+                closeMenus();
+                if (match) navigate(getPrimaryDashboardPath(match));
+              }}
+            >
+              <Box>
+                <Typography variant="body2" fontWeight={700}>{person.name}</Typography>
+                <Typography variant="caption" color="text.secondary">{person.role}</Typography>
+              </Box>
+            </MenuItem>
+          ))}
+        </Menu>
         <IconButton title="Sign out" aria-label="Sign out" color="primary" onClick={signOut}>
           <LogoutOutlinedIcon />
         </IconButton>

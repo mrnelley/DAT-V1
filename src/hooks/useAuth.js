@@ -1,5 +1,4 @@
 import { createContext, createElement, useContext, useMemo, useState } from 'react';
-import { temporaryLoginPassword } from '../config/auth';
 import { users } from '../data/mockData';
 import { getPrimaryDashboardPath } from '../utils/dashboardRouting';
 
@@ -48,28 +47,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signIn = ({ password, username }) => {
-    const normalized = username.trim().toLowerCase();
-    const localPart = normalized.split('@')[0];
-    if (!normalized || password !== temporaryLoginPassword) return null;
+  // This strategy prototype uses explicit demo personas, not account credentials.
+  const selectDemoUser = (nextUserId) => {
+    const match = users.find((candidate) => candidate.id === nextUserId);
+    if (!match) return null;
 
-    const match = users.find((candidate) => {
-      return (
-        candidate.username === normalized
-        || candidate.username === localPart
-        || candidate.name.toLowerCase() === normalized
-      );
-    });
-
-    if (match) {
-      selectUserId(match.id);
-      setIsAuthenticated(true);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(authenticatedStorageKey, 'true');
-      }
+    selectUserId(match.id);
+    setIsAuthenticated(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(authenticatedStorageKey, 'true');
     }
-
-    return match || null;
+    return { ...match, ...(profileOverrides[match.id] || {}) };
   };
 
   const signOut = () => {
@@ -100,7 +88,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     primaryDashboardPath: getPrimaryDashboardPath(user),
     resetUserProfile,
-    signIn,
+    selectDemoUser,
     signOut,
     updateUserProfile,
     user,

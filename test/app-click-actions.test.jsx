@@ -90,7 +90,7 @@ const { CssBaseline } = await import('@mui/material');
 const { MemoryRouter, Route, Routes, useLocation } = await import('react-router-dom');
 const { cleanup, fireEvent, render, screen, waitFor, within } = await import('@testing-library/react');
 const { default: userEvent } = await import('@testing-library/user-event');
-const { AuthProvider } = await import('../src/hooks/useAuth.js');
+const { AuthProvider, useAuth } = await import('../src/hooks/useAuth.js');
 const { ActionFeedbackProvider } = await import('../src/context/ActionFeedbackContext.jsx');
 const { CalendarEventProvider } = await import('../src/context/CalendarEventContext.jsx');
 const { FeatureAccessProvider } = await import('../src/context/FeatureAccessContext.jsx');
@@ -284,32 +284,49 @@ describe('clickable user actions', () => {
     expect(screen.getByText(/weekly commitments and their action items live in the weekly tracker/i)).to.exist;
   });
 
-  it('routes authenticated users to their assigned dashboard', async () => {
-    const { user } = renderLoginFlow();
-
-    await user.type(await screen.findByLabelText(/username/i), 'dana');
-    await user.type(screen.getByLabelText(/^password$/i), 'WelcomeHDC');
-    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
-    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/organization');
-
-    cleanup();
-    const next = renderLoginFlow();
-    await next.user.type(await screen.findByLabelText(/username/i), 'michael');
-    await next.user.type(screen.getByLabelText(/^password$/i), 'WelcomeHDC');
-    await next.user.click(screen.getByRole('button', { name: /^sign in$/i }));
-    expect((await screen.findByTestId('location')).textContent).to.equal('/dashboard/me');
+  it('opens every demo dashboard by name without credentials', async () => {
+    for (const person of users) {
+      const { user } = renderLoginFlow();
+      expect(screen.queryByLabelText(/password/i)).to.equal(null);
+      await user.click(screen.getByRole('button', { name: `View ${person.name}'s dashboard` }));
+      expect(screen.getByTestId('location').textContent).to.equal(
+        person.primaryDashboard === 'company' ? '/dashboard/organization' : '/dashboard/me',
+      );
+      expect(window.localStorage.getItem('hdc_compass_user_id')).to.equal(person.id);
+      expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal('true');
+    }
   });
 
-  it('rejects an invalid temporary password', async () => {
+  it('switches demo dashboards from a team member without signing out or using admin', async () => {
+    const { user } = renderWithProviders(
+      <><TopBar onMenuClick={() => {}} /><LocationProbe /></>, '/task-view', 'u7',
+    );
+    for (const person of [testUser('u1'), testUser('u7')]) {
+      await user.click(screen.getByRole('button', { name: 'Switch dashboard' }));
+      await user.click(screen.getByRole('menuitem', { name: new RegExp(person.name) }));
+      expect(screen.getByTestId('location').textContent).to.equal(
+        person.primaryDashboard === 'company' ? '/dashboard/organization' : '/dashboard/me',
+      );
+      expect(window.localStorage.getItem('hdc_compass_user_id')).to.equal(person.id);
+      expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal('true');
+      expect(screen.getByLabelText(person.name)).to.exist;
+    }
+  });
+
+  it('restores the selected demo persona and rejects unknown persona IDs', async () => {
+    const Probe = () => {
+      const { user, isAuthenticated, selectDemoUser } = useAuth();
+      return <><div data-testid="persona">{user.id}:{String(isAuthenticated)}</div>
+        <button onClick={() => selectDemoUser('unknown-user')}>Invalid persona</button></>;
+    };
     const { user } = renderLoginFlow();
-
-    await user.type(await screen.findByLabelText(/username/i), 'dana');
-    await user.type(screen.getByLabelText(/^password$/i), 'not-the-password');
-    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
-
-    expect(await screen.findByText(/username or password is incorrect/i)).to.exist;
-    expect(screen.getByTestId('location').textContent).to.equal('/');
-    expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal(null);
+    await user.click(screen.getByRole('button', { name: "View Michael Sedoti's dashboard" }));
+    cleanup();
+    render(<AuthProvider><Probe /></AuthProvider>);
+    expect(screen.getByTestId('persona').textContent).to.equal('u7:true');
+    fireEvent.click(screen.getByRole('button', { name: 'Invalid persona' }));
+    expect(screen.getByTestId('persona').textContent).to.equal('u7:true');
+    expect(window.localStorage.getItem('hdc_compass_user_id')).to.equal('u7');
   });
 
   it('keeps the configured department and leadership directory precise', () => {

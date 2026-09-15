@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
-    "test": "tsx node_modules/mocha/bin/mocha.js --timeout 20000 \"test/**/*.test.jsx\""
+    "test": "tsx node_modules/mocha/bin/mocha.js --timeout 20000 \"test/**/*.test.jsx\"",
+    "test:prototype": "node --test test/weekly-prototype.test.mjs",
+    "validate:database": "node scripts/validate-weekly-database.mjs",
+    "check": "npm run lint && npm test && npm run test:prototype && npm run build"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.23.0",
