@@ -1,4 +1,5 @@
 import { mountCommandCenter } from '../admin/commandCenter.js';
+import { describeAuthCallback } from '../metric-entry/authSession.js';
 import { pillars, strategicMetrics, departmentMetrics, quarterlyObjectives } from '../planning/catalog.js';
 import { strategyAliases, strategyObjectives } from '../planning/strategyObjectives.js';
 import { dictionaryTerms } from '../../data/learnDictionary.js';
@@ -11,7 +12,7 @@ const labels={good:'On track',watch:'Watch',risk:'Off track',pending:'Awaiting a
 const badge=s=>`<span class="badge ${s}"><span class="dot"></span>${labels[s]}</span>`;
 const monthNow=()=>new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'America/New_York'}).format(new Date()).replace(/^(\d{2})\/(\d{4})$/,'$2-$1');
 let view=location.hash.slice(1)||'strategic',month=monthNow(),token=0,access=null,data=null,groups=[];
-if(new URLSearchParams(location.search).has('code')||view==='record-progress'||new URLSearchParams(location.hash.slice(1)).has('access_token'))view='metrics';
+if(describeAuthCallback(location).active||view==='record-progress')view='metrics';
 const dialog=document.querySelector('#detail'),body=document.querySelector('#detail-body');
 function detail(title,html){body.innerHTML=`<h2 id="detail-title" tabindex="-1">${esc(title)}</h2>${html}`;dialog.showModal();body.querySelector('h2').focus();}
 document.querySelector('#close').onclick=()=>dialog.close();

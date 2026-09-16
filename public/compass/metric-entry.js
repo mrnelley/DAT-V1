@@ -16,6 +16,7 @@
         const form = root.querySelector('#metric-signin');
         const codeForm = root.querySelector('#metric-code');
         const message = root.querySelector('#signin-message');
+        message.textContent = store.signInProblem?.() || '';
         form.onsubmit = async event => {
           event.preventDefault(); const button = form.querySelector('button'); button.disabled = true;
           try { await store.sendCode(form.elements.email.value); codeForm.hidden = false;

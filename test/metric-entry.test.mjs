@@ -49,3 +49,10 @@ test('signed-out users receive sign-in, not a browser-only save fallback',async(
   assert.ok(root.querySelector('#metric-signin'));assert.equal(root.querySelector('#metric-entry'),null);
   dom.window.close();
 });
+
+test('failed callbacks explain recovery beside a usable sign-in form',async()=>{
+ const dom=setup({session:async()=>null,signInProblem:()=> 'This sign-in link has expired. Request a new email.'});
+ const root=dom.window.document.querySelector('#surface');await dom.window.CompassMetricEntry.mount(root);
+ assert.match(root.querySelector('#signin-message').textContent,/expired/);
+ assert.ok(root.querySelector('#metric-signin button'));dom.window.close();
+});

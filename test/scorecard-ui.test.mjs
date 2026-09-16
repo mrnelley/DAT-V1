@@ -35,7 +35,7 @@ test('Learn preserves planning objectives and the searchable Dictionary',async()
 });
 
 test('app callback opens metric entry for sign-in codes and invitation tokens',async()=>{
- for(const callback of ['auth/callback?code=test-code','auth/callback#access_token=test-access&refresh_token=test-refresh&type=invite']){
+ for(const callback of ['auth/callback?code=test-code','auth/callback#access_token=test-access&refresh_token=test-refresh&type=invite','auth/callback#error=access_denied&error_code=otp_expired','auth/callback']){
   const dom=await setup(callback);
   assert.equal(dom.window.document.querySelector('#surface').textContent,'Metric entry mounted');
   dom.window.close();

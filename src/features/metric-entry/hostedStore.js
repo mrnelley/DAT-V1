@@ -1,18 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { authFlowForHash } from './authFlow.js';
+import { createAuthSession, describeAuthCallback } from './authSession.js';
+const callback = describeAuthCallback(location);
 const client = createClient(process.env.COMPASS_SUPABASE_URL, process.env.COMPASS_SUPABASE_KEY, {
   auth: { flowType: authFlowForHash(location.hash), storageKey: 'compass-hosted-auth' },
 });
+const authSession = createAuthSession(client.auth, callback, () => history.replaceState(null, '', '/#metrics'));
 async function rpc(name, args) {
   const { data, error } = await client.rpc(name, args);
   if (error) throw new Error(error.message);
   return data;
 }
 window.CompassMetricStore = {
-  async session() { const { data, error } = await client.auth.getSession(); if(error) throw error; return data.session; },
+  session: () => authSession.session(),
+  signInProblem: () => authSession.problem(),
   async sendCode(email) {
     const {error} = await client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: `${location.origin}/auth/callback` } });
     if(error) throw error;
+    authSession.clearProblem();
   },
   async verifyCode(email, token) {
     const {error} = await client.auth.verifyOtp({ email: email.trim(), token: token.trim(), type: 'email' });
