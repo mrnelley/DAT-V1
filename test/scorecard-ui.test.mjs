@@ -9,6 +9,7 @@ const fixture=()=>({metrics:[{metricId:'finance-5',department:'Finance',value:32
 const setup=async(hash='',overrides={})=>{
  const dom=new JSDOM(readFileSync('index.html','utf8'),{url:'http://localhost/'+hash,runScripts:'outside-only'}),w=dom.window;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.CompassMetricEntry={mount:async root=>{root.textContent='Metric entry mounted';}};
  w.CompassMetricStore={session:async()=>({}),access:async()=>({positionTitle:'Manager, Enterprise Initiatives',admin:true,metrics:true,weekly:true}),scorecards:async()=>fixture(),targets:async()=>[],members:async()=>({members:[{userId:'u1',email:'admin@example.invalid',positionTitle:'Manager',roles:['admin'],departments:['Finance'],active:true,positions:[],readMetrics:null,writeMetrics:null,readWeekly:null,writeWeekly:null}],departments:['Finance'],positions:[]}),...overrides};
  w.CompassMetricStore.adminWorkspace ||= async()=>({teams:[],properties:[],features:[],audit:[]});
  w.eval(code);await tick();return dom;
@@ -31,4 +32,12 @@ test('signed-out root contains no fabricated scorecard values and hides Admin',a
 });
 test('Learn preserves planning objectives and the searchable Dictionary',async()=>{
  const dom=await setup('#learn'),w=dom.window,d=w.document;assert.match(d.querySelector('#surface').textContent,/Advance Strategic Acquisitions/);d.querySelector('[data-learn="dictionary"]').click();d.querySelector('input').value='Compass';d.querySelector('input').dispatchEvent(new w.Event('input'));assert.match(d.querySelector('#terms').textContent,/Compass/);dom.window.close();
+});
+
+test('app callback opens metric entry for sign-in codes and invitation tokens',async()=>{
+ for(const callback of ['auth/callback?code=test-code','auth/callback#access_token=test-access&refresh_token=test-refresh&type=invite']){
+  const dom=await setup(callback);
+  assert.equal(dom.window.document.querySelector('#surface').textContent,'Metric entry mounted');
+  dom.window.close();
+ }
 });

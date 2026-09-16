@@ -35,7 +35,7 @@ Apply after the September 18 metric/rollup releases:
 2. `20260919_user_provisioning.sql`
 3. `20260919_provisioning_scope.sql`
 
-Deploy `compass-admin-users` to development project `vbkjyiurvcnwnjxqvajr`. Built-in `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` stay on the Edge runtime. `COMPASS_APP_URL` optionally configures the invitation return URL; the default is the already-approved local redirect. For a hosted frontend, set this value and add the same URL to Auth's redirect allowlist.
+Deploy `compass-admin-users` to development project `vbkjyiurvcnwnjxqvajr`. Built-in `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` stay on the Edge runtime. `COMPASS_APP_URL` configures the hosted app origin. Invitations return to `/auth/callback`; the local default is `http://127.0.0.1:4174/auth/callback`. Follow [hosted auth configuration](hosted-auth-configuration.md) to configure the redirect allowlist and hosted origin.
 
 The third SQL release narrows position recalculation to the affected account's former/current assignments, satisfying the hosted HTTP database's safe-update requirement. The live endpoint smoke test caught this distinction from direct SQL test execution.
 

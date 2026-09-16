@@ -1,7 +1,7 @@
 // Dependencies are injected so authorization and retry behavior can be tested without sending email.
 export function createUserHandler({createClient,env}) {
   const url=env('SUPABASE_URL'),anon=env('SUPABASE_ANON_KEY'),secret=env('SUPABASE_SERVICE_ROLE_KEY');
-  const appUrl=env('COMPASS_APP_URL')||'http://127.0.0.1:4174/scorecard-demo/index.html';
+  const appUrl=new URL('/auth/callback',env('COMPASS_APP_URL')||'http://127.0.0.1:4174').href;
   const origins=new Set([new URL(appUrl).origin,'http://127.0.0.1:4174','http://localhost:4174']);
   return async request=>{
     const origin=request.headers.get('origin');

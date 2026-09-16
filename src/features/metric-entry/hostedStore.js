@@ -11,7 +11,7 @@ async function rpc(name, args) {
 window.CompassMetricStore = {
   async session() { const { data, error } = await client.auth.getSession(); if(error) throw error; return data.session; },
   async sendCode(email) {
-    const {error} = await client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: `${location.origin}/scorecard-demo/index.html` } });
+    const {error} = await client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: `${location.origin}/auth/callback` } });
     if(error) throw error;
   },
   async verifyCode(email, token) {

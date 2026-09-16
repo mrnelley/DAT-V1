@@ -11,7 +11,7 @@ const setup=(options={})=>{
   return {data:null};
  }};
  const admin={auth:{admin:{createUser:async data=>{calls.push({name:'createUser',data});account={id:'new-id',requestId:data.app_metadata.compass_provisioning_id,assigned:false,confirmed:false};return {data:{user:{id:'new-id'}}};},inviteUserByEmail:async(email,options)=>{calls.push({name:'invite',email,options});return {data:{}};}}}};
- const handler=createUserHandler({createClient:(_url,key)=>key==='server-only'?admin:user,env:key=>({SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[key]});
+ const handler=createUserHandler({createClient:(_url,key)=>key==='server-only'?admin:user,env:key=>({SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only',COMPASS_APP_URL:options.appUrl})[key]});
  const send=(data=payload,headers={authorization:'Bearer verified','origin':'http://127.0.0.1:4174'})=>handler(new Request('https://example/functions/admin',{method:'POST',headers,body:JSON.stringify(data)}));
  return {send,calls};
 };
@@ -22,3 +22,11 @@ test('missing authentication, invalid sessions, non-Admins and unknown origins c
 test('invalid roles and departments are rejected before account creation',async()=>{for(const change of [{roles:['superuser']},{departments:['Operations']},{positionTitle:''}]){const {send,calls}=setup();assert.equal((await send({...payload,...change})).status,400);assert.equal(calls.filter(c=>c.name==='createUser').length,0);}});
 test('assignment failures leave a recoverable account and report failure',async()=>{const {send}=setup({assignmentFailure:true});const response=await send();assert.equal(response.status,422);assert.match((await response.json()).error,/access could not be saved/);});
 test('invitations require an existing assigned unconfirmed account',async()=>{const {send,calls}=setup({account:{id:'new-id',assigned:true,confirmed:false}});assert.equal((await send({action:'invite',email:payload.email})).status,200);assert.equal(calls.filter(c=>c.name==='invite').length,1);const missing=setup();assert.equal((await missing.send({action:'invite',email:payload.email})).status,404);});
+
+test('hosted invitations use the app callback and accept the configured hosted origin',async()=>{
+ const {send,calls}=setup({appUrl:'https://compass.example.org/previous-path',account:{id:'new-id',assigned:true,confirmed:false}});
+ const response=await send({action:'invite',email:payload.email},{authorization:'Bearer verified',origin:'https://compass.example.org'});
+ assert.equal(response.status,200);
+ assert.equal(response.headers.get('Access-Control-Allow-Origin'),'https://compass.example.org');
+ assert.equal(calls.find(c=>c.name==='invite').options.redirectTo,'https://compass.example.org/auth/callback');
+});

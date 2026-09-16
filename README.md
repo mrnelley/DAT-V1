@@ -19,7 +19,7 @@ npm install
 npm run dev -- --host 127.0.0.1 --port 4174
 ```
 
-The working application is served at `/`. Its entry point is `src/features/scorecards/app.js`, with interface assets in `public/compass/`. Scorecards, metric updates, weekly accountability and Admin controls use hosted Supabase persistence. The old `/scorecard-demo/` address forwards to the root so existing sign-in links continue to work.
+The working application is served at `/`. Its entry point is `src/features/scorecards/app.js`, with interface assets in `public/compass/`. Scorecards, metric updates, weekly accountability and Admin controls use hosted Supabase persistence. Authentication uses `/auth/callback`; see [hosted auth configuration](docs/database/hosted-auth-configuration.md). The previous address remains a compatibility redirect for existing links.
 
 The previous app was preserved in `../Compass-Legacy-2026-09-16` before replacing the entry point. See [rollup and Admin handoff](docs/mvp/rollups-admin-handoff.md) for the release sequence, calculation rules and remaining workflows.
 
