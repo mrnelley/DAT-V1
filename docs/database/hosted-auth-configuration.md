@@ -1,5 +1,17 @@
 # Hosted authentication
 
+## Microsoft work-account sign-in
+
+Microsoft is the primary sign-in option. Supabase calls this provider `azure`. The browser requests the `email` scope and returns to `/auth/callback` on the origin where sign-in began. No authentication email is sent for this flow. Email sign-in remains under a secondary disclosure while the Microsoft rollout is verified.
+
+In Entra, register a single-tenant application for HDC. Its Web redirect URI is `https://vbkjyiurvcnwnjxqvajr.supabase.co/auth/v1/callback`. In Supabase's Azure provider, set the client ID, client secret value, and tenant URL `https://login.microsoftonline.com/HDC-TENANT-ID`. Follow Supabase's Azure guide for the verified email claim (`xms_edov`). Keep the secret in Supabase, never frontend environment variables.
+
+Microsoft establishes identity; Compass membership and role checks still control data access. Verify the existing Admin account and a scoped staff account before onboarding. Confirm the return host matches the initiating host, the position appears, refresh retains the session, and another department's writes remain forbidden. An HDC Microsoft account by itself does not grant Compass membership. Existing email-invitation buttons still require configured mail delivery.
+
+Use a stable dev hostname for testing and allow its exact callback below. Completing the Microsoft login is the remaining end-to-end check after provider setup and frontend deployment.
+
+## URLs and deployment
+
 Compass uses `/auth/callback` for sign-in links and Admin invitations. Vercel rewrites this route to the app entry point; Vite serves it through its SPA fallback. Query parameters and fragments reach the existing Supabase callback handler unchanged.
 
 1. Deploy the updated frontend to your stable hosted development address.

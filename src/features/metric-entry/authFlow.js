@@ -4,3 +4,11 @@ export function authFlowForHash(hash) {
   const parameters = new URLSearchParams(hash.replace(/^#/, ''));
   return parameters.has('access_token') && parameters.has('refresh_token') ? 'implicit' : 'pkce';
 }
+
+export async function signInWithMicrosoft(auth, origin) {
+  const { error } = await auth.signInWithOAuth({
+    provider: 'azure',
+    options: { scopes: 'email', redirectTo: `${origin}/auth/callback` },
+  });
+  if (error) throw error;
+}

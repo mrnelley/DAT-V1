@@ -1,12 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { authFlowForHash } from '../src/features/metric-entry/authFlow.js';
+import { authFlowForHash, signInWithMicrosoft } from '../src/features/metric-entry/authFlow.js';
 import { createAuthSession, describeAuthCallback } from '../src/features/metric-entry/authSession.js';
 test('ordinary navigation and sign-in preserve PKCE',()=>{
   for(const hash of ['', '#admin', '#metrics', '#access_token=incomplete'])assert.equal(authFlowForHash(hash),'pkce');
 });
 test('invitation callbacks use the recipient-compatible Auth flow',()=>{
   assert.equal(authFlowForHash('#access_token=test-access&refresh_token=test-refresh&type=invite'),'implicit');
+});
+
+test('Microsoft sign-in requests email identity and the callback on the originating app',async()=>{
+ const calls=[];
+ await signInWithMicrosoft({signInWithOAuth:async request=>{calls.push(request);return {error:null};}},'https://compass.example');
+ assert.deepEqual(calls,[{provider:'azure',options:{scopes:'email',redirectTo:'https://compass.example/auth/callback'}}]);
+ await assert.rejects(signInWithMicrosoft({signInWithOAuth:async()=>({error:new Error('Provider unavailable')})},'https://compass.example'),/Provider unavailable/);
 });
 
 test('missing PKCE verifier produces a recovery message instead of a silent sign-in loop',async()=>{

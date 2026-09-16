@@ -29,13 +29,13 @@ export function createAuthSession(auth, callback, onSettled = () => {}) {
         if (callback.active && !session) {
           const failure = initialization.error;
           if (callback.expired || ['otp_expired', 'flow_state_expired', 'flow_state_not_found'].includes(failure?.code)) {
-            problem = 'This sign-in link has expired or has already been used. Request a new email below and use only the newest link.';
+            problem = 'This sign-in link has expired or has already been used. Sign in with Microsoft, or request a new email and use only the newest link.';
           } else if (callback.code && !failure) {
-            problem = 'Compass could not find the browser verification for this link. Request a new email from this app address, then open it in the same browser and profile.';
+            problem = 'Compass could not find the browser verification for this sign-in. Start sign-in again from this app address in the same browser and profile.';
           } else if (callback.error || failure || callback.tokens) {
-            problem = 'Compass could not complete this sign-in link. It may have expired, been used, or lost its browser verification. Request a new email below and open the newest link in this browser.';
+            problem = 'Compass could not complete sign-in. Try Microsoft sign-in again. If using an email link, request a new one and open it in this browser.';
           } else {
-            problem = 'The sign-in return contained no verification code. Request a new email below. If this repeats, check the hosted redirect URL and email template.';
+            problem = 'The sign-in return contained no verification code. Start sign-in again. If this repeats, contact your Compass administrator to check the redirect configuration.';
           }
         }
         if (callback.active) onSettled();

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { authFlowForHash } from './authFlow.js';
+import { authFlowForHash, signInWithMicrosoft } from './authFlow.js';
 import { createAuthSession, describeAuthCallback } from './authSession.js';
 const callback = describeAuthCallback(location);
 const client = createClient(process.env.COMPASS_SUPABASE_URL, process.env.COMPASS_SUPABASE_KEY, {
@@ -14,6 +14,10 @@ async function rpc(name, args) {
 window.CompassMetricStore = {
   session: () => authSession.session(),
   signInProblem: () => authSession.problem(),
+  async signInMicrosoft() {
+    await signInWithMicrosoft(client.auth, location.origin);
+    authSession.clearProblem();
+  },
   async sendCode(email) {
     const {error} = await client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: `${location.origin}/auth/callback` } });
     if(error) throw error;

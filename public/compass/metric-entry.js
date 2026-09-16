@@ -9,14 +9,24 @@
       if (!store) throw new Error('Hosted client is unavailable. Refresh the page or rebuild the client.');
       if (!await store.session()) {
         if (generationId !== generation) return;
-        root.innerHTML = `<div class="hero"><h2>Sign in to record progress</h2></div><p>Your entries save to Compass.</p>
+        root.innerHTML = `<div class="hero"><h2>Sign in to Compass</h2></div><p>Use your HDC work account.</p>
+        <button type="button" class="primary-button" id="microsoft-signin">Sign in with Microsoft</button>
+        <p role="status" aria-live="polite" id="signin-message"></p>
+        <details><summary>Sign in with email instead</summary>
         <form class="entry-form" id="metric-signin"><label>Work email<input name="email" type="email" autocomplete="email" required></label>
-        <button type="submit" class="tab">Send sign-in email</button><p role="status" id="signin-message"></p></form>
-        <form class="entry-form" id="metric-code" hidden><label>Email code (if provided)<input name="code" autocomplete="one-time-code" required></label><button class="tab" type="submit">Verify code</button></form>`;
+        <button type="submit" class="tab">Send sign-in email</button></form>
+        <form class="entry-form" id="metric-code" hidden><label>Email code (if provided)<input name="code" autocomplete="one-time-code" required></label><button class="tab" type="submit">Verify code</button></form></details>`;
         const form = root.querySelector('#metric-signin');
         const codeForm = root.querySelector('#metric-code');
         const message = root.querySelector('#signin-message');
         message.textContent = store.signInProblem?.() || '';
+        const microsoftButton = root.querySelector('#microsoft-signin');
+        microsoftButton.onclick = async () => {
+          microsoftButton.disabled = true;
+          message.textContent = 'Opening Microsoft sign-in…';
+          try { await store.signInMicrosoft(); }
+          catch(error) { message.textContent = error.message; microsoftButton.disabled = false; }
+        };
         form.onsubmit = async event => {
           event.preventDefault(); const button = form.querySelector('button'); button.disabled = true;
           try { await store.sendCode(form.elements.email.value); codeForm.hidden = false;
