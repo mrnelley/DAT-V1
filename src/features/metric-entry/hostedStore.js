@@ -5,7 +5,7 @@ const callback = describeAuthCallback(location);
 const client = createClient(process.env.COMPASS_SUPABASE_URL, process.env.COMPASS_SUPABASE_KEY, {
   auth: { flowType: authFlowForHash(location.hash), storageKey: 'compass-hosted-auth' },
 });
-const authSession = createAuthSession(client.auth, callback, () => history.replaceState(null, '', '/#metrics'));
+const authSession = createAuthSession(client.auth, callback, () => history.replaceState(null, '', '/#strategic'));
 async function rpc(name, args) {
   const { data, error } = await client.rpc(name, args);
   if (error) throw new Error(error.message);
@@ -14,6 +14,13 @@ async function rpc(name, args) {
 window.CompassMetricStore = {
   session: () => authSession.session(),
   signInProblem: () => authSession.problem(),
+  onAuthChange(listener) {
+    const { data } = client.auth.onAuthStateChange((event, session) => {
+      // Leave Supabase's callback before making further authenticated requests.
+      setTimeout(() => listener(event, session), 0);
+    });
+    return () => data.subscription.unsubscribe();
+  },
   async signInMicrosoft() {
     await signInWithMicrosoft(client.auth, location.origin);
     authSession.clearProblem();
@@ -27,7 +34,7 @@ window.CompassMetricStore = {
     const {error} = await client.auth.verifyOtp({ email: email.trim(), token: token.trim(), type: 'email' });
     if(error) throw error;
   },
-  async signOut() { const {error} = await client.auth.signOut(); if(error) throw error; },
+  async signOut() { const {error} = await client.auth.signOut({scope:'local'}); if(error) throw error; },
   context: () => rpc('compass_metric_context'),
   access: () => rpc('compass_access_context'),
   async scorecards(month) {

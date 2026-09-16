@@ -8,6 +8,7 @@ export function describeAuthCallback(location) {
     code: has('code'),
     tokens: has('access_token'),
     error: has('error') || has('error_description') || has('error_code'),
+    providerExchangeFailed: /Unable to exchange external code/i.test(query.get('error_description') || hash.get('error_description') || ''),
     expired: (query.get('error_code') || hash.get('error_code')) === 'otp_expired',
   };
 }
@@ -28,12 +29,14 @@ export function createAuthSession(auth, callback, onSettled = () => {}) {
         checked = true;
         if (callback.active && !session) {
           const failure = initialization.error;
-          if (callback.expired || ['otp_expired', 'flow_state_expired', 'flow_state_not_found'].includes(failure?.code)) {
-            problem = 'This sign-in link has expired or has already been used. Sign in with Microsoft, or request a new email and use only the newest link.';
+          if (callback.providerExchangeFailed) {
+            problem = 'Microsoft sign-in could not be completed by Compass. Your administrator needs to check the Microsoft connection settings. Reference: AUTH_PROVIDER_EXCHANGE.';
+          } else if (callback.expired || ['otp_expired', 'flow_state_expired', 'flow_state_not_found'].includes(failure?.code)) {
+            problem = 'This email link has expired or has already been used. Sign in with your HDC Microsoft account below.';
           } else if (callback.code && !failure) {
             problem = 'Compass could not find the browser verification for this sign-in. Start sign-in again from this app address in the same browser and profile.';
           } else if (callback.error || failure || callback.tokens) {
-            problem = 'Compass could not complete sign-in. Try Microsoft sign-in again. If using an email link, request a new one and open it in this browser.';
+            problem = 'Compass could not complete sign-in. Try Microsoft sign-in again. If this repeats, contact your Compass administrator.';
           } else {
             problem = 'The sign-in return contained no verification code. Start sign-in again. If this repeats, contact your Compass administrator to check the redirect configuration.';
           }

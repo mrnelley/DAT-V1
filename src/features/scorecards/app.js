@@ -1,31 +1,46 @@
 import { mountCommandCenter } from '../admin/commandCenter.js';
 import { describeAuthCallback } from '../metric-entry/authSession.js';
+import { mountSignIn } from '../metric-entry/signInView.js';
 import { pillars, strategicMetrics, departmentMetrics, quarterlyObjectives } from '../planning/catalog.js';
 import { strategyAliases, strategyObjectives } from '../planning/strategyObjectives.js';
 import { dictionaryTerms } from '../../data/learnDictionary.js';
 import { annualRollups, strategicRollups, initiativeRollups, mixRollup } from './rollups.js';
 
-const root=document.querySelector('#surface'),store=window.CompassMetricStore;
+const outlet=document.querySelector('#surface'),store=window.CompassMetricStore;
+let root=outlet,authPhase='loading',sessionUser=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=v=>v==null?'Not reported':new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(v);
 const labels={good:'On track',watch:'Watch',risk:'Off track',pending:'Awaiting assessment'};
 const badge=s=>`<span class="badge ${s}"><span class="dot"></span>${labels[s]}</span>`;
 const monthNow=()=>new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'America/New_York'}).format(new Date()).replace(/^(\d{2})\/(\d{4})$/,'$2-$1');
 let view=location.hash.slice(1)||'strategic',month=monthNow(),token=0,access=null,data=null,groups=[];
-if(describeAuthCallback(location).active||view==='record-progress')view='metrics';
+if(describeAuthCallback(location).active)view='strategic';
+if(view==='record-progress')view='metrics';
+if(!['strategic','annual','weekly','metrics','learn','admin'].includes(view))view='strategic';
+const workspaceNav=document.querySelector('nav[aria-label="Compass"]');
+const signOutButton=document.createElement('button');
+signOutButton.type='button';signOutButton.className='quiet-button';signOutButton.textContent='Sign out';signOutButton.hidden=true;
+document.querySelector('.account').append(signOutButton);
+signOutButton.onclick=async()=>{signOutButton.disabled=true;try{await store.signOut();sessionUser=null;access=null;view='strategic';history.replaceState(null,'','/#strategic');await render();}catch(error){root.textContent=error.message;}finally{signOutButton.disabled=false;}};
 const dialog=document.querySelector('#detail'),body=document.querySelector('#detail-body');
 function detail(title,html){body.innerHTML=`<h2 id="detail-title" tabindex="-1">${esc(title)}</h2>${html}`;dialog.showModal();body.querySelector('h2').focus();}
 document.querySelector('#close').onclick=()=>dialog.close();
 function readings(ms){return ms.length?ms.map(m=>`<p><strong>${number(m.value)}</strong> · ${esc(m.department)}</p>`).join(''):'<p>No update for this reporting month.</p>';}
 function targetText(t){return t.operator==='mix'?'33 / 33 / 33':t.operator==='benchmark'?'Above national average':`${({gt:'> ',gte:'≥ ',lt:'< ',lte:'≤ '})[t.operator]||''}${number(t.value)}${t.upper?'–'+t.upper:''} ${t.unit||''}`;}
-async function identity(){
-  if(!await store.session()){access=null;document.querySelector('[data-surface="admin"]').hidden=true;return;}
-  try{access=await store.access();}catch{await store.context();access=await store.access();}
+async function identity(expected=token){
+  const session=await store.session();if(expected!==token)return;
+  sessionUser=session?.user?.id|| (session?'authenticated':null);
+  if(!session){access=null;authPhase='signed-out';return;}
+  authPhase='access-check';
+  let nextAccess;
+  try{nextAccess=await store.access();}catch{await store.context();nextAccess=await store.access();}
+  if(expected!==token)return;
+  access=nextAccess;authPhase='ready';
   document.querySelector('.account strong').textContent=access.positionTitle;
   document.querySelector('.account small').textContent='Connected to Compass';
   document.querySelector('[data-surface="admin"]').hidden=!access.admin;
   document.querySelector('[data-surface="weekly"]').hidden=!access.weekly;
-  for(const key of ['strategic','annual','metrics','weekly','learn']){const b=document.querySelector(`[data-surface="${key}"]`);if(b)b.hidden=access.features?.[key]===false||(key==='weekly'&&!access.weekly);}
+  for(const key of ['strategic','annual','metrics','weekly','learn']){const b=document.querySelector(`[data-surface="${key}"]`);if(b)b.hidden=access.features?.[key]===false||(key==='weekly'&&!access.weekly)||(['strategic','annual','metrics'].includes(key)&&!access.metrics);}
 }
 function learn(){
   root.innerHTML=`<div class="hero"><div><h2>Learn</h2><p>Planning language and the work it connects.</p></div></div><nav class="tabs" aria-label="Learn"><button class="tab" data-learn="catalog">Planning catalog</button><button class="tab" data-learn="dictionary">Dictionary</button></nav><div id="learn-content"></div>`;
@@ -35,7 +50,7 @@ function learn(){
   root.querySelector('[data-learn="dictionary"]').onclick=()=>{content.innerHTML='<label class="field">Find a term<input id="dictionary-search" type="search"></label><div id="terms"></div>';const render=()=>{const q=content.querySelector('input').value.toLowerCase();content.querySelector('#terms').innerHTML=dictionaryTerms.filter(t=>`${t.term} ${t.translation}`.toLowerCase().includes(q)).map(t=>`<article class="card learn-card"><h3>${esc(t.term)}</h3><p>${esc(t.translation||t.shortDefinition)}</p></article>`).join('')||'<p>No matching terms.</p>';};content.querySelector('input').oninput=render;render();};catalog();
 }
 async function admin(){
-  const roster=await store.members();if(view!=='admin')return;
+  const expected=token,roster=await store.members();if(view!=='admin'||expected!==token)return;
   const roles=['admin','executive','elt','director','staff','external'];
   root.innerHTML=`<div class="hero"><div><h2>Admin</h2><p>Manage positions and access.</p></div></div><p class="note">Create accounts here, assign access, and send invitations when ready.</p><label class="field">Account<select id="admin-user"><option value="">Choose an account</option>${roster.members.map(m=>`<option value="${esc(m.userId)}">${esc(m.email)} · ${esc(m.positionTitle||'Needs assignment')}</option>`).join('')}</select></label><div id="member-editor"></div>`;
   root.insertAdjacentHTML('beforeend',`<details class="card learn-card"><summary>Annual measure targets</summary><p>Set the approved comparison for a department measure. Values below a minimum or above a maximum receive a Watch signal.</p><form class="entry-form" id="target-form"><label>Year<input type="number" name="year" min="2026" max="2100" value="${month.slice(0,4)}" required></label><label>Measure<select name="metricId">${departmentMetrics.filter(m=>!/^community-relations-[2-5]$/.test(m.id)).map(m=>`<option value="${m.id}">${esc(m.department||m.trackingArea)} · ${esc(m.name)}</option>`).join('')}</select></label><label>Comparison<select name="operator"><option value="gte">At least</option><option value="gt">Greater than</option><option value="lte">At most</option><option value="lt">Less than</option></select></label><label>Target<input type="number" step="any" name="value" required></label><button class="primary-button" type="submit">Save target</button><p role="status" id="target-result"></p></form></details>`);
@@ -53,7 +68,7 @@ async function admin(){
       try{await store.saveMember(payload);Object.assign(member,payload);result.textContent='Access saved.';root.dispatchEvent(new Event('compass-admin-saved'));await identity();if(!access?.admin)await render();}catch(error){result.textContent=error.message;}finally{button.disabled=false;}
     };
   };
-  await mountCommandCenter(root,store,roster);
+  if(expected===token)await mountCommandCenter(root,store,roster);
 }
 function showMix(){const mix=mixRollup(data);return `<p class="detail-summary">Reporting month ${esc(month)} · Balance target 33 / 33 / 33. Status awaits an approved tolerance.</p>${mix.streams.map((s,i)=>`<section class="detail-section"><h3>Stream ${i+1} · ${s.share==null?'Share unavailable':number(s.share)+'%'}</h3>${s.components.map(c=>`<h4>${esc(c.name)}</h4>${readings(c.observations)}`).join('')}<p>Total: ${number(s.value)}</p></section>`).join('')}<section class="detail-section"><h3>Contribution categories</h3>${data.contributions.map(c=>`<p>${esc(c.categoryId)}: ${number(c.value)}</p>`).join('')||'<p>No contributions recorded.</p>'}</section>`;}
 function showInitiatives(){const items=initiativeRollups(data);detail('Enterprise priorities',`<p class="detail-summary">Submitted weekly progress · Week of ${esc(data.week)}. These signals reflect linked weekly commitments.</p>${items.map(o=>`<section class="detail-section"><h3>${esc(o.title)}</h3>${badge(o.status)}${o.updates.length?o.updates.map(u=>`<div class="commitment"><strong>${esc(u.position)}</strong><p>${esc(u.title)}</p><p>${esc(u.result)}</p></div>`).join(''):'<p>No linked submission for this week.</p>'}</section>`).join('')||'<p>No enterprise priorities configured for this quarter.</p>'}`);}
@@ -67,19 +82,34 @@ function scorecards(){
   root.querySelector('[data-priorities]')?.addEventListener('click',showInitiatives);root.querySelector('[data-mix]')?.addEventListener('click',()=>detail('Revenue mix',showMix()));
 }
 async function render(){
+  root=document.createElement('div');outlet.replaceChildren(root);
   const current=++token;document.querySelectorAll('[data-surface]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.surface===view)));
   document.querySelector('.intro h1').textContent=({metrics:'Record progress',weekly:'Weekly accountability',admin:'Admin',learn:'Learn'})[view]||'Enterprise scorecards';
   root.innerHTML='<p role="status">Loading Compass…</p>';
+  workspaceNav.hidden=true;signOutButton.hidden=true;
   try{
+    await identity(current);if(current!==token)return;
+    if(!access){
+      data=null;groups=[];if(dialog.open)dialog.close();
+      document.querySelector('.account strong').textContent='Your workspace';document.querySelector('.account small').textContent='Signed out';document.querySelector('.avatar').textContent='';
+      document.querySelector('.intro h1').textContent='Compass';document.querySelector('[data-surface="admin"]').hidden=true;
+      mountSignIn(root,store);return;
+    }
+    workspaceNav.hidden=false;signOutButton.hidden=false;
+    const selectedTab=workspaceNav.querySelector(`[data-surface="${view}"]`);
+    if(selectedTab?.hidden){const available=[...workspaceNav.querySelectorAll('[data-surface]')].find(b=>!b.hidden);if(available){view=available.dataset.surface;history.replaceState(null,'','/#'+view);await render();return;}}
     if(view==='learn'){learn();return;}
-    if(view==='metrics'){await window.CompassMetricEntry.mount(root);await identity();return;}
-    await identity();if(current!==token)return;
+    if(view==='metrics'){await window.CompassMetricEntry.mount(root);return;}
     if(access?.features?.[view]===false&&view!=='admin'){root.innerHTML='<p>This section is hidden for your account. Choose another section.</p>';return;}
-    if(!access){root.innerHTML='<div class="hero"><div><h2>Welcome to Compass</h2><p>Sign in to view your scorecards and record progress.</p></div></div><button class="primary-button" data-surface="metrics">Sign in</button>';return;}
     if(view==='weekly'){await window.CompassWeekly.mount(root);return;}
     if(view==='admin'){await admin();return;}
     data=await store.scorecards(month);if(current===token)scorecards();
-  }catch(error){if(current===token)root.innerHTML=`<p role="alert">${esc(error.message)}</p><button class="quiet-button" data-retry>Try again</button>`;}
+  }catch(error){if(current===token){signOutButton.hidden=!sessionUser;root.innerHTML=`${authPhase==='access-check'?'<h2>Your Microsoft sign-in is complete</h2><p>Compass could not open your assigned workspace. Contact Manager, Enterprise Initiatives if retrying does not resolve this.</p>':''}<p role="alert">${esc(error.message)}</p><button class="quiet-button" data-retry>Try again</button>`;}}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-surface]');if(b){view=b.dataset.surface;history.replaceState(null,'','#'+view);render();}if(e.target.closest('[data-retry]'))render();});
+store.onAuthChange?.((event,session)=>{
+  const nextUser=session?.user?.id||(session?'authenticated':null);
+  if(event==='SIGNED_OUT'||(nextUser!==sessionUser&&event!=='INITIAL_SESSION')){access=null;data=null;sessionUser=nextUser;render();}
+});
+window.addEventListener('compass-auth-required',()=>render());
 render();

@@ -8,36 +8,7 @@
     try {
       if (!store) throw new Error('Hosted client is unavailable. Refresh the page or rebuild the client.');
       if (!await store.session()) {
-        if (generationId !== generation) return;
-        root.innerHTML = `<div class="hero"><h2>Sign in to Compass</h2></div><p>Use your HDC work account.</p>
-        <button type="button" class="primary-button" id="microsoft-signin">Sign in with Microsoft</button>
-        <p role="status" aria-live="polite" id="signin-message"></p>
-        <details><summary>Sign in with email instead</summary>
-        <form class="entry-form" id="metric-signin"><label>Work email<input name="email" type="email" autocomplete="email" required></label>
-        <button type="submit" class="tab">Send sign-in email</button></form>
-        <form class="entry-form" id="metric-code" hidden><label>Email code (if provided)<input name="code" autocomplete="one-time-code" required></label><button class="tab" type="submit">Verify code</button></form></details>`;
-        const form = root.querySelector('#metric-signin');
-        const codeForm = root.querySelector('#metric-code');
-        const message = root.querySelector('#signin-message');
-        message.textContent = store.signInProblem?.() || '';
-        const microsoftButton = root.querySelector('#microsoft-signin');
-        microsoftButton.onclick = async () => {
-          microsoftButton.disabled = true;
-          message.textContent = 'Opening Microsoft sign-in…';
-          try { await store.signInMicrosoft(); }
-          catch(error) { message.textContent = error.message; microsoftButton.disabled = false; }
-        };
-        form.onsubmit = async event => {
-          event.preventDefault(); const button = form.querySelector('button'); button.disabled = true;
-          try { await store.sendCode(form.elements.email.value); codeForm.hidden = false;
-            message.textContent = 'Check your email. Open the sign-in link in this browser, or enter the code if one is provided.';
-          } catch(error) { message.textContent = error.message; } finally { button.disabled = false; }
-        };
-        codeForm.onsubmit = async event => {
-          event.preventDefault(); const button = codeForm.querySelector('button'); button.disabled = true;
-          try { await store.verifyCode(form.elements.email.value,codeForm.elements.code.value); await mount(root); }
-          catch(error) { message.textContent = error.message; } finally { button.disabled = false; }
-        };
+        window.dispatchEvent(new Event('compass-auth-required'));
         return;
       }
       const access = await store.context();
@@ -49,7 +20,7 @@
         account.querySelector('small').textContent = 'Signed in';
         account.querySelector('.avatar').textContent = access.positionTitle.split(/\s+/).map(word=>word[0]).slice(0,3).join('');
       }
-      root.innerHTML = `<div class="hero"><div><h2>Record progress</h2><p>${esc(access.positionTitle)} · Connected to Compass</p></div><button type="button" class="tab" id="metric-signout">Sign out</button></div>
+      root.innerHTML = `<div class="hero"><div><h2>Record progress</h2><p>${esc(access.positionTitle)} · Connected to Compass</p></div></div>
       <p class="note">Choose a reporting month and measure. Corrections retain the previous entry in the record history.</p>
       <form id="metric-entry" class="entry-form"><label>Department<select name="department">${access.departments.map(d=>`<option>${esc(d)}</option>`).join('')}</select></label>
       <label>Measure<select name="metric"></select></label>
@@ -61,9 +32,6 @@
       <div><button class="tab" type="submit">Save entry</button><button class="tab" type="button" id="cancel-edit" hidden>Cancel correction</button></div>
       <p id="entry-message" role="status" aria-live="polite"></p></form>
       <section><h3>Saved entries</h3><div id="entry-history" aria-live="polite"></div></section>`;
-      root.querySelector('#metric-signout').onclick = async () => { try { await store.signOut();
-        if(account){account.querySelector('strong').textContent='Compass';account.querySelector('small').textContent='Signed out';account.querySelector('.avatar').textContent='C';}
-        await mount(root); } catch(e) { root.querySelector('#entry-message').textContent=e.message; } };
       const form = root.querySelector('#metric-entry'); const f = form.elements;
       const message = root.querySelector('#entry-message');
       const save = form.querySelector('[type="submit"]');

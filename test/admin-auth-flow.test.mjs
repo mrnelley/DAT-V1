@@ -32,6 +32,13 @@ test('expired callback errors are surfaced even when getSession returns no error
  await reader.session();assert.match(reader.problem(),/expired or has already been used/);
 });
 
+test('Microsoft token exchange failures identify provider configuration without retaining the external code',async()=>{
+ const callback=describeAuthCallback(new URL('https://compass.example/?error=server_error&error_code=unexpected_failure&error_description=Unable+to+exchange+external+code%3A+secret-code#metrics'));
+ const reader=createAuthSession({initialize:async()=>({error:{code:'unexpected_failure'}}),getSession:async()=>({data:{session:null},error:null})},callback);
+ await reader.session();assert.match(reader.problem(),/AUTH_PROVIDER_EXCHANGE/);
+ assert.doesNotMatch(reader.problem(),/new email/);assert.doesNotMatch(JSON.stringify(callback),/secret-code/);
+});
+
 test('callback waits for exchange; a successful session clears failure and cleans the URL once',async()=>{
  let resolveInitialization,finished=false,cleaned=0;
  const auth={initialize:()=>new Promise(resolve=>{resolveInitialization=resolve;}),getSession:async()=>{assert.equal(finished,true);return {data:{session:{user:{id:'user'}}},error:null};}};
