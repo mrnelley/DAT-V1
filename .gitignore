@@ -1,6 +1,8 @@
 node_modules/
 
 # Build output
+public/scorecard-demo/hosted-store.js
+public/compass/hosted-store.js
 dist/
 build/
 

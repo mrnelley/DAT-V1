@@ -378,6 +378,15 @@ const LearnPage = () => {
               </Box>
 
               <List disablePadding sx={{ borderTop: '1px solid rgba(239,220,156,0.45)' }}>
+                <ListItemButton component="a" href="/planning-review/index.html"
+                  sx={{ color: '#ffffff', gap: 2, py: 2.5, borderBottom: '1px solid rgba(239,220,156,0.45)' }}>
+                  <MenuBookOutlinedIcon sx={{ color: 'background.accent', fontSize: 34 }} />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h2">Planning catalog</Typography>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>Strategic priorities, department measures, and revenue mappings.</Typography>
+                  </Box>
+                  <ArrowForwardOutlinedIcon sx={{ color: 'background.accent' }} />
+                </ListItemButton>
                 <ListItemButton
                   onClick={() => setActiveTool('dictionary')}
                   sx={{

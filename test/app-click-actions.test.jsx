@@ -303,13 +303,13 @@ describe('clickable user actions', () => {
     );
     for (const person of [testUser('u1'), testUser('u7')]) {
       await user.click(screen.getByRole('button', { name: 'Switch dashboard' }));
-      await user.click(screen.getByRole('menuitem', { name: new RegExp(person.name) }));
+      await user.click(screen.getByRole('menuitem', { name: new RegExp(person.role) }));
       expect(screen.getByTestId('location').textContent).to.equal(
         person.primaryDashboard === 'company' ? '/dashboard/organization' : '/dashboard/me',
       );
       expect(window.localStorage.getItem('hdc_compass_user_id')).to.equal(person.id);
       expect(window.localStorage.getItem('hdc_compass_authenticated')).to.equal('true');
-      expect(screen.getByLabelText(person.name)).to.exist;
+      expect(screen.getByLabelText(person.role)).to.exist;
     }
   });
 
@@ -924,7 +924,7 @@ describe('clickable user actions', () => {
     );
 
     expect(screen.queryByRole('combobox', { name: /demo user/i })).to.equal(null);
-    expect(await screen.findByText('Dana Hanchin')).to.exist;
+    expect(await screen.findByText(testUser('u1').role)).to.exist;
 
     const destinations = [
       ['Strategy', 'Organization Dashboard', '/dashboard/organization'],

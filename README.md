@@ -8,7 +8,7 @@ Compass is HDC MidAtlantic's planning and accountability application. This repos
 - Git remote: `https://github.com/mrnelley/DAT-V1.git`
 - Production branch: `main`
 - Active development branch: `dev`
-- Vercel builds the React/Vite application with `npm run build`; generated `dist/` files are not source files.
+- Vercel builds the Vite application with `npm run build`; generated `dist/` files are not source files.
 
 `DAT-Practice` is a separate historical practice application with its own Git remote. The sibling `PM` and `supabase` folders are not part of this repository. Product code, migrations, automated checks, and operating documentation for Compass belong here.
 
@@ -19,7 +19,9 @@ npm install
 npm run dev -- --host 127.0.0.1 --port 4174
 ```
 
-The current scorecard and weekly-accountability proof of concept is served at `/scorecard-demo/`. It is intentionally isolated from the existing Compass runtime while the database contract is reconciled.
+The working application is served at `/`. Its entry point is `src/features/scorecards/app.js`, with interface assets in `public/compass/`. Scorecards, metric updates, weekly accountability and Admin controls use hosted Supabase persistence. The old `/scorecard-demo/` address forwards to the root so existing sign-in links continue to work.
+
+The previous app was preserved in `../Compass-Legacy-2026-09-16` before replacing the entry point. See [rollup and Admin handoff](docs/mvp/rollups-admin-handoff.md) for the release sequence, calculation rules and remaining workflows.
 
 Run the complete local verification gate with:
 

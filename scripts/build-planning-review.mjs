@@ -1,0 +1,33 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { pillars, strategicMetrics, departmentMetrics, quarterlyObjectives, reconciliationIssues, revenueMix, contributedRevenueCategories } from '../src/features/planning/catalog.js';
+import { strategyObjectives, strategyAliases } from '../src/features/planning/strategyObjectives.js';
+
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+const list = values => `<ul>${values.map(value => `<li>${esc(value)}</li>`).join('')}</ul>`;
+const targetLabel = target => `${({ gt: '>', gte: '≥', range: '', mix: '', benchmark: 'Above benchmark' })[target.operator]} ${Array.isArray(target.value) ? target.value.join('/') : target.value ?? ''}${target.upper ? `–${target.upper}` : ''} ${target.unit}`;
+let html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Compass planning catalog</title>
+<style>body{margin:0;background:#f5f8f8;color:#193c43;font:16px/1.6 system-ui}main{max-width:1100px;margin:auto;padding:32px 24px}h1{font-size:2rem;margin-bottom:8px}h2{margin-top:32px}a{color:#126b78}section,details{background:white;border:1px solid #dce5e5;border-radius:14px;padding:18px 22px;margin:14px 0}summary{cursor:pointer;font-weight:650}summary:focus-visible,a:focus-visible{outline:3px solid #167888;outline-offset:4px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.grid section{margin:0}small,.muted{color:#52696e}li{margin:7px 0}.review{border-left:5px solid #b78320}nav{display:flex;gap:22px;flex-wrap:wrap}</style>
+<main><p>COMPASS · PLANNING REFERENCE</p><h1>One plan, connected accountability</h1><p>5 pillars · 15 strategies · 42 objectives · 19 strategic measures · 90 departmental measures</p><p class="muted">Source catalog from September 16, 2026. No performance actuals are implied. This review is not yet connected to hosted data.</p><nav aria-label="Catalog sections"><a href="#strategy">2030 plan</a><a href="#quarter">Q3 objectives</a><a href="#departments">Department measures</a><a href="#decisions">Mapping decisions</a></nav>
+<h2 id="strategy">2030 plan</h2>${pillars.map(pillar => `<section><h3>${pillar.order}. ${esc(pillar.title)}</h3>${list(strategicMetrics.filter(m => m.pillarId === pillar.id).map(m => `${m.name}: ${targetLabel(m.target)}${m.target.definitionPending ? ' · Definition needed' : ''}`))}${pillar.strategies.map(strategy => `<details><summary>${esc(strategy.id)} · ${esc(strategy.title)}</summary>${strategyAliases[strategy.id] ? `<p class="muted">Latest outline wording: ${esc(strategyAliases[strategy.id])}</p>` : ''}${list(strategyObjectives.filter(o => o.strategyId === strategy.id).map(o => `${o.title}${o.mappingStatus === 'review-source-placement' ? ' · Placement needs review' : ''}`))}</details>`).join('')}</section>`).join('')}
+<h2 id="quarter">Q3 2026 objectives</h2><p class="muted">Pillar links follow the supplied grouping. Links to specific strategies remain to be assigned.</p>${list(quarterlyObjectives.map(o => `${o.number}. ${o.title || 'Source title missing'} — ${o.area}${o.number === 13 ? ' (number inferred)' : ''}`))}
+<h2 id="departments">Department measures</h2><p class="muted">Owners define source, period, population and calculation once. Recurring entry then asks only for the needed values.</p><div class="grid">${[...new Set(departmentMetrics.map(m => m.department))].map(department => `<section><h3>${esc(department)}</h3>${list(departmentMetrics.filter(m => m.department === department).map(m => m.name))}</section>`).join('')}</div>
+<h2 id="decisions">Mapping decisions</h2><section class="review">${list(reconciliationIssues.map(issue => issue.message))}</section><p class="muted">Objective descriptions await transcription. Metric methodology and ownership require approval before activation. No missing measurements have been replaced with sample actuals.</p></main></html>`;
+const folder = new URL('../public/planning-review/', import.meta.url);
+// Apply confirmed presentation decisions while retaining stable internal source keys.
+for (const pillar of pillars) html = html.replace(`${pillar.order}. ${esc(pillar.title)}`, esc(pillar.title));
+for (const pillar of pillars) for (const strategy of pillar.strategies) {
+  html = html.replace(`${esc(strategy.id)} · ${esc(strategy.title)}`, esc(strategyAliases[strategy.id] || strategy.title));
+  if (strategyAliases[strategy.id]) html = html.replace(`<p class="muted">Latest outline wording: ${esc(strategyAliases[strategy.id])}</p>`, '');
+}
+for (const objective of quarterlyObjectives) html = html.replace(`${objective.number}. ${esc(objective.title)}`, esc(objective.title));
+html = html.replace(' (number inferred)', '');
+html = html.replace('Owners define source, period, population and calculation once.', 'Departments track their KPIs independently. Advocacy and Operations are cross-department tracking areas; their measures and action items may belong to any department.');
+html = html.replace('<h3></h3>', '<h3>Cross-department measures</h3>');
+html = html.replace('90 departmental measures', `${departmentMetrics.length} tracked measures`);
+const metricName = id => departmentMetrics.find(metric => metric.id === id).name;
+const streamCards = revenueMix.streams.map((stream, index) => `<section><h3>Stream ${index + 1}</h3>${list(stream.metricIds.map(metricName))}${stream.id === 'stream-2' ? '<p><strong>Finance · 2026 Financial resiliency</strong></p><p>Excess cash to parent: amounts properties owe back to HDC. Tracked separately from deferred developer fee payments; both contribute to this stream.</p>' : ''}${stream.id === 'stream-3' ? `<p>Community Relations records each contribution by category, amount, period and description.</p>${list(contributedRevenueCategories.map(category => category.label))}<p>Each contribution has one category. The total rolls up once; category detail is not added to the total again.</p>` : ''}</section>`).join('');
+html = html.replace('<h2 id="decisions">', `<h2>Revenue diversification</h2><p>Target: ${revenueMix.targetDisplay}. Stream labels are provisional.</p><div class="grid">${streamCards}</div><p>${esc(revenueMix.calculation)}. Awaiting recorded amounts. Distributions and residual receipts are out of scope.</p><h2 id="decisions">`);
+mkdirSync(folder, { recursive: true });
+writeFileSync(new URL('index.html', folder), html);
+writeFileSync(new URL('catalog.json', folder), JSON.stringify({ departmentMetrics, contributedRevenueCategories, revenueMix }));
+console.log('Generated public/planning-review/index.html from the planning catalog.');

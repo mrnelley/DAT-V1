@@ -117,11 +117,10 @@ const TopBar = ({ onMenuClick }) => {
           </IconButton>
         </Tooltip>
         <Box sx={{ display: { xs: 'none', xl: 'block' }, maxWidth: 180, minWidth: 0, textAlign: 'right' }}>
-          <Typography variant="body2" fontWeight={800} noWrap title={user.name}>{user.name}</Typography>
-          <Typography variant="caption" color="text.secondary" noWrap title={user.role}>{user.role}</Typography>
+          <Typography variant="body2" fontWeight={800} noWrap title={user.role}>{user.role}</Typography>
         </Box>
-        <Tooltip title={user.name}>
-          <Avatar aria-label={user.name} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{user.initials}</Avatar>
+        <Tooltip title={user.role}>
+          <Avatar aria-label={user.role} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: '0.8rem', fontWeight: 700 }}>{(user.role || '').split(/\s+/).map(word => word[0]).slice(0, 3).join('')}</Avatar>
         </Tooltip>
         <Button
           aria-label="Switch dashboard"
@@ -155,8 +154,7 @@ const TopBar = ({ onMenuClick }) => {
               }}
             >
               <Box>
-                <Typography variant="body2" fontWeight={700}>{person.name}</Typography>
-                <Typography variant="caption" color="text.secondary">{person.role}</Typography>
+                <Typography variant="body2" fontWeight={700}>{person.role}</Typography>
               </Box>
             </MenuItem>
           ))}

@@ -8,15 +8,18 @@
   const day = date => { const p = dateParts(date); return `${p.year}-${p.month}-${p.day}`; };
   const addDays = (value, amount) => new Date(Date.parse(`${value}T12:00:00Z`) + amount * 86400000).toISOString().slice(0, 10);
   const weekOf = date => { const value = day(date); const weekday = new Date(`${value}T12:00:00Z`).getUTCDay(); return addDays(value, -((weekday + 6) % 7)); };
-  const deadline = week => {
-    const friday = addDays(week, 4);
-    // Determine the UTC offset at noon on the Friday, including DST transitions.
+  const localInstant = (date, time) => {
+    // Determine the UTC offset for the local calendar date, including DST transitions.
     const offsetName = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' })
-      .formatToParts(new Date(`${friday}T17:00:00Z`)).find(p => p.type === 'timeZoneName').value;
-    return new Date(`${friday}T17:00:00${offsetName.replace('GMT', '') || '+00:00'}`).toISOString();
+      .formatToParts(new Date(`${date}T12:00:00Z`)).find(p => p.type === 'timeZoneName').value;
+    return new Date(`${date}T${time}${offsetName.replace('GMT', '') || '+00:00'}`).toISOString();
   };
+  const millis = value => value instanceof Date ? value.getTime() : Date.parse(value);
+  const deadline = week => localInstant(addDays(week, 4), '17:00:00');
+  const graceEnd = week => localInstant(addDays(week, 7), '09:00:00');
+  const policy = Object.freeze({ startingPoints: 100, onTimePriority: 5, onTimeOptOut: 0, late: -3, missed: -10 });
   const key = (week, position) => `${week}:${position}`;
-  const empty = () => ({ version: 1, records: {}, events: [], lateDeduction: null });
+  const empty = () => ({ version: 2, records: {}, events: [] });
   const freshDraft = () => ({ capacity: '', note: '', entries: [] });
   const entry = (week, position) => ({ id: crypto.randomUUID(), title: '', desiredResult: '', projectId: '', initiativeId: '', status: 'good', due: addDays(week, 4), support: '', tasks: [], owner: position });
   const validate = (draft, initiatives) => {
@@ -40,6 +43,15 @@
     next.records[id] = { ...next.records[id], week, position, draft: clone(draft) };
     return next;
   };
+  const scoreEvent = (week, capacity, firstAt) => {
+    if (millis(firstAt) <= millis(deadline(week))) {
+      return capacity === 'enterprise'
+        ? { type: 'on_time_priority', reason: 'On-time enterprise priority', points: policy.onTimePriority }
+        : { type: 'on_time_opt_out', reason: 'On-time enterprise opt-out', points: policy.onTimeOptOut };
+    }
+    if (millis(firstAt) <= millis(graceEnd(week))) return { type: 'late_submission', reason: 'Late weekly submission', points: policy.late };
+    return { type: 'missed_submission', reason: 'Weekly submission missed grace window', points: policy.missed };
+  };
   const submit = (state, week, position, draft, initiatives, now = new Date()) => {
     const error = validate(draft, initiatives);
     if (error) throw new Error(error);
@@ -47,23 +59,27 @@
     const next = saveDraft(state, week, position, draft), record = next.records[key(week, position)];
     const firstAt = record.submitted?.firstAt || now.toISOString();
     record.submitted = { firstAt, updatedAt: now.toISOString(), snapshot: { ...clone(draft), entries: draft.entries.filter(e => e.title.trim()).map((e, index) => ({ ...clone(e), rank: index + 1 })) } };
-    const eventId = `${week}:${position}:late-entry`;
-    if (Date.parse(firstAt) > Date.parse(deadline(week)) && !next.events.some(e => e.id === eventId)) {
-      next.events.push({ id: eventId, week, position, reason: 'Late weekly submission', recordedAt: firstAt, points: next.lateDeduction });
+    const eventId = `${week}:${position}:weekly-score`, event = scoreEvent(week, draft.capacity, firstAt);
+    const existing = next.events.find(e => e.id === eventId);
+    if (!existing) next.events.push({ id: eventId, week, position, recordedAt: firstAt, ...event });
+    else if (millis(now) <= millis(deadline(week)) && millis(firstAt) <= millis(deadline(week))) Object.assign(existing, event, { updatedAt: now.toISOString() });
+    return next;
+  };
+  const assessMissed = (state, week, positions, now = new Date()) => {
+    if (millis(now) <= millis(graceEnd(week))) throw new Error('Missed submissions are assessed after Monday at 9 a.m. Eastern.');
+    const next = clone(state);
+    for (const item of positions) {
+      const position = typeof item === 'string' ? item : item.id, eventId = `${week}:${position}:weekly-score`;
+      if (!next.records[key(week, position)]?.submitted && !next.events.some(e => e.id === eventId)) {
+        next.events.push({ id: eventId, week, position, type: 'missed_submission', reason: 'Weekly submission missed grace window', recordedAt: now.toISOString(), points: policy.missed });
+      }
     }
     return next;
   };
-  const setDeduction = (state, amount) => {
-    if (!Number.isInteger(amount) || amount < 1 || amount > 100) throw new Error('Choose a whole-number deduction from 1 to 100.');
-    const next = clone(state); next.lateDeduction = amount;
-    // Settle pending events once. An established deduction never changes retroactively.
-    next.events = next.events.map(e => e.points === null ? { ...e, points: amount } : e);
-    return next;
-  };
-  const score = (state, position) => 100 - state.events.filter(e => e.position === position).reduce((sum, e) => sum + (e.points ?? 0), 0);
+  const score = (state, position) => policy.startingPoints + state.events.filter(e => e.position === position).reduce((sum, e) => sum + e.points, 0);
   const carry = (draft, fromWeek, toWeek, position) => ({ capacity: '', note: '', entries: draft.entries.map(e => ({
     ...clone(e), id: crypto.randomUUID(), carriedFrom: e.id, owner: position, status: 'watch', due: addDays(toWeek, 4),
     tasks: e.tasks.filter(t => !['complete', 'cancelled'].includes(t.status)).map(t => ({ ...t, id: crypto.randomUUID(), carriedFrom: t.id, due: addDays(toWeek, 4), status: 'open' })),
   })) });
-  globalThis.CompassWeeklyModel = { zone, clone, day, addDays, weekOf, deadline, key, empty, freshDraft, entry, validate, saveDraft, submit, setDeduction, score, carry };
+  globalThis.CompassWeeklyModel = { zone, policy, clone, day, addDays, weekOf, deadline, graceEnd, key, empty, freshDraft, entry, validate, saveDraft, submit, assessMissed, score, carry };
 })();

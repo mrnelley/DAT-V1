@@ -20,8 +20,8 @@ Estimated implementation and validation effort:
 3. Prototype positions are derived from role-title strings; project IDs are reused as initiative IDs. The weekly validator currently requires those IDs to be equal. This must become actual relationships supporting multiple projects per tactic and multiple contributions to an outcome.
 4. `dev` uses mock records/localStorage in `src/context/OperatingDataContext.jsx`; `main` contains Supabase adapters, authentication and table-backed loading. There are substantial differences between the branches. Reuse selected code; do not merge the branches wholesale to recover a backend.
 5. `main:src/api/supabaseData.js` loads 26 datasets together, including unrelated property/contact/huddle data. Replace that dependency with queries scoped to each MVP surface and period.
-6. The latest database audit did not pass: four hosted REST endpoints returned 404/PGRST205, and the local Docker engine was unreachable after a startup attempt. This is an API/runtime blocker, not proof that the physical hosted tables do not exist.
-7. Ten prototype tests passed for deadline rules, submission behavior, scoring idempotency, draft snapshots, carry-forward and initiative drill-through. They are useful regression cases, but do not validate database transactions, permissions, concurrent users, or production identity.
+6. The intended Supabase project is linked and reachable, but its migration history is empty and the weekly/priority API endpoints return `PGRST205`. Treat it as a clean development bootstrap until a schema inventory proves otherwise.
+7. Prototype tests cover DST boundaries, on-time rewards, opt-outs, grace deductions, missed deductions, idempotency, draft snapshots, carry-forward and initiative drill-through. They remain browser-level regression cases and do not replace database transaction, permission, or concurrency tests.
 
 ## 1. Work breakdown and dependency order
 
@@ -108,12 +108,15 @@ These are conceptual entities; final physical tables should reuse suitable exist
 
 | Area | Established requirement | Decision or implementation still needed |
 | --- | --- | --- |
-| Submission deadline | Friday at 5 p.m.; Eastern used for HDC | Confirm whether Friday closes the current week's report or submits next week's priorities; handle DST server-side |
-| Capacity | People may declare no enterprise priority this week | Declaration counts as submitted; no penalty for the choice itself; department commitments remain possible |
-| Starting points | 100 per position | Confirm score floor, recovery/bonus rules if any; do not invent other penalties |
-| Carry-forward | Points carry forward and are evaluated yearly by position | Confirm whether any year-end reset is intended. Current prototype assumes no automatic reset; that is not yet an approved permanent policy |
-| Late deductions | Late entries reduce points | Deduction amount is still unset; agree one-time vs escalation, missing submissions, exceptions and authorized reversals |
-| Submission timing | Need an accountable first submission | Define minimum valid content and whether superficial early submissions can satisfy timeliness; preserve original time on ordinary edits |
+| Submission cycle | Monday 12 a.m. through Friday 5 p.m. in the organization timezone | Server derives report timestamps with IANA/DST handling |
+| On-time priority | A real enterprise priority submitted by Friday 5 p.m. | +5 points; requires at least one linked enterprise priority |
+| On-time opt-out | People may explicitly declare no enterprise priority this week | 0 points; neutral and still counts as submitted |
+| Grace window | Friday after 5 p.m. through Monday 9 a.m. | -3 points for the first valid submission in this window |
+| Missed | No valid submission when Monday 9 a.m. passes | -10 points, assessed once by a server job/function |
+| Edit behavior | People may iterate before the deadline | 0 edit penalty; one weekly ledger key prevents duplicate score events |
+| Starting points | 100 per position | Carries forward; no automatic reset is currently defined |
+| Carry-forward | Points carry forward and are evaluated yearly by position | Annual reporting groups activity without resetting the lifetime balance |
+| Submission timing | Server records the first valid submission | Ordinary revisions preserve the first timestamp and immutable snapshots |
 | Point calculation | Start less established deductions | `balance = 100 + sum(signed ledger events)`; year review separates opening balance, annual changes and closing balance |
 | Initiative count | List all tracked priorities and color each status | `on_track_count / tracked_count`; agree archived/completed/pending treatment, handle empty denominator explicitly |
 | KPI bars | Show actual relative to target | Define per-metric interpretation: higher/lower is better, ceiling usage, target range and negative/zero targets; preserve raw values even if bar length is capped |
@@ -207,9 +210,9 @@ Teams notifications/cards, Captain Compass AI authoring, elaborate rewards/leade
 
 ## 10. Inputs that unlock the schedule
 
-- Correct isolated Supabase target, usable access and confirmed migration baseline.
+- Confirmed development database bootstrap and successful application of the baseline migration chain.
 - Approved strategic/objective mapping, authoritative annual metric inventory and targets, and position roster.
-- Late deduction amount, Friday reporting semantics, year-end score treatment, participation/exemption rules, and group-health rules.
+- Authorized exception/reversal process, participation exemptions, future score floor, and group-health rules. Milestone badges are deferred.
 - Confirmed dev deployment target and the testers' expected access. Preserve the old Compass as a comparison reference.
 
 These decisions can be consolidated into one short review. Environment work, component packaging and fixtures can proceed while business-rule answers are being finalized, but scores and rollups should not ship with unexplained assumptions.

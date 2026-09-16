@@ -1,0 +1,851 @@
+{
+  "formatVersion": 1,
+  "source": "src/data/mockData.js and its imported workbook scaffold",
+  "status": "candidate: compare with saved browser/live-app edits before hosted import",
+  "excludedCollections": [
+    "users",
+    "weeklyEntries",
+    "tasks",
+    "stucks",
+    "huddles",
+    "departmentWorkplans"
+  ],
+  "strategicPlan": {
+    "id": "sp-2030",
+    "name": "Resident-Centered. Future-Ready.",
+    "timeframe": "2026-2030",
+    "owner": "HDC MidAtlantic",
+    "description": "HDC MidAtlantic's internal strategic plan through 2030.",
+    "pillars": [
+      {
+        "id": "care-connection",
+        "order": 1,
+        "name": "Care and Connection",
+        "description": "Deepen commitment to residents and communities through trauma-informed resident services and design.",
+        "successMetrics": [
+          {
+            "label": "Resident satisfaction",
+            "target": ">85%"
+          },
+          {
+            "label": "Resident Experience Score",
+            "target": ">60%"
+          },
+          {
+            "label": "Wage growth for working families",
+            "target": ">25% by 2030"
+          }
+        ]
+      },
+      {
+        "id": "diversify-innovate",
+        "order": 2,
+        "name": "Diversify & Innovate",
+        "description": "Explore inclusive, community-responsive models to provide affordable housing, expand impact, and better serve communities in need.",
+        "successMetrics": [
+          {
+            "label": "Growth rate in new units outside acquisitions",
+            "target": ">15%"
+          },
+          {
+            "label": "Units created, acquired, or preserved",
+            "target": ">750"
+          },
+          {
+            "label": "Enterprise-level capital for real estate development",
+            "target": "$1.5M"
+          },
+          {
+            "label": "New housing models",
+            "target": "5-7"
+          }
+        ]
+      },
+      {
+        "id": "advocate-change",
+        "order": 3,
+        "name": "Advocate for Change",
+        "description": "Influence policy and systems to benefit residents, advance HDC's mission, and enhance the affordable housing industry.",
+        "successMetrics": [
+          {
+            "label": "Coalitions and allies",
+            "target": "2-3"
+          },
+          {
+            "label": "Elected official and policymaker engagement",
+            "target": ">50% increase"
+          },
+          {
+            "label": "Resident leaders and stakeholders participating",
+            "target": "100"
+          },
+          {
+            "label": "Policy wins",
+            "target": "3"
+          }
+        ]
+      },
+      {
+        "id": "agility-capacity",
+        "order": 4,
+        "name": "Agility & Capability",
+        "description": "Adapt, respond, and evolve effectively in a dynamic environment, strengthening both the workforce and organizational infrastructure.",
+        "successMetrics": [
+          {
+            "label": "Employee satisfaction",
+            "target": "90%"
+          },
+          {
+            "label": "Employee Net Promoter Score",
+            "target": ">50"
+          },
+          {
+            "label": "Employee engagement rate",
+            "target": ">50%"
+          },
+          {
+            "label": "Newly adopted technologies with measurable time or cost savings",
+            "target": "5"
+          }
+        ]
+      },
+      {
+        "id": "sustainable-growth",
+        "order": 5,
+        "name": "Sustainable Growth",
+        "description": "Ensure financial stability and responsible growth for the long-term viability and expanded impact of HDC.",
+        "successMetrics": [
+          {
+            "label": "Balanced diversification of revenue streams",
+            "target": "Achieved"
+          },
+          {
+            "label": "Days cash on hand",
+            "target": "150 days"
+          },
+          {
+            "label": "Philanthropic contribution growth",
+            "target": "Outpace national average"
+          },
+          {
+            "label": "Positive brand visibility and reach score",
+            "target": ">80%"
+          }
+        ]
+      }
+    ]
+  },
+  "quarterlyPriorities": [
+    {
+      "children": [],
+      "company": true,
+      "description": "Enterprise fees, asset management, and contributed revenue.",
+      "id": "q2-2026-enterprise-revenue",
+      "keyObjectives": [
+        {
+          "department": "Finance",
+          "id": "q2-2026-objective-01",
+          "kpis": [
+            {
+              "currentLabel": "Plan created. Phase 1 completed and Phase 2 implemented, with letters sent to investors and/or PHFA. Deadlines were provided to PHFA and CREA. Cinnaire responded on Bond 2 with a lower percentage than requested due to DSCR. CREA confirmed the request is with its consents team. Follow-up with PHFA on St. Catherine and review the Gov Gateway approval process.",
+              "id": "q2-2026-objective-01-kpi",
+              "progress": 55,
+              "status": "Watch",
+              "target": "Obtain approval for PM fee increases at 11 properties, resulting in an additional $34K fee by year end.",
+              "title": "Develop and implement plan to increase PM fee"
+            }
+          ],
+          "notes": "Plan created. Phase 1 completed and Phase 2 implemented, with letters sent to investors and/or PHFA. Deadlines were provided to PHFA and CREA. Cinnaire responded on Bond 2 with a lower percentage than requested due to DSCR. CREA confirmed the request is with its consents team. Follow-up with PHFA on St. Catherine and review the Gov Gateway approval process.",
+          "owner": {
+            "id": "u9",
+            "name": "Shar",
+            "initials": "SH",
+            "role": "Finance Team Member",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Finance",
+            "dashboardFocus": "financials",
+            "teams": [
+              "Finance"
+            ],
+            "primaryDashboard": "individual",
+            "username": "shar"
+          },
+          "ownerIds": [
+            "u9"
+          ],
+          "source": {
+            "objectiveNumber": 1,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Watch",
+          "title": "Develop and implement plan to increase PM fee",
+          "workplanAccess": "Finance",
+          "workplanSummary": "Obtain approval for PM fee increases at 11 properties, resulting in an additional $34K fee by year end.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Operations",
+          "id": "q2-2026-objective-02",
+          "kpis": [
+            {
+              "currentLabel": "Newtowne exited on 4/21, Providence on 4/30, and Hartley on 5/1. Alliance for Health is releasing an RFP for Brandywine, with a Kevin Ressler call scheduled for 6/25 and an exit target of 10/1.",
+              "id": "q2-2026-objective-02-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "Exit three properties: Newtowne, Hartley, and Providence.",
+              "title": "Terminate third-party property management business and implement exit strategy for target contracts"
+            }
+          ],
+          "notes": "Newtowne exited on 4/21, Providence on 4/30, and Hartley on 5/1. Alliance for Health is releasing an RFP for Brandywine, with a Kevin Ressler call scheduled for 6/25 and an exit target of 10/1.",
+          "owner": {
+            "id": "u8",
+            "name": "Tammie Fitzpatrick",
+            "initials": "TF",
+            "role": "VP & COO",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Operations",
+            "dashboardFocus": "operations",
+            "teams": [
+              "Operations",
+              "Executive Leadership",
+              "Resident Services"
+            ],
+            "primaryDashboard": "company",
+            "username": "tammie"
+          },
+          "ownerIds": [
+            "u8"
+          ],
+          "source": {
+            "objectiveNumber": 2,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Terminate third-party property management business and implement exit strategy for target contracts",
+          "workplanAccess": "Operations",
+          "workplanSummary": "Exit three properties: Newtowne, Hartley, and Providence.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Finance",
+          "id": "q2-2026-objective-03",
+          "kpis": [
+            {
+              "currentLabel": "Complete the Asset Manager 90-day onboarding plan and build the Asset Management tracker.",
+              "id": "q2-2026-objective-03-kpi",
+              "progress": 20,
+              "status": "Alert",
+              "target": "Final strategy in place, implementation taskforce launched, and Asset Management tracker in place.",
+              "title": "Develop and launch Asset Management strategy"
+            }
+          ],
+          "notes": "Complete the Asset Manager 90-day onboarding plan and build the Asset Management tracker.",
+          "owner": {
+            "id": "u2",
+            "name": "Sam Jordan",
+            "initials": "SJ",
+            "role": "CFO",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Finance",
+            "dashboardFocus": "financials",
+            "teams": [
+              "Finance",
+              "Executive Leadership"
+            ],
+            "primaryDashboard": "company",
+            "username": "sam"
+          },
+          "ownerIds": [
+            "u2"
+          ],
+          "source": {
+            "objectiveNumber": 3,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Alert",
+          "title": "Develop and launch Asset Management strategy",
+          "workplanAccess": "Finance",
+          "workplanSummary": "Final strategy in place, implementation taskforce launched, and Asset Management tracker in place.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Impact and Advancement",
+          "id": "q2-2026-objective-04",
+          "kpis": [
+            {
+              "currentLabel": "Contributed revenue YTD is $683,402, or 68% of the 2026 goal. The Q2 goal was achieved by $6,202.",
+              "id": "q2-2026-objective-04-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "Secure $522K in Q2 and $650K year to date.",
+              "title": "Secure contributed revenue, including the NW flexible impact grant"
+            }
+          ],
+          "notes": "Contributed revenue YTD is $683,402, or 68% of the 2026 goal. The Q2 goal was achieved by $6,202.",
+          "owner": {
+            "id": "u6",
+            "name": "Meg Struck",
+            "initials": "MS",
+            "role": "Senior VP of Impact and Advancement",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Impact and Advancement",
+            "dashboardFocus": "advancement",
+            "teams": [
+              "Advancement",
+              "Community Relations",
+              "Grant Writing"
+            ],
+            "primaryDashboard": "company",
+            "username": "meg"
+          },
+          "ownerIds": [
+            "u6"
+          ],
+          "source": {
+            "objectiveNumber": 4,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Secure contributed revenue, including the NW flexible impact grant",
+          "workplanAccess": "Impact and Advancement",
+          "workplanSummary": "Secure $522K in Q2 and $650K year to date.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        }
+      ],
+      "name": "Enterprise Revenue",
+      "reportingPeriodId": "2026-Q2",
+      "roadmapStatus": "Alert",
+      "source": {
+        "sheet": "Q2 2026 Enterprise Priorities",
+        "workbook": "OLT_Action Tracker-local.xlsx"
+      },
+      "strategicPillar": "Sustainable Growth",
+      "strategicPillarId": "sustainable-growth",
+      "strategicPlan": "Resident-Centered. Future-Ready.",
+      "type": "ROLLUP"
+    },
+    {
+      "children": [],
+      "company": true,
+      "description": "Development feasibility, closings, underwriting, and predevelopment capital.",
+      "id": "q2-2026-robust-pipeline",
+      "keyObjectives": [
+        {
+          "department": "Real Estate Development",
+          "id": "q2-2026-objective-05",
+          "kpis": [
+            {
+              "currentLabel": "Revise underwriting and complete the scope of work for the new properties by 6/30. The team is pursuing the 9% option.",
+              "id": "q2-2026-objective-05-kpi",
+              "progress": 20,
+              "status": "Alert",
+              "target": "Revise underwriting and complete the scope of work for new properties added to the deal.",
+              "title": "Restructure and demonstrate feasibility for the NEPA Preservation Project"
+            }
+          ],
+          "notes": "Revise underwriting and complete the scope of work for the new properties by 6/30. The team is pursuing the 9% option.",
+          "owner": {
+            "id": "u3",
+            "name": "Kim Krauter",
+            "initials": "KK",
+            "role": "VP of Real Estate Development",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Real Estate Development",
+            "dashboardFocus": "development",
+            "teams": [
+              "Real Estate Development",
+              "Executive Leadership"
+            ],
+            "primaryDashboard": "company",
+            "username": "kim"
+          },
+          "ownerIds": [
+            "u3"
+          ],
+          "source": {
+            "objectiveNumber": 5,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Alert",
+          "title": "Restructure and demonstrate feasibility for the NEPA Preservation Project",
+          "workplanAccess": "Real Estate Development",
+          "workplanSummary": "Revise underwriting and complete the scope of work for new properties added to the deal.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Real Estate Development",
+          "id": "q2-2026-objective-06",
+          "kpis": [
+            {
+              "currentLabel": "Closed on June 3. Community meeting scheduled for July 8.",
+              "id": "q2-2026-objective-06-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "HDC is the owner and management agent.",
+              "title": "Acquire Nathan's Village and assume property management"
+            }
+          ],
+          "notes": "Closed on June 3. Community meeting scheduled for July 8.",
+          "owner": {
+            "id": "u14",
+            "name": "Abby",
+            "initials": "AB",
+            "role": "Real Estate Development Team Member",
+            "workingGroup": "Team Member",
+            "organization": "HDC MidAtlantic",
+            "department": "Real Estate Development",
+            "dashboardFocus": "development",
+            "teams": [
+              "Real Estate Development"
+            ],
+            "primaryDashboard": "individual",
+            "username": "abby"
+          },
+          "ownerIds": [
+            "u14"
+          ],
+          "source": {
+            "objectiveNumber": 6,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Acquire Nathan's Village and assume property management",
+          "workplanAccess": "Real Estate Development",
+          "workplanSummary": "HDC is the owner and management agent.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Real Estate Development",
+          "id": "q2-2026-objective-07",
+          "kpis": [
+            {
+              "currentLabel": "College Avenue Phase 2 drawings are at 70%, GC RFP responses were received, and a GC decision is due by 6/22. Cornerstone demolition has started, land development is complete, 70% drawings are due by 6/30, and the master schedule needs an update.",
+              "id": "q2-2026-objective-07-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "College Avenue Phase 2: complete 100% drawings and select a GC. Cornerstone: complete 70% drawings, historic approval, and demolition.",
+              "title": "Advance College Avenue Phase 2 and Cornerstone closing"
+            }
+          ],
+          "notes": "College Avenue Phase 2 drawings are at 70%, GC RFP responses were received, and a GC decision is due by 6/22. Cornerstone demolition has started, land development is complete, 70% drawings are due by 6/30, and the master schedule needs an update.",
+          "owner": {
+            "id": "u3",
+            "name": "Kim Krauter",
+            "initials": "KK",
+            "role": "VP of Real Estate Development",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Real Estate Development",
+            "dashboardFocus": "development",
+            "teams": [
+              "Real Estate Development",
+              "Executive Leadership"
+            ],
+            "primaryDashboard": "company",
+            "username": "kim"
+          },
+          "ownerIds": [
+            "u3"
+          ],
+          "source": {
+            "objectiveNumber": 7,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Advance College Avenue Phase 2 and Cornerstone closing",
+          "workplanAccess": "Real Estate Development",
+          "workplanSummary": "College Avenue Phase 2: complete 100% drawings and select a GC. Cornerstone: complete 70% drawings, historic approval, and demolition.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Real Estate Development",
+          "id": "q2-2026-objective-08",
+          "kpis": [
+            {
+              "currentLabel": "The strategy was not completed and will move to Q3.",
+              "id": "q2-2026-objective-08-kpi",
+              "progress": 20,
+              "status": "Alert",
+              "target": "Put 4% and 9% underwriting guidelines in place.",
+              "title": "Develop 4% and 9% underwriting guidelines"
+            }
+          ],
+          "notes": "The strategy was not completed and will move to Q3.",
+          "owner": {
+            "id": "u13",
+            "name": "Chris",
+            "initials": "CH",
+            "role": "Real Estate Development Team Member",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Real Estate Development",
+            "dashboardFocus": "development",
+            "teams": [
+              "Real Estate Development"
+            ],
+            "primaryDashboard": "individual",
+            "username": "chris"
+          },
+          "ownerIds": [
+            "u13"
+          ],
+          "source": {
+            "objectiveNumber": 8,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Alert",
+          "title": "Develop 4% and 9% underwriting guidelines",
+          "workplanAccess": "Real Estate Development",
+          "workplanSummary": "Put 4% and 9% underwriting guidelines in place.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Impact and Advancement",
+          "id": "q2-2026-objective-09",
+          "kpis": [
+            {
+              "currentLabel": "Lancaster County Community Foundation awarded $500,000. A $750,000 High Foundation submission is due 6/30. The team must develop and confirm a strategy for four additional opportunities.",
+              "id": "q2-2026-objective-09-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "Make $1.25M in funding requests.",
+              "title": "Develop and launch Predevelopment Revolving Fund strategy"
+            }
+          ],
+          "notes": "Lancaster County Community Foundation awarded $500,000. A $750,000 High Foundation submission is due 6/30. The team must develop and confirm a strategy for four additional opportunities.",
+          "owner": {
+            "id": "u6",
+            "name": "Meg Struck",
+            "initials": "MS",
+            "role": "Senior VP of Impact and Advancement",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Impact and Advancement",
+            "dashboardFocus": "advancement",
+            "teams": [
+              "Advancement",
+              "Community Relations",
+              "Grant Writing"
+            ],
+            "primaryDashboard": "company",
+            "username": "meg"
+          },
+          "ownerIds": [
+            "u6"
+          ],
+          "source": {
+            "objectiveNumber": 9,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Develop and launch Predevelopment Revolving Fund strategy",
+          "workplanAccess": "Impact and Advancement",
+          "workplanSummary": "Make $1.25M in funding requests.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        }
+      ],
+      "name": "Robust Pipeline",
+      "reportingPeriodId": "2026-Q2",
+      "roadmapStatus": "Alert",
+      "source": {
+        "sheet": "Q2 2026 Enterprise Priorities",
+        "workbook": "OLT_Action Tracker-local.xlsx"
+      },
+      "strategicPillar": "Diversify & Innovate",
+      "strategicPillarId": "diversify-innovate",
+      "strategicPlan": "Resident-Centered. Future-Ready.",
+      "type": "ROLLUP"
+    },
+    {
+      "children": [],
+      "company": true,
+      "description": "Hiring, retention, onboarding, and training.",
+      "id": "q2-2026-employee-retention",
+      "keyObjectives": [
+        {
+          "department": "Human Resources",
+          "id": "q2-2026-objective-10",
+          "kpis": [
+            {
+              "currentLabel": "All critical roles were filled. Attrition remains an active concern.",
+              "id": "q2-2026-objective-10-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "Fill the Talent Management Specialist, Employee Relations Coordinator, Asset Manager, and Director of Resident Services roles.",
+              "title": "Execute final components of the Workforce Relief Program"
+            }
+          ],
+          "notes": "All critical roles were filled. Attrition remains an active concern.",
+          "owner": {
+            "id": "u5",
+            "name": "Michele Stauffer",
+            "initials": "MS",
+            "role": "Director of HR",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Human Resources",
+            "dashboardFocus": "hr",
+            "teams": [
+              "Human Resources",
+              "Hiring Managers"
+            ],
+            "primaryDashboard": "individual",
+            "username": "michele"
+          },
+          "ownerIds": [
+            "u5"
+          ],
+          "source": {
+            "objectiveNumber": 10,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Execute final components of the Workforce Relief Program",
+          "workplanAccess": "Human Resources",
+          "workplanSummary": "Fill the Talent Management Specialist, Employee Relations Coordinator, Asset Manager, and Director of Resident Services roles.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Human Resources",
+          "id": "q2-2026-objective-11",
+          "kpis": [
+            {
+              "currentLabel": "There are 16 open positions, with three candidates waiting to start and 13 positions in active recruitment.",
+              "id": "q2-2026-objective-11-kpi",
+              "progress": 20,
+              "status": "Alert",
+              "target": "Reduce open positions to nine.",
+              "title": "Reduce open positions below 10"
+            }
+          ],
+          "notes": "There are 16 open positions, with three candidates waiting to start and 13 positions in active recruitment.",
+          "owner": {
+            "id": "u5",
+            "name": "Michele Stauffer",
+            "initials": "MS",
+            "role": "Director of HR",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Human Resources",
+            "dashboardFocus": "hr",
+            "teams": [
+              "Human Resources",
+              "Hiring Managers"
+            ],
+            "primaryDashboard": "individual",
+            "username": "michele"
+          },
+          "ownerIds": [
+            "u5"
+          ],
+          "source": {
+            "objectiveNumber": 11,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Alert",
+          "title": "Reduce open positions below 10",
+          "workplanAccess": "Human Resources",
+          "workplanSummary": "Reduce open positions to nine.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        },
+        {
+          "department": "Human Resources",
+          "id": "q2-2026-objective-12",
+          "kpis": [
+            {
+              "currentLabel": "Finalize by 6/30/26. Across 49 employees, onboarding scored 4.33 out of 5 (87%) and training scored 4.09 (81%). For hires from October through January, onboarding scored 4.04 (81%) and training 2.96 (59%). For hires from February to present, onboarding scored 4.43 (89%) and training 4.50 (90%).",
+              "id": "q2-2026-objective-12-kpi",
+              "progress": 55,
+              "status": "Watch",
+              "target": "Reach 100% employee satisfaction with onboarding and training.",
+              "title": "Implement new employee onboarding and training program"
+            }
+          ],
+          "notes": "Finalize by 6/30/26. Across 49 employees, onboarding scored 4.33 out of 5 (87%) and training scored 4.09 (81%). For hires from October through January, onboarding scored 4.04 (81%) and training 2.96 (59%). For hires from February to present, onboarding scored 4.43 (89%) and training 4.50 (90%).",
+          "owner": {
+            "id": "u5",
+            "name": "Michele Stauffer",
+            "initials": "MS",
+            "role": "Director of HR",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Human Resources",
+            "dashboardFocus": "hr",
+            "teams": [
+              "Human Resources",
+              "Hiring Managers"
+            ],
+            "primaryDashboard": "individual",
+            "username": "michele"
+          },
+          "ownerIds": [
+            "u5"
+          ],
+          "source": {
+            "objectiveNumber": 12,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Watch",
+          "title": "Implement new employee onboarding and training program",
+          "workplanAccess": "Human Resources",
+          "workplanSummary": "Reach 100% employee satisfaction with onboarding and training.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        }
+      ],
+      "name": "Employee Retention & Satisfaction",
+      "reportingPeriodId": "2026-Q2",
+      "roadmapStatus": "Alert",
+      "source": {
+        "sheet": "Q2 2026 Enterprise Priorities",
+        "workbook": "OLT_Action Tracker-local.xlsx"
+      },
+      "strategicPillar": "Agility & Capability",
+      "strategicPillarId": "agility-capacity",
+      "strategicPlan": "Resident-Centered. Future-Ready.",
+      "type": "ROLLUP"
+    },
+    {
+      "children": [],
+      "company": true,
+      "description": "Systems and operating practices that improve agency-wide execution.",
+      "id": "q2-2026-operational-efficiency",
+      "keyObjectives": [
+        {
+          "department": "Operations",
+          "id": "q2-2026-objective-13",
+          "kpis": [
+            {
+              "currentLabel": "Third-party contractors are coordinating the work. Data migration will add cost. Demo configuration is due by 6/30, with staggered user acceptance testing by 7/20.",
+              "id": "q2-2026-objective-13-kpi",
+              "progress": 100,
+              "status": "Steady",
+              "target": "Build the CRM and have it ready to test in Q3.",
+              "title": "Complete Client Relationship Management (CRM) design"
+            }
+          ],
+          "notes": "Third-party contractors are coordinating the work. Data migration will add cost. Demo configuration is due by 6/30, with staggered user acceptance testing by 7/20.",
+          "owner": {
+            "id": "u11",
+            "name": "Parnell",
+            "initials": "PK",
+            "role": "Operations Team Member",
+            "workingGroup": "OLT",
+            "organization": "HDC MidAtlantic",
+            "department": "Operations",
+            "dashboardFocus": "operations",
+            "teams": [
+              "Operations"
+            ],
+            "primaryDashboard": "individual",
+            "username": "parnell"
+          },
+          "ownerIds": [
+            "u11"
+          ],
+          "source": {
+            "objectiveNumber": 13,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Steady",
+          "title": "Complete Client Relationship Management (CRM) design",
+          "workplanAccess": "Operations",
+          "workplanSummary": "Build the CRM and have it ready to test in Q3.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        }
+      ],
+      "name": "Operational Efficiency",
+      "reportingPeriodId": "2026-Q2",
+      "roadmapStatus": "Steady",
+      "source": {
+        "sheet": "Q2 2026 Enterprise Priorities",
+        "workbook": "OLT_Action Tracker-local.xlsx"
+      },
+      "strategicPillar": "Agility & Capability",
+      "strategicPillarId": "agility-capacity",
+      "strategicPlan": "Resident-Centered. Future-Ready.",
+      "type": "ROLLUP"
+    },
+    {
+      "children": [],
+      "company": true,
+      "description": "A consistent philosophy and standard for the resident experience.",
+      "id": "q2-2026-resident-experience",
+      "keyObjectives": [
+        {
+          "department": "Operations",
+          "id": "q2-2026-objective-14",
+          "kpis": [
+            {
+              "currentLabel": "Working sessions are on hold.",
+              "id": "q2-2026-objective-14-kpi",
+              "progress": 20,
+              "status": "Alert",
+              "target": "Develop the Resident Experience philosophy, Resident Journey Map, and project plan.",
+              "title": "Develop Resident Experience philosophy and Standards of Excellence"
+            }
+          ],
+          "notes": "Working sessions are on hold.",
+          "owner": {
+            "id": "u8",
+            "name": "Tammie Fitzpatrick",
+            "initials": "TF",
+            "role": "VP & COO",
+            "workingGroup": "ELT",
+            "organization": "HDC MidAtlantic",
+            "department": "Operations",
+            "dashboardFocus": "operations",
+            "teams": [
+              "Operations",
+              "Executive Leadership",
+              "Resident Services"
+            ],
+            "primaryDashboard": "company",
+            "username": "tammie"
+          },
+          "ownerIds": [
+            "u8"
+          ],
+          "source": {
+            "objectiveNumber": 14,
+            "sheet": "Q2 2026 Enterprise Priorities",
+            "workbook": "OLT_Action Tracker-local.xlsx"
+          },
+          "status": "Alert",
+          "title": "Develop Resident Experience philosophy and Standards of Excellence",
+          "workplanAccess": "Operations",
+          "workplanSummary": "Develop the Resident Experience philosophy, Resident Journey Map, and project plan.",
+          "workplanTitle": "Q2 2026 Enterprise Priorities"
+        }
+      ],
+      "name": "Resident Experience/Customer Service",
+      "reportingPeriodId": "2026-Q2",
+      "roadmapStatus": "Alert",
+      "source": {
+        "sheet": "Q2 2026 Enterprise Priorities",
+        "workbook": "OLT_Action Tracker-local.xlsx"
+      },
+      "strategicPillar": "Care & Connection",
+      "strategicPillarId": "care-connection",
+      "strategicPlan": "Resident-Centered. Future-Ready.",
+      "type": "ROLLUP"
+    }
+  ]
+}
