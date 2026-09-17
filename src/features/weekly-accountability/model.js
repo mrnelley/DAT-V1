@@ -1,4 +1,4 @@
-/* Demo domain logic. Production timestamps, permissions and ledger writes must be server owned. */
+/* Client display calculations; authoritative timestamps and scoring live on the server. */
 (() => {
   const zone = 'America/New_York';
   const clone = value => JSON.parse(JSON.stringify(value));

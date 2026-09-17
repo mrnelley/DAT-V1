@@ -1,4 +1,3 @@
-import { build } from 'esbuild';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { departmentMetrics, contributedRevenueCategories, strategicMetrics } from '../src/features/planning/catalog.js';
 
@@ -24,7 +23,4 @@ if (!key.startsWith('sb_publishable_')) {
   const claims = JSON.parse(Buffer.from(key.split('.')[1] || '', 'base64url').toString());
   if (claims.role !== 'anon') throw new Error('Only an anon or publishable key may be bundled');
 }
-await build({ entryPoints: ['src/features/metric-entry/hostedStore.js'], bundle: true, minify: true,
-  format:'iife',platform:'browser',outfile:'public/compass/hosted-store.js',
-  define: { 'process.env.COMPASS_SUPABASE_URL':JSON.stringify(url), 'process.env.COMPASS_SUPABASE_KEY':JSON.stringify(key) } });
-console.log('Built hosted metric client and versioned catalog seed (no credentials printed).');
+console.log('Validated public auth configuration and generated catalog seeds. Vite bundles the auth client with the application.');

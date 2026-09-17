@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 const fixture=()=>({week:'2026-09-14',startsOn:'2026-09-14',positionTitle:'Director, Finance',boundaries:{deadline_at:'2026-09-18T21:00:00Z',grace_at:'2026-09-21T13:00:00Z'},positions:[{id:'finance',title:'Director, Finance',canEdit:true,required:true,points:100}],objectives:[{id:'2026-Q3-7',title:'Advance College Ave Phase 2 Closing',period:'2026-Q3'}],records:[],events:[]});
 const setup=()=>{const dom=new JSDOM('<button data-surface="weekly" aria-pressed="true"></button><div id="surface"></div>',{url:'http://localhost',runScripts:'outside-only'});
- dom.window.structuredClone=structuredClone;dom.window.eval(readFileSync('public/compass/weekly-model.js','utf8'));dom.window.eval(readFileSync('public/compass/weekly-hosted.js','utf8'));return dom;};
+ dom.window.structuredClone=structuredClone;dom.window.eval(readFileSync('src/features/weekly-accountability/model.js','utf8'));dom.window.eval(readFileSync('src/features/weekly-accountability/view.js','utf8'));return dom;};
 test('hosted weekly opt-out saves and reloads without browser persistence',async()=>{
  const dom=setup(),w=dom.window,root=w.document.querySelector('#surface'),data=fixture();const saved=[];
  w.CompassMetricStore={session:async()=>({}),weekly:async()=>structuredClone(data),saveWeekly:async(payload,finalizing)=>{

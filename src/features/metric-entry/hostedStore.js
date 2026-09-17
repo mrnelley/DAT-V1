@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { authFlowForHash, signInWithMicrosoft } from './authFlow.js';
 import { createAuthSession, describeAuthCallback } from './authSession.js';
 const callback = describeAuthCallback(location);
-const client = createClient(process.env.COMPASS_SUPABASE_URL, process.env.COMPASS_SUPABASE_KEY, {
+const client = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY, {
   auth: { flowType: authFlowForHash(location.hash), storageKey: 'compass-hosted-auth' },
 });
 const authSession = createAuthSession(client.auth, callback, () => history.replaceState(null, '', '/#strategic'));

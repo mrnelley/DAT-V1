@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
-import '../public/compass/weekly-model.js';
+import '../src/features/weekly-accountability/model.js';
 const M = globalThis.CompassWeeklyModel;
 const initiatives = [{ id: 'a1' }];
 const draft = () => ({ capacity: 'enterprise', note: '', entries: [{ ...M.entry('2026-09-14', 'coo'), title: 'Review the weekly workflow', desiredResult: 'Agree the fields', projectId: 'a1', initiativeId: 'a1' }] });

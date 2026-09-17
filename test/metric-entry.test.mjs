@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { mountSignIn } from '../src/features/metric-entry/signInView.js';
 import { departmentMetrics, contributedRevenueCategories } from '../src/features/planning/catalog.js';
-const source=readFileSync('public/compass/metric-entry.js','utf8');
+const source=readFileSync('src/features/metric-entry/form.js','utf8');
 const setup=store=>{
   const dom=new JSDOM('<button data-surface="metrics" aria-pressed="true"></button><div id="surface"></div>',{url:'http://localhost',runScripts:'outside-only'});
   dom.window.CompassMetricStore=store;dom.window.eval(source);return dom;

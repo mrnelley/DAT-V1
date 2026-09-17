@@ -37,8 +37,9 @@ async function identity(expected=token){
   try{nextAccess=await store.access();}catch{await store.context();nextAccess=await store.access();}
   if(expected!==token)return;
   access=nextAccess;authPhase='ready';
-  document.querySelector('.account strong').textContent=access.positionTitle;
-  document.querySelector('.account small').textContent='Connected to Compass';
+  const profile=session.user?.user_metadata||{};
+  document.querySelector('.account strong').textContent=profile.full_name||profile.name||session.user?.email||access.positionTitle;
+  document.querySelector('.account small').textContent=access.positionTitle+' · Connected to Compass';
   document.querySelector('[data-surface="admin"]').hidden=!access.admin;
   document.querySelector('[data-surface="weekly"]').hidden=!access.weekly;
   for(const key of ['strategic','annual','metrics','weekly','learn']){const b=document.querySelector(`[data-surface="${key}"]`);if(b)b.hidden=access.features?.[key]===false||(key==='weekly'&&!access.weekly)||(['strategic','annual','metrics'].includes(key)&&!access.metrics);}

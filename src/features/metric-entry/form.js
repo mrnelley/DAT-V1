@@ -14,12 +14,6 @@
       const access = await store.context();
       if (generationId !== generation || !document.querySelector('[data-surface="metrics"][aria-pressed="true"]')) return;
       const metrics = access.metricDefinitions;
-      const account = document.querySelector('.account');
-      if (account) {
-        account.querySelector('strong').textContent = access.positionTitle;
-        account.querySelector('small').textContent = 'Signed in';
-        account.querySelector('.avatar').textContent = access.positionTitle.split(/\s+/).map(word=>word[0]).slice(0,3).join('');
-      }
       root.innerHTML = `<div class="hero"><div><h2>Record progress</h2><p>${esc(access.positionTitle)} · Connected to Compass</p></div></div>
       <p class="note">Choose a reporting month and measure. Corrections retain the previous entry in the record history.</p>
       <form id="metric-entry" class="entry-form"><label>Department<select name="department">${access.departments.map(d=>`<option>${esc(d)}</option>`).join('')}</select></label>

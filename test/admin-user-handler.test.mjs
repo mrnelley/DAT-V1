@@ -30,3 +30,13 @@ test('hosted invitations use the app callback and accept the configured hosted o
  assert.equal(response.headers.get('Access-Control-Allow-Origin'),'https://compass.example.org');
  assert.equal(calls.find(c=>c.name==='invite').options.redirectTo,'https://compass.example.org/auth/callback');
 });
+
+test('dev domain allows Admin requests and keeps invitations on the custom domain',async()=>{
+ const {send,calls}=setup({appUrl:'https://hdc-compass.dev',account:{id:'new-id',assigned:true,confirmed:false}});
+ const response=await send({action:'invite',email:payload.email},{authorization:'Bearer verified',origin:'https://hdc-compass.dev'});
+ assert.equal(response.status,200);
+ assert.equal(response.headers.get('Access-Control-Allow-Origin'),'https://hdc-compass.dev');
+ assert.equal(calls.find(c=>c.name==='invite').options.redirectTo,'https://hdc-compass.dev/auth/callback');
+ const rejected=await send(payload,{authorization:'Bearer verified',origin:'https://old-deployment.vercel.app'});
+ assert.equal(rejected.status,403);
+});

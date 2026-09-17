@@ -15,9 +15,9 @@ Local and hosted rollback tests cover metric create, correction, revision histor
 
 ## Browser integration
 
-`Record progress` uses Supabase RPCs exclusively. Its old local-storage records are left intact but not silently imported. The client requests a sign-in email and verifies a code or callback. Add `https://YOUR-DEV-HOST/auth/callback` to hosted Auth Redirect URLs. Local development uses `http://127.0.0.1:4174/auth/callback`. See [hosted auth configuration](hosted-auth-configuration.md).
+`Record progress` uses Supabase RPCs exclusively. Its old local-storage records are left intact but not silently imported. The client signs in with Microsoft and verifies the callback. Add `https://hdc-compass.dev/auth/callback` to hosted Auth Redirect URLs. Local development uses `http://127.0.0.1:4174/auth/callback`. See [hosted auth configuration](hosted-auth-configuration.md).
 
-`npm run build:hosted-metrics` bundles the hosted client using only the publishable/anon key. The script refuses a service-role JWT. It also regenerates the catalog seed. `npm run build` includes that build step. The generated bundle is ignored in Git and must be rebuilt on new checkouts. No server credentials are shipped.
+`npm run build:hosted-metrics` validates the public auth configuration; Vite bundles the hosted client with the application using only the publishable/anon key. The script refuses a service-role JWT. It also regenerates the catalog seed. `npm run build` includes that build step. The generated bundle is ignored in Git and must be rebuilt on new checkouts. No server credentials are shipped.
 
 ## Verification commands
 

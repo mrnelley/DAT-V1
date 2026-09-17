@@ -1,6 +1,6 @@
 # Working application
 
-The Vite entry point is now `index.html` → `src/features/scorecards/app.js`. The active interface assets are in `public/compass`. `public/scorecard-demo/index.html` preserves old email redirect links and forwards query parameters and fragments to the root. Learn contains the catalog and the existing Dictionary.
+The Vite entry point is now `index.html` → `src/bootstrap.js`. Feature code is bundled from `src/features`; styles and static assets are in `public/compass`. `public/scorecard-demo/index.html` preserves old email redirect links and forwards query parameters and fragments to the root. Learn contains the catalog and the existing Dictionary.
 
 The previous working source was copied, without credentials, dependencies or Git internals, to `../Compass-Legacy-2026-09-16` before the entry point changed. Its App.jsx hash was verified. The archive includes its original package lock and startup instructions.
 

@@ -16,6 +16,14 @@ test('Microsoft sign-in requests email identity and the callback on the originat
  await assert.rejects(signInWithMicrosoft({signInWithOAuth:async()=>({error:new Error('Provider unavailable')})},'https://compass.example'),/Provider unavailable/);
 });
 
+test('custom dev domain and local sign-in each retain their own callback origin',async()=>{
+ for(const origin of ['https://hdc-compass.dev','http://127.0.0.1:4174']){
+  let request;
+  await signInWithMicrosoft({signInWithOAuth:async value=>{request=value;return {error:null};}},origin);
+  assert.equal(request.options.redirectTo,`${origin}/auth/callback`);
+ }
+});
+
 test('missing PKCE verifier produces a recovery message instead of a silent sign-in loop',async()=>{
  const callback=describeAuthCallback(new URL('https://compass.example/auth/callback?code=secret'));
  let cleaned=0;
