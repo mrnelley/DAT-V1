@@ -64,6 +64,7 @@ window.CompassMetricStore = {
   saveProperty: payload => rpc('compass_admin_save_property',{payload}),
   setFeature: (userId,key,value) => rpc('compass_admin_set_feature',{target_user:userId,feature:key,enabled_value:value}),
   adminRecords: (kind,page=0,search='') => rpc('compass_admin_records',{record_kind:kind,page_number:page,search_text:search}),
+  adminArchive: (period,search='') => rpc('compass_admin_archive',{archive_period:period,search_text:search}),
   async manageUser(payload) {
     if(workspace.current())throw new Error('Return to your Admin account to manage users.');
     const {data,error}=await client.functions.invoke('compass-admin-users',{body:payload});

@@ -34,6 +34,7 @@ supabase/.temp-stale*/
 # Reference artifacts that do not belong in the application repository
 deliverables/
 *.csv
+!supabase/seeds/templates/*.csv
 *.doc
 *.docx
 *.pdf

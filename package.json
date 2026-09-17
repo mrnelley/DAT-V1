@@ -11,13 +11,13 @@
     "lint": "eslint src --ext .js,.jsx",
     "test": "tsx node_modules/mocha/bin/mocha.js --timeout 20000 \"test/**/*.test.jsx\"",
     "test:prototype": "node --test test/weekly-prototype.test.mjs",
-    "test:planning": "node --test test/planning-catalog.test.mjs test/metric-entry.test.mjs",
+    "test:planning": "node --test test/planning-catalog.test.mjs test/metric-entry.test.mjs test/annual-seed.test.mjs",
     "test:weekly-hosted": "node --test test/weekly-hosted.test.mjs",
     "review:planning": "node scripts/build-planning-review.mjs",
     "validate:database": "node scripts/validate-weekly-database.mjs",
     "check": "npm run lint && npm test && npm run test:prototype && npm run test:planning && npm run test:weekly-hosted && npm run test:scorecards && npm run test:admin && npm run build",
     "test:scorecards": "node --test test/scorecard-rollups.test.mjs test/scorecard-ui.test.mjs",
-    "test:admin": "node --test test/admin-user-handler.test.mjs test/admin-command-center.test.mjs test/admin-auth-flow.test.mjs test/auth-browser-lifecycle.test.mjs test/workspace-session.test.mjs test/positions-ui.test.mjs"
+    "test:admin": "node --test test/admin-user-handler.test.mjs test/admin-command-center.test.mjs test/admin-auth-flow.test.mjs test/auth-browser-lifecycle.test.mjs test/workspace-session.test.mjs test/positions-ui.test.mjs test/archive-ui.test.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.23.0",

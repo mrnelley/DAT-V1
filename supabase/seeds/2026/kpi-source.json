@@ -1,0 +1,530 @@
+[
+  {
+    "id": "attachment-kpi-01",
+    "name": "Reduce Health Insurance Claim Costs",
+    "definition": "% decrease in health insurance claim costs from previous year",
+    "formula": "(2026 - 2025 claim costs)/2025 claim costs",
+    "system": "Claims reports provided by Benecon",
+    "departments": "HR"
+  },
+  {
+    "id": "attachment-kpi-02",
+    "name": "Imlement protocol to eliminate missed premiums",
+    "definition": "Reduce missed premiums in 2026 to $0",
+    "formula": "2025 total missed premiums - 2026 total missed premiums",
+    "system": "ADP reports",
+    "departments": "HR"
+  },
+  {
+    "id": "attachment-kpi-03",
+    "name": "Resident Satisfaction",
+    "definition": "Overall resident satisfaction",
+    "formula": "Determined by resident surveys",
+    "system": "Survey Monkey",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-04",
+    "name": "Continued development of Leadership Development Plans",
+    "definition": "Increase participation to 50% from current 22%",
+    "formula": "# of employees with active LDPs divided by total # of active employees",
+    "system": "LDP tracker",
+    "departments": "HR"
+  },
+  {
+    "id": "attachment-kpi-05",
+    "name": "Increase employee retention",
+    "definition": "Trending between 63-65% retention in 2025",
+    "formula": "#of retained employees divided by total head count for a specific time period",
+    "system": "ADP reports",
+    "departments": "HR"
+  },
+  {
+    "id": "attachment-kpi-06",
+    "name": "Reduce Accounts Receivable",
+    "definition": "Accounts Rreceivable from properties",
+    "formula": "$ of funds owed to HDC from Properties",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-07",
+    "name": "Excess Cash to Parent",
+    "definition": "Excess cash flow from the properties to the parent company",
+    "formula": "$ of funds from properties that can flow to HDC",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-08",
+    "name": "Deferred Developer Fee Paid",
+    "definition": "Excess cash that can be used to reduce Developer Fee Receivables",
+    "formula": "$ of funds from properties to pay down developer fee",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-09",
+    "name": "Number of days cash on hand",
+    "definition": "Number of days of cash to pay recurring expenditures",
+    "formula": "Total cash on hand/(annual expenses/365)",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-10",
+    "name": "Current Ratio",
+    "definition": "Current Assets/Current Liabilities",
+    "formula": "Current Assets/Current Liabilities",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-11",
+    "name": "Net Operating Income (NOI)",
+    "definition": "Total cash flow for parent company",
+    "formula": "Revenue - Expenses",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-12",
+    "name": "Average Property Management Fee",
+    "definition": "% management fee charged for all properties",
+    "formula": "Total management fees/Total Revenue",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-13",
+    "name": "Property Management Fee",
+    "definition": "$ of management fee charged",
+    "formula": "$ of management fee charged",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-14",
+    "name": "Development Fee Revenue",
+    "definition": "$ of developer fee earned",
+    "formula": "$ of developer fee earned",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-15",
+    "name": "Reduce Vacancy loss through a coordinated strategy with PM",
+    "definition": "$ lost from vacant units",
+    "formula": "Count income lost per vacant unit",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-16",
+    "name": "Properties meeting budgeted NOI",
+    "definition": "Properties that are in line with budget",
+    "formula": "Count of properties meeting budget",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-17",
+    "name": "Reduce properties with negative NOI from 9",
+    "definition": "Properties that have negative budget",
+    "formula": "Count of properties with negative NOI",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-18",
+    "name": "Reduce troubled property list from 11",
+    "definition": "Properties that have $10m plus in A/R",
+    "formula": "Count of properties with $10m A/R balance",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-19",
+    "name": "Maintain average controllable cost",
+    "definition": "No increase to costs that can be controlled (opex,etc..)",
+    "formula": "$ per unit for costs that can be controlled",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-20",
+    "name": "Economic Occupancy Rate",
+    "definition": "$ lost based on total potential rent",
+    "formula": "Total potential rent - Actual rent collected",
+    "system": "Yardi",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-21",
+    "name": "Resident Communication Channel",
+    "definition": "Platform to send targeted messages to residents.",
+    "formula": "Satisfaction Rate = (# satisfied respondents / total respondents) × 100",
+    "system": "Constant Contact",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-22",
+    "name": "Google Review Management",
+    "definition": "Oversight of online reviews and responses.",
+    "formula": "Avg. Star Rating = (Sum of ratings / total reviews)",
+    "system": "Google",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-23",
+    "name": "Recruitment Marketing",
+    "definition": "Digital campaigns to attract new talent.",
+    "formula": "Effectiveness = (# applicants from campaign / total applicants) × 100",
+    "system": "LinkedIn",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-24",
+    "name": "Website Sessions",
+    "definition": "Number of website visits.",
+    "formula": "Sessions per month = Total sessions / months",
+    "system": "Microsoft Clarity",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-25",
+    "name": "Unique Website Users",
+    "definition": "Number of distinct visitors to website.",
+    "formula": "Unique Users per month = Total unique users / months",
+    "system": "Microsoft Clarity",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-26",
+    "name": "Newsletters",
+    "definition": "Periodic emails informing and engaging stakeholders.",
+    "formula": "Open Rate = (# opens / emails sent) × 100",
+    "system": "Constant Contact",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-27",
+    "name": "LinkedIn Followers",
+    "definition": "Count of new LinkedIn followers.",
+    "formula": "Followers per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-28",
+    "name": "LinkedIn Engagement Rate",
+    "definition": "% of interactions relative to impressions.",
+    "formula": "Engagement Rate = (Total engagements / Total impressions) × 100",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-29",
+    "name": "LinkedIn Impressions",
+    "definition": "Number of times LinkedIn content is seen.",
+    "formula": "Impressions per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-30",
+    "name": "Facebook Followers",
+    "definition": "Count of new Facebook followers.",
+    "formula": "Followers per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-31",
+    "name": "Facebook Reach",
+    "definition": "Number of unique Facebook users seeing posts.",
+    "formula": "Reach per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-32",
+    "name": "Facebook Engagement",
+    "definition": "Interactions on Facebook posts.",
+    "formula": "Engagement per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-33",
+    "name": "Facebook Impressions",
+    "definition": "Number of Facebook content views.",
+    "formula": "Impressions per month = Annual target / 12",
+    "system": "Hootsuite",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-34",
+    "name": "Earned Media Coverage",
+    "definition": "Media placements without paid advertising.",
+    "formula": "N/A",
+    "system": "Meltwater",
+    "departments": "CR"
+  },
+  {
+    "id": "attachment-kpi-35",
+    "name": "Turnover Time",
+    "definition": "Reduce turnover time to align with HDC's target turn time",
+    "formula": "8 days FT tech/ 14 days PT tech",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-36",
+    "name": "Troubled Properties",
+    "definition": "Review AR and AP monthly with FM, CM and FN",
+    "formula": "troubled property list is at 9",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-37",
+    "name": "Housing Stability",
+    "definition": "Coordinating with RS to minimize evictions",
+    "formula": "Monthly meetings with RS",
+    "system": "Yardi/ Resident Connect",
+    "departments": "PM/RS"
+  },
+  {
+    "id": "attachment-kpi-38",
+    "name": "Resident Satisfaction via Community Meetings",
+    "definition": "4 Community meetings per community",
+    "formula": "Community meeting to be held every 90 days",
+    "system": "Resident Surveys",
+    "departments": "PM/RS"
+  },
+  {
+    "id": "attachment-kpi-39",
+    "name": "Vacant Units",
+    "definition": "Monthly meetings with HA and Open House Dates",
+    "formula": "Have units filled within 70 days",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-40",
+    "name": "Units Rehabbed",
+    "definition": "All Bond IC's completed and signed 90 days after Bond Closing; New files completed and uploaded to Yardi within 90 days after Bond Closing.",
+    "formula": "123 IC's Closed out and signed 90 days following Bond Closing; New files completed and uploaded to Yardi.",
+    "system": "Yardi and Compliance On-site Inspection",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-41",
+    "name": "New Units Placed in Service",
+    "definition": "Lease up Flats V to 100% occupancy within 90 days of CO",
+    "formula": "Open applications in March, start processing in April, receive applicant supplied verifications for quicker turnaround (if HOTMA is in effect), all documents signed within 90 days of CO (use Travel CM on-site to assist)",
+    "system": "Yardi/ Rent Up Chart",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-42",
+    "name": "Resident Services Utilization Rate",
+    "definition": "Number of unique residents utilizing/connecting with Resident Services 1:1 & through programs/events",
+    "formula": "Unique count based on households",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-43",
+    "name": "Resident Experience Score",
+    "definition": "To measure how supported, connected, and empowered residents feel throughout their housing journey, and how these experiences contribute to overall housing stability.",
+    "formula": "Blended score for housing stability rate, average housing tenure; positive move-outs, and resident satisfaction. \nHousing Stability Rate:\t% of households with no eviction  / involuntary exits (10% weight)\nAverage Housing Tenure: Avg. length of stay (seniors 7+, families 5+)\t(10% weight)\nPositive Move-Out Rate: % of move-outs that are planned, stable, upward (30% weight); Resident Satisfaction (50%)",
+    "system": "Yardi",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-44",
+    "name": "Positive Move-Out Rate",
+    "definition": "Move-outs that are planned, stable and upward.",
+    "formula": "Positive: Move to unsubsidized or market-rate housing due to increased income; Purchase of a home,\nMove to a location with better access to jobs, education, or supports; assisted living, health concerns, relocating\nNegative: Nonrenewal; eviction; homeslessness or unstable housing; unsatisfied with property\nNeutral: Death",
+    "system": "YARDI",
+    "departments": "PM/RS"
+  },
+  {
+    "id": "attachment-kpi-45",
+    "name": "Household Engagement Rate",
+    "definition": "Community Meetings & Group Programs Based on Households",
+    "formula": "",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-46",
+    "name": "Resident Satisfaction Rate",
+    "definition": "Residents satisfied living in an HDC Community (85%)",
+    "formula": "% satisfaction rate per survey responses",
+    "system": "Survey Monkey",
+    "departments": "RS/PM"
+  },
+  {
+    "id": "attachment-kpi-47",
+    "name": "Service Delivery Partner Connection Rate",
+    "definition": "Number of referrals made to partners across service areas, including housing stability, financial capability & Health & Wellness.",
+    "formula": "# of referrals per area",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-48",
+    "name": "Hours Saved",
+    "definition": "Measures the total number of staff hours saved as a result of operational effeciences.",
+    "formula": "",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-49",
+    "name": "Connection to Partners",
+    "definition": "The number of residents connected to service delivery partners as a result of referrals.",
+    "formula": "# of referrals per service partner",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-50",
+    "name": "Employee Satisfaction",
+    "definition": "Determined through Pulse Surveys",
+    "formula": "Pulse Survey Rate",
+    "system": "Survey Monkey",
+    "departments": "HR"
+  },
+  {
+    "id": "attachment-kpi-51",
+    "name": "Cost Savings",
+    "definition": "Total dollar value of financial relief, cost reductions, and essential savings that residents receive as a direct result of being connected to benefits, financial assistance, or cost-saving programs.",
+    "formula": "$ in cost savings",
+    "system": "CRM System",
+    "departments": "RS"
+  },
+  {
+    "id": "attachment-kpi-52",
+    "name": "Contributed Revenue",
+    "definition": "The revenue raised in collaboration with CR through grant writing to fund RS programs & events.",
+    "formula": "$100,000 for General Operating for RS & $25,000 for the H&O Fund.",
+    "system": "CRM System",
+    "departments": "RS/CR"
+  },
+  {
+    "id": "attachment-kpi-53",
+    "name": "Reduce vendor use",
+    "definition": "Develop a 2026 Maintenance Tech Traning Schedule which will help reduce vendor use by 5% or more.",
+    "formula": "5% reduction in number of vendors used 2026 over 2025.",
+    "system": "Yardi",
+    "departments": ""
+  },
+  {
+    "id": "attachment-kpi-54",
+    "name": "Zero Non-Compliance",
+    "definition": "Zero Non-Compliance",
+    "formula": "No formula - just zero non-compliance reported",
+    "system": "Compliance records",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-55",
+    "name": "Cap Ex",
+    "definition": "completion of planned capital expense projects",
+    "formula": "Number of projects per property",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-56",
+    "name": "Reduce Compliance Consultant use",
+    "definition": "Reduce Compliance Consulant use by 50% or more",
+    "formula": "Take 2025 Compliance Consultant dollars spent and compare to 2026 dollars spent.",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-57",
+    "name": "Develop plan to implement Yardi efficiencies and optimization",
+    "definition": "Determine which Yardi efficiences to implement, who to involve and timeline for implementation.",
+    "formula": "Timeline of implementation met for planned efficiencies",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-58",
+    "name": "Launch Customer Service Training Program in collaboration with HR",
+    "definition": "Improve resident centered customer service approach by launching a Customer Service Training Program in collaboration with HR.",
+    "formula": "Decrease in customer service complaints to Home office by 20% over last year.",
+    "system": "Home office phone log",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-59",
+    "name": "Improve MT employee retention",
+    "definition": "The MT Training Program will ultimately reduce turnover of techs and increase their ability to perform in-house repairs.",
+    "formula": "2026 turnover of techs versus 2025 turnover of techs; 2026 Total Vendor use over 2025 Total Vendor use.",
+    "system": "HR records/Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-60",
+    "name": "Rent Collection",
+    "definition": "Maintain/Increase rent collection targets 95/98%",
+    "formula": "Consistent implementation of rent collection policy and heavy RM follow up with CMs",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-61",
+    "name": "Time to Fill",
+    "definition": "Reduce time to fill for PM staffing vacancies and plan for coverage of vacancy",
+    "formula": "Implementation of formal coverage plan and plan to reduce position vacancy time",
+    "system": "HR",
+    "departments": "PM/HR"
+  },
+  {
+    "id": "attachment-kpi-62",
+    "name": "Turnover Time",
+    "definition": "Average number of days it takes to take a unit from move out to move in ready",
+    "formula": "Ready Date to Move out Date",
+    "system": "Yardi",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-63",
+    "name": "Improve CM employee retention",
+    "definition": "Improve employee retention by ensuring comprehensive training plan for property management staff.",
+    "formula": "2026 turnover of CMs versus 2025 turnover of CMs",
+    "system": "HR Records",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-64",
+    "name": "Create a PM Learning and Growth Dashboard",
+    "definition": "Create a PM Learning and Growth Dashboard to track growth an capacity building within the departments.",
+    "formula": "Number of PM positions that were promoted or built capacity within 2026",
+    "system": "HR Records",
+    "departments": "PM"
+  },
+  {
+    "id": "attachment-kpi-65",
+    "name": "Cost Savings (Direct + Indirect) from technology",
+    "definition": "Staff hours saved and direct cost savings from the use of technology",
+    "formula": "Direct Savings +(staff hours saved x hourly rate) + late fees avoided",
+    "system": "Department reporting",
+    "departments": "FIN"
+  },
+  {
+    "id": "attachment-kpi-66",
+    "name": "Employee Engagement",
+    "definition": "blended rate of employees engaged in leadership development, survey participation, and involvement in employee groups",
+    "formula": "40% survey participation; 30% LDP, 30% involvement in groups; employee events",
+    "system": "",
+    "departments": "HR"
+  }
+]

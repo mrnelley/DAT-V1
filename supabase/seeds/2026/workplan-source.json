@@ -1,0 +1,1866 @@
+[
+  {
+    "id": "workplan-community-relations",
+    "filename": "Community Relations.pdf",
+    "department": "Community Relations",
+    "sha256": "d3dc425c9f42ad4f3e4e175ba5e0e48ca566170856cf474149661f46e26a8418",
+    "objectives": [
+      {
+        "id": "workplan-community-relations-p1-t1-r4",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Develop media announcement regarding LIHTC awards and other key project awards",
+        "targetText": "2",
+        "startText": "TBD",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r5",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Enterprise level predevelopment fund for real estate development pipeline",
+        "targetText": "$500,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Groundbreaking events for Cornerstone and CA 2 (possibly)",
+        "targetText": "2",
+        "startText": "TBD",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r7",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Support ribbon cutting for Flats 5 in DE",
+        "targetText": "1",
+        "startText": "7/1/2026",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r9",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Grow corporate sponsorship revenue by renewing key partners, upgrading existing sponsors, and cultivating new relationships through the #BetterTogether Corporate Giving Campaign",
+        "targetText": "$225,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/20026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r10",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Retention: Achieve an 80% renewal rate of 2025 corporate sponsors",
+        "targetText": "80%",
+        "startText": "1/1/2026",
+        "endText": "12/31/20026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r11",
+        "page": 1,
+        "sourceNumber": "1.b",
+        "title": "Upgrades: Attain a 20% rate of increased giving among renewing sponsors",
+        "targetText": "20%",
+        "startText": "1/1/2026",
+        "endText": "12/31/20026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r12",
+        "page": 1,
+        "sourceNumber": "1.c",
+        "title": "Acquisition: Secure 3-5 new corporate sponsors",
+        "targetText": "3-5",
+        "startText": "1/1/2026",
+        "endText": "12/31/20026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r13",
+        "page": 1,
+        "sourceNumber": "1.d",
+        "title": "Acquisition: Secure 2-4 major sponsors at the $10,000+ level",
+        "targetText": "2-4",
+        "startText": "1/1/2026",
+        "endText": "12/31/20026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r14",
+        "page": 1,
+        "sourceNumber": "1.e",
+        "title": "Launch a faith based corporate giving campaign focused on securing gifts for Hope & Opportunity Fund (Q4)",
+        "targetText": "$25,000",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Secure philanthropic grants to advance resident services, strengthen general operations, and drive program innovation",
+        "targetText": "$500,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r16",
+        "page": 1,
+        "sourceNumber": "2.a",
+        "title": "Increase grant success rate and yield rate. (industry standard success 42%; yield rate is 38%)",
+        "targetText": "85% success rate 70% yield rate",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r17",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Build individual giving through a mix of acquisition and retention strategies, including revamping the Groundbreaker Giving Circle, strengthening the ExtraGive campaign, and executing targeted year-end digital solicitations",
+        "targetText": "$35,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "3.a",
+        "title": "Ensure full board engagement in philanthropy by achieving 100% participation in annual giving",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r19",
+        "page": 1,
+        "sourceNumber": "3.b",
+        "title": "Acquisition: Recruit 3-5 new Groundbreakers Giving Circle members",
+        "targetText": "3-5",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r20",
+        "page": 1,
+        "sourceNumber": "3.c",
+        "title": "Retention: Achieve a 60% donor retention rate from 2025 ExtraGive",
+        "targetText": "60%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Secure NW Flexible Impact and Capital Grant",
+        "targetText": "$200,000",
+        "startText": "1/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r22",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Establish a framework to guide a planned giving strategy; evaluate the potential for a recognition society centered on estate giving (planned gifts)",
+        "targetText": "n/a",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Craft a data-driven SROI case for support to highlight measurable impact and engage funders seeking innovative opportunities",
+        "targetText": "n/a",
+        "startText": "7/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r25",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Implementation and integration of a CRM platform to strengthen relationship management and enhance cross- departmental collaboration",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r26",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Form a cross-functional team to evaluate grant opportunities and relationship engagement status on a quarterly basis, ensuring they align with organizational priorities",
+        "targetText": "4 meetings",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r27",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Cross-departmental Event Planning Protocol developed and implemented",
+        "targetText": "n/a",
+        "startText": "8/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r29",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Develop and launch resident communication channel in collaboration with PM and RS",
+        "targetText": "85% satisfaction",
+        "startText": "9/1/2026",
+        "endText": "12/31/1026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r30",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Transfer ownership of corporate Google reviews to Property Management, and develop a strategy for Community Managers to take ownership of Google review goals for their individual sites.",
+        "targetText": "4.5 stars",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r31",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Create and distribute trauma-informed, value-aligned, HDC branded communication templates for residents (door sign, resident memo, resident letter, follow-up card)",
+        "targetText": "4 templates",
+        "startText": "7/1/2026",
+        "endText": "8/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r33",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Complete Leadership Development Plans for CR team members",
+        "targetText": "2",
+        "startText": "2/1/2026",
+        "endText": "4/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r34",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Develop recruitment digital marketing strategy with HR to attract new talent, which includes testimonials, video, quotes, in writing",
+        "targetText": "90%",
+        "startText": "7/1/2026",
+        "endText": "8/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r35",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Develop and implement Corporate/Leadership Recognition Strategy: Identify opportunities and create plan and secure \"wins\" to elevate programs/projects and leadership for external recognization, \"under 40\" \"under 30\", \"trail-blazer\" leadership awards, \"best in affordable housing\", \"best multifamily community\", etc.",
+        "targetText": "4",
+        "startText": "6/1/2026",
+        "endText": "2/28/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r38",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Develop and implement board-approved policy and advocacy priorities, inclusive of communications strategy and messaging approach - federal, state, and local",
+        "targetText": "",
+        "startText": "1/1/2026",
+        "endText": "4/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r39",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Create 2026 advocacy engagement calendar, key targets, touch points and tracking tool for meetings, site visits, tours, etc.",
+        "targetText": "25",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r40",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Identify and cultivate residents who are willing to document, speak and share/produce their stories with elected officials",
+        "targetText": "10",
+        "startText": "6/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r41",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Participate and increase executive leadership in coalition/alliances: PA Developer's Council, National NeighborWorks Association, Affordable Housing Tax Credit Coalition, Up for Growth, PA Housing Choice Campaign, Delaware NonProfit Affordable Housing Group, Housing Partnership Network Policy Group, Coalition for Sustainable Housing (Lancaster)",
+        "targetText": "8",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r42",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Issue and track sign-on support letters for policy and advocacy priorities to achieve policy wins",
+        "targetText": "6",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r43",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Produce board-driven, resident-centered op-eds related to advocacy",
+        "targetText": "2",
+        "startText": "8/1/2026",
+        "endText": "11/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r44",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Identify and develop advocacy-specific collateral to support priorities (PA & DE Fact Sheets; 5 Project Fact Sheets; 10 new Resident Stories)",
+        "targetText": "17",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r46",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Redesign the website to improve user experience, update content, modernize the look, and support 5-year strategic plan.",
+        "targetText": "",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r47",
+        "page": 1,
+        "sourceNumber": "1a",
+        "title": "Sessions (Achieve a total of 40,700 sessions from September through December 2025, with an average of 10,175 sessions per month, following the website redesign -10% growth)",
+        "targetText": "10,175/mo",
+        "startText": "7/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r48",
+        "page": 1,
+        "sourceNumber": "1b",
+        "title": "Unique Users (Increase unique users from ~23,300 to 25,600 between September and December 2025, with a monthly target of 6,400 unique users, driven by improved site navigation and content updates -10% growth)",
+        "targetText": "25,600",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r49",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Facilitate the production and communications strategy of annual collateral, including the Impact Report and Strategic Plan, to ensure brand consistency and effectively communicate the organization’s mission, vision, and values to external stakeholders.",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "2/9/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r50",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Produce four external newsletters annually to educate and keep stakeholders informed, driving engagement and actionable support, with open rates used to measure effectiveness. (16% increase)",
+        "targetText": "35% open rate",
+        "startText": "1/15/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r51",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "LinkedIn - Implement a social media strategy utilizing ELT to elevate HDC's brand, expand audience reach, and grow reach and followers, with performance tracked through key growth metrics.",
+        "targetText": "",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r52",
+        "page": 1,
+        "sourceNumber": "4a",
+        "title": "Followers (Gain approximately 71 new LinkedIn followers per month in 2026 to reach an annual total of 3,300 followers by year-end - 27% growth) 2,608 according to LinkedIn Baseline 2025 = 2,641 followers",
+        "targetText": "71/mo",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r53",
+        "page": 1,
+        "sourceNumber": "4b",
+        "title": "Post Engagement Rate (Increase LinkedIn engagement rate from 11.03% to 13% in 2026, maintaining at least 13% each month)",
+        "targetText": "13%/mo",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p1-t1-r54",
+        "page": 1,
+        "sourceNumber": "4c",
+        "title": "Post Impressions (Increase LinkedIn post impressions to approximately 6,300 per month in 2026, targeting a total of 75,500 impressions for the year -15% growth)",
+        "targetText": "6,300/mo",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r1",
+        "page": 2,
+        "sourceNumber": "5",
+        "title": "Facebook - Track and analyze performance metrics, and implement strategies to increase followers and engagement of key partners, residents, and elected officials.",
+        "targetText": "",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r2",
+        "page": 2,
+        "sourceNumber": "5a",
+        "title": "Followers (Gain approximately 18 new Facebook followers per month in 2026 to reach an annual total of 1,646 followers by year-end - 15% growth). Baseline 2025 = 1,453 followers",
+        "targetText": "18/mo",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r3",
+        "page": 2,
+        "sourceNumber": "5b",
+        "title": "Post Reach (Increase Facebook post reach to approximately 28,950 people in 2026, with an average of 2,400 people per month -15% growth)",
+        "targetText": "2,400/mo",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r4",
+        "page": 2,
+        "sourceNumber": "5c",
+        "title": "Post Engagement (Increase post engagements to approximately 456 per month in 2026, targeting a total of 5,472 engagements for the year - 15% growth)",
+        "targetText": "456/mo",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r5",
+        "page": 2,
+        "sourceNumber": "5d",
+        "title": "Post impressions (Increase post impressions to approximately 4,050 per month in 2026, targeting a total of 48,600 impressions for the year -15% growth) * Facebook has transitioned from reporting “impressions” to “views,” which more accurately reflect content that was actively seen rather than simply displayed.",
+        "targetText": "4,050/mo",
+        "startText": "",
+        "endText": "",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r6",
+        "page": 2,
+        "sourceNumber": "6",
+        "title": "Subject Matter Expertise Produce 25 thought leadership presentations in 2026, supported by a proactive strategy to identify, organize, and leverage thought leadership opportunities across all departments to build brand awareness.",
+        "targetText": "25",
+        "startText": "6/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-community-relations-p2-t1-r7",
+        "page": 2,
+        "sourceNumber": "7",
+        "title": "Earned Media Coverage Secure at least 50 earned media placements in 2026, building on current coverage and supported by a proactive media outreach strategy.-10% growth to buildd brand awareness and reach.",
+        "targetText": "50",
+        "startText": "6/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 2
+  },
+  {
+    "id": "workplan-finance",
+    "filename": "Finance.pdf",
+    "department": "Finance",
+    "sha256": "28693a49618975a751e1a698705e79e394d851c067bbeb97f9ef6232756940f1",
+    "objectives": [
+      {
+        "id": "workplan-finance-p1-t1-r5",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Develop workplan for addressing accounts receivable that includes rent collection, controllable costs, insurance, and taxes.",
+        "targetText": "$ 1 ,100,000.00",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Identify properties that have ability to produce excess cash and manage the 7 of properties to maximize cash to parent.",
+        "targetText": "$ 1 04,500.00",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r7",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Identify properties that have deferred developer fee and manage 3 of properties to maximize deferred fee payment.",
+        "targetText": "$ 5 0,000.00",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r8",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Increase cash on hand from 85 to 110 through reducing A/R, increases in dev fee paid, and excess cash.",
+        "targetText": "110",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r12",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Analyze all properties below 10% PM fee to determine potential increased fee; priortize properties and obtain approvals to increase fee and timeline to execute. Develop a financial performance dashboard by region to include: PM%, Rent Collection %, Vacancy loss, controllable cost per unit, >AR",
+        "targetText": "8.80%",
+        "startText": "1/1/2026",
+        "endText": "4/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r14",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Develop and execute a coordinated stabilization and hand off process for each development project from closing to post construction to ensure equity installments and perm loan closing milestones are achieved.",
+        "targetText": "$ 1 ,627,500.00",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "8.a",
+        "title": "Reduce Vacancy loss through a coordinated strategy with PM",
+        "targetText": "$725,000",
+        "startText": "1/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r16",
+        "page": 1,
+        "sourceNumber": "8.b",
+        "title": "Properties meeting budgeted NOI",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r17",
+        "page": 1,
+        "sourceNumber": "8.c",
+        "title": "Reduce properties with negative NOI from 9",
+        "targetText": "<6",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "8.d",
+        "title": "Reduce troubled property list from 11",
+        "targetText": "9",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r19",
+        "page": 1,
+        "sourceNumber": "8.e",
+        "title": "Maintain average controllable cost",
+        "targetText": "<$4200",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r20",
+        "page": 1,
+        "sourceNumber": "8.f",
+        "title": "Economic Occupancy Rate",
+        "targetText": "98%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "9",
+        "title": "Evaluate feasibility and sustainability of 3rd party property management in collaboration with PM.",
+        "targetText": "$ Net income to HDC",
+        "startText": "1/1/2026",
+        "endText": "4/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Develop strategy and implement new Asset Management software system.",
+        "targetText": "n/a",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r25",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "User adoption rate (software systems)",
+        "targetText": "90%",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r26",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Staff time reallocation/productivity gains in process or procedures related to techology optimization (ADP, Yardi: payroll, AP)",
+        "targetText": "400",
+        "startText": "1/1/2026",
+        "endText": "2/28/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r27",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Reduce time to close each property",
+        "targetText": "18th of month - date last property closed of the month",
+        "startText": "1/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r28",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Develop a strategy to capture efficiencies from acquisition integration",
+        "targetText": "N/A",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r29",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Develop strategy for Asset Management Line of Business financials",
+        "targetText": "N/A",
+        "startText": "1/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r30",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Develop plan to implement Yardi efficiencies and optimization",
+        "targetText": "# hours saved",
+        "startText": "3/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r32",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Reduce late fees by implementing a streamlined accounts payable process",
+        "targetText": "50% / $10,000",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r33",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Improve internal relationship through customer service training",
+        "targetText": "85%",
+        "startText": "1/1/2026",
+        "endText": "8/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r36",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Complete Leadership Development Plans for FIN team members",
+        "targetText": "11",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r39",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Develop long term strategy for asset (IT) replacement",
+        "targetText": "not to exceed budget",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r40",
+        "page": 1,
+        "sourceNumber": "1.b",
+        "title": "Identify cost savings related to IT vendor contract",
+        "targetText": "$20,000",
+        "startText": "1/1/2026",
+        "endText": "4/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r41",
+        "page": 1,
+        "sourceNumber": "1.c",
+        "title": "Increase security Awareness scoring",
+        "targetText": "675 ESS Score",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r42",
+        "page": 1,
+        "sourceNumber": "1.d",
+        "title": "Develop and test an incident response plan according to the BCDR",
+        "targetText": "90% Recovery Time Actual < Recovery Time Objection",
+        "startText": "1/1/2026",
+        "endText": "1/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r43",
+        "page": 1,
+        "sourceNumber": "1.e",
+        "title": "Implement automatic encryption system for sensitive information in emails and training for all employees",
+        "targetText": "100% effective @ quarterly testing",
+        "startText": "2/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-finance-p1-t1-r44",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Develop and implement new organizational structure of department focusing on efficiencies",
+        "targetText": "n/a",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 1
+  },
+  {
+    "id": "workplan-hr",
+    "filename": "HR.pdf",
+    "department": "Human Resources",
+    "sha256": "4395a23af35cc0ec5d776b494f0c635ff21fc78ab1e60993b5531b59631ab05b",
+    "objectives": [
+      {
+        "id": "workplan-hr-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Reduce health insurance claim costs by 10% by increasing health benefits training to employees. (total claims for 2025: $1,614,757)",
+        "targetText": "$1,453,281.00",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r8",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Implement optimization in ADP to include recruitment, compensation management and performance management (exact strategies TBD after assessement)",
+        "targetText": "208 hours saved",
+        "startText": "3/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r9",
+        "page": 1,
+        "sourceNumber": "1.b",
+        "title": "Implement carrier connections for all ancillary benefits including 401k",
+        "targetText": "120 hours",
+        "startText": "2/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r10",
+        "page": 1,
+        "sourceNumber": "2.a",
+        "title": "Revise SOP to clearly define roles and responsibilities between finance, HR, and hiring managers as it relates payroll, HRIS",
+        "targetText": "208 hours saved",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r11",
+        "page": 1,
+        "sourceNumber": "2.b",
+        "title": "Define a better process for tracking FMLA",
+        "targetText": "24 hours saved",
+        "startText": "4/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r12",
+        "page": 1,
+        "sourceNumber": "2.c",
+        "title": "Implement protocol/process to eliminate missed premium payments by employees (new hires, EE on leave)",
+        "targetText": "0",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r14",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Develop and Implement Comprehensive Customer Service Training Framework Strategy - could include monthly/quarterly customer service training or undercover boss/secret shopper strategy.",
+        "targetText": "85%",
+        "startText": "2/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "1.b",
+        "title": "Develop more enhanced customer Service Feedback Loop with Residents (work with CR and PM)",
+        "targetText": "85%",
+        "startText": "2/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r17",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Improve 6 month employee retention rate by hiring the right people for the right position. (Develop Interview Guide for Hiring Managers)",
+        "targetText": "85% 6-month 80% 12-month < 10 open positions",
+        "startText": "2/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Improve employee retention by continuing the Training Check-ins at 2 weeks, 30, 60, and 90 days (new hire, hiring manager, and trainer) and stay interviews 1, 3 and 5 years",
+        "targetText": "80%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r19",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Build capacity of HR Coordinator by further define HR roles more clearly and perform cross-training",
+        "targetText": "208 hours saved",
+        "startText": "4/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r20",
+        "page": 1,
+        "sourceNumber": "4.a",
+        "title": "Develop and implement cross-training program.",
+        "targetText": "80%",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "4.b",
+        "title": "Develop Departmental Career Pathways (PM is complete) and cross- departmental path",
+        "targetText": "",
+        "startText": "4/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r22",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Launch LEAD cohort #2",
+        "targetText": "100% participation",
+        "startText": "4/1/2026",
+        "endText": "11/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r23",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Develop strategy for increasing employee engagement by highlight employee stories and experiences - once a month.",
+        "targetText": ">50%",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Continue development of Leadership Develop Plans for employees and develop tracking system with updates",
+        "targetText": "50%",
+        "startText": "1/31/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r25",
+        "page": 1,
+        "sourceNumber": "8.a",
+        "title": "Create strategy to build relationships with College & Tech Schools throughout Geographic footprint",
+        "targetText": "",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r26",
+        "page": 1,
+        "sourceNumber": "8.b",
+        "title": "Research and implement assessment tools on skills and culture fit",
+        "targetText": "50 or less days",
+        "startText": "4/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r27",
+        "page": 1,
+        "sourceNumber": "8.c",
+        "title": "Develop recruitment marketing strategy with CR to attract new talent",
+        "targetText": "to fill",
+        "startText": "7/1/2026",
+        "endText": "8/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r28",
+        "page": 1,
+        "sourceNumber": "8.d",
+        "title": "Develop a formal Employee Value Proposition that highlights HDC's mission, culture, flexibility, and impact",
+        "targetText": "",
+        "startText": "4/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r29",
+        "page": 1,
+        "sourceNumber": "9.a",
+        "title": "Build out performance management module in ADP",
+        "targetText": "",
+        "startText": "7/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r30",
+        "page": 1,
+        "sourceNumber": "9.b",
+        "title": "Develop calendar for monthly HR Training (supervisor training, benefit training, wellness training)",
+        "targetText": "90% employee satisfaction",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r32",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Collaborate with One2One on developing and delivering AI Training and Education",
+        "targetText": "75%",
+        "startText": "3/31/2026",
+        "endText": "7/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p1-t1-r33",
+        "page": 1,
+        "sourceNumber": "2.a",
+        "title": "Improve employee engagement around policies, programs, \"fun\" engagement, inclusion & belonging, and culture.",
+        "targetText": "",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p2-2.b",
+        "page": 2,
+        "sourceNumber": "2.b",
+        "title": "Monthly Property Spotlight during FMM: site staff present their property",
+        "targetText": ">50% employee engagement",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-hr-p2-2.c",
+        "page": 2,
+        "sourceNumber": "2.c",
+        "title": "Employee spotlight or show and tell on FMM",
+        "targetText": ">50% employee engagement",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 2
+  },
+  {
+    "id": "workplan-property-management",
+    "filename": "Property Management.pdf",
+    "department": "Property Management",
+    "sha256": "de5616b9a6d65e97faacd43941eb913f29f89af31b334d4cb722f9599aed3117",
+    "objectives": [
+      {
+        "id": "workplan-property-management-p1-t1-r4",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Implement lease up strategy on Flats 5 to exceed milestones - create lease-up dashboard",
+        "targetText": "53 units - leased up within 90 days of CO",
+        "startText": "1/1/2026",
+        "endText": "9/1/2026 n",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r5",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Ensure that all income certifications are completed 90 days after financial closing.",
+        "targetText": "123units ICs completed within 120 days of closing.",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026n",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Improve timeliness, communication and satisfaction with residents and departments around rehabiliation projects. Develop a Rehab resident engagement SOP (pre-notification, communication touchpoints, post-completion survey)",
+        "targetText": "85%",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r8",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Analyze all properties below 10% PM fee to determine potential increased fee; priortize properties and obtain approvals to increase fee and timeline to execute",
+        "targetText": "8.80%",
+        "startText": "1/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r10",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Lower insurance claim totals by 20% through training and education of maintenance technicians and residents. Insurance Claim Reduction 2025 Insurance Claim Total: 26 totaling $493,037",
+        "targetText": "20% reduction/ total claims not to exceed $394,429",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r11",
+        "page": 1,
+        "sourceNumber": "3.a",
+        "title": "Reduce repair and restoration costs for water damage and restorations costs by performing work in house.",
+        "targetText": "20%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r12",
+        "page": 1,
+        "sourceNumber": "3.b",
+        "title": "Reduce repairs and maintenance line item in budgets by 5%.",
+        "targetText": "5%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r13",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Develop workplan for addressing accounts receivable that includes rent collection, controllable costs, insurance, and taxes.",
+        "targetText": "9 properties",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r14",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Increase accountability with maintenance technicians, community managers, and regional managers to hit target turn times inclusive of an action plan.",
+        "targetText": "8 - FT Techs/14 - PT Techs",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Improve housing authority response time related to vacancy claims, vacant units, and applicants.",
+        "targetText": "HA Units Vacant: XX HA Days Vacant: XX",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r16",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Reduce vacancy loss and economic vacancy by holding regional managers accountable for filling vacant units.",
+        "targetText": "$725,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "9.a",
+        "title": "Reduce average controllable cost by Implementing Enterprise-level contract opportunities and bulk purchase opportunities",
+        "targetText": "",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r19",
+        "page": 1,
+        "sourceNumber": "9.b",
+        "title": "Reduce vendor use by increasing capacity and training of maintainance techs. 5%",
+        "targetText": "$4,200",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r20",
+        "page": 1,
+        "sourceNumber": "10",
+        "title": "Maintain or increase rent collection targets",
+        "targetText": "95% /98%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "11",
+        "title": "Ensure housing stability rate by coordinating with resident services to minimize risk of eviction.",
+        "targetText": "99%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r22",
+        "page": 1,
+        "sourceNumber": "12",
+        "title": "Ensure all planned cap expense projects are completed Total Projects 194",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Zero noncompliance",
+        "targetText": "0",
+        "startText": "1/1/2026",
+        "endText": "12/311 fo/2r0 p2h6ys",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r26",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Develop plan to implement Yardi efficiencies and optimization",
+        "targetText": "roll out new modules",
+        "startText": "1/1/2026",
+        "endText": "6/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r27",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "All properties subject to NSPIRE scores achieve 95 or higher.",
+        "targetText": "95",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r28",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Reduce time to fill for PM staffing vacancies and plan for coverage of vacancy which includes communications to residents.",
+        "targetText": "50 days",
+        "startText": "1/1/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r30",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "Improve resident centered customer service approach by launching a customer service training program in collaboration with HR",
+        "targetText": "85%",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r31",
+        "page": 1,
+        "sourceNumber": "1.b",
+        "title": "Improve resident satisfaction by reducing complaints and resolving the issue. (2025 #)",
+        "targetText": "50% decrease in resident compliants",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r32",
+        "page": 1,
+        "sourceNumber": "1.e",
+        "title": "Increase resident satisfaction by holding quarterly Community Meetings.",
+        "targetText": "85%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r33",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Increase Positive move-outs by connecting residents to resources that would promote economic mobility- homebuyer courses at sites annually",
+        "targetText": "25%",
+        "startText": "3/31/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r35",
+        "page": 1,
+        "sourceNumber": "1.a",
+        "title": "All PM staff who want Leadership Development Plans have one",
+        "targetText": "100%",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r36",
+        "page": 1,
+        "sourceNumber": "3.a",
+        "title": "Improve employee retention by building technical skills and training for MTs in order to perform in-house repairs.",
+        "targetText": "",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r37",
+        "page": 1,
+        "sourceNumber": "3.b",
+        "title": "Improve employee retention by ensuring comprehensive training plan for property management staff.",
+        "targetText": "90",
+        "startText": "1/1/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-property-management-p1-t1-r38",
+        "page": 1,
+        "sourceNumber": "3.c",
+        "title": "Create a PM Learning and Growth Dashboard to track growth and capacity building within the departments.",
+        "targetText": "",
+        "startText": "8/1/2026",
+        "endText": "12/31/2026n",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 1
+  },
+  {
+    "id": "workplan-real-estate-development",
+    "filename": "Real Estate Development.pdf",
+    "department": "Real Estate Development",
+    "sha256": "027e011c78c01bdeac8a29c6a2c86e302b34cae0a18dc0ae65a9357b4def3022",
+    "objectives": [
+      {
+        "id": "workplan-real-estate-development-p1-t1-r4",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Close and NTP Issued for Cornerstone Apartments - 100% closed by 12/31/26",
+        "targetText": "46 units",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r5",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Close and NTP Issued for College Ave Phase 2 - 10% construction complete by year end",
+        "targetText": "49 units",
+        "startText": "1/1/2026",
+        "endText": "10/15/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Prepare and submit 9% LIHTC Application for Smyrna Phase 2 (DE)",
+        "targetText": "48 units",
+        "startText": "1/1/2026",
+        "endText": "4/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r7",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Prepare and submit 9% LIHTC Application for Bucks Co (PA)",
+        "targetText": "55 units",
+        "startText": "5/1/2026",
+        "endText": "9/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r8",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Flats 5- 100% construction completion and placed in service",
+        "targetText": "53 units",
+        "startText": "5/1/2026",
+        "endText": "7/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r9",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "HOP-New Freedom, Landisville 1, St. Stanislaus",
+        "targetText": "82 units",
+        "startText": "1/2/2026",
+        "endText": "5/15/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r10",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Close and NTP Issued for NEPA Preservation Deal - 65% complete by year end",
+        "targetText": "123 units",
+        "startText": "1/2/2026",
+        "endText": "5/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r11",
+        "page": 1,
+        "sourceNumber": "8",
+        "title": "Develop portfolio mix metrics that can be used as part of the evaluation of prospective RED projects of acquisitions",
+        "targetText": "SOP/Policy",
+        "startText": "1/2/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r13",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Deliver Projected Development Fee Revenue as Planned",
+        "targetText": "$1,627,500",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r14",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Develop enterprise level capital strategy in collaboration with FIN for revolving loan to support early stage predevelopment (temporary loan to permanent financing).",
+        "targetText": "500,000",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Develop strategy to maximize permanent debt on LIHTC deals (consider Market Rate Units, internal reserves to increase income) 2026 baseline measurement - year over year increase moving forward.",
+        "targetText": ">1,000,000",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r16",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "NEPA Preservation deal achieved at closing within deferred dev target",
+        "targetText": "<25% deferred developer fee at closing",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r17",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Develop coordinated policy for protocol and coordinating between FIN, RED and CR to approach banks/foundations with aligned asks, prioritizing either development or operations based on donor fit and impact.",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Diversify deal structure by researching and identifying 5 new funding resources and 3 new deal structures to enable deals to be feasible in the uncertain financial times.",
+        "targetText": "Source Directory Complete",
+        "startText": "1/2/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r19",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Develop a policy of non-negotiables for LPAs",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Create Page Turn Policy and implement page turn protocol during design phase to reduce Change Orders by 60% from 2025 projects",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r22",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Implement schedule to ensure applications will be complete 1 week before due date",
+        "targetText": "Apps submitted 1-2 days early",
+        "startText": "1/2/2026",
+        "endText": "5/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r23",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Develop process so that all invoices will be processed within 7 days of receipt",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Reduce time to execute development related documents by implementing Electronic Signature Protocol for HDC RED staff and partners",
+        "targetText": "Save <8 hours per requisition",
+        "startText": "1/2/2026",
+        "endText": "3/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r1",
+        "page": 2,
+        "sourceNumber": "5",
+        "title": "Develop and implement contractor performance scorecards and debriefs after project completion.",
+        "targetText": "Scorecard matrix completed",
+        "startText": "1/2/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r2",
+        "page": 2,
+        "sourceNumber": "6",
+        "title": "Develop a compliance and policy checklist for RED deals at different stages (application, predevelopment, construction, and stabilization)",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "9/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r3",
+        "page": 2,
+        "sourceNumber": "7",
+        "title": "Develop strategy for preparing for financial and PM hand off protocol for development hand off post construction.",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r4",
+        "page": 2,
+        "sourceNumber": "8",
+        "title": "Create an evaluation tool to determine the efficiency of the new department structure.",
+        "targetText": "",
+        "startText": "10/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r6",
+        "page": 2,
+        "sourceNumber": "1",
+        "title": "Develop strategy and process for resident feedback loop (pre and post production) - inform revisions to HDC Design Guide Standards. Track number of design changes informed by residents.",
+        "targetText": "85% satisfaction rate",
+        "startText": "1/2/2026",
+        "endText": "3/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r7",
+        "page": 2,
+        "sourceNumber": "2",
+        "title": "Improve satisfaction with external and internal partners. Create a continuous improvement feed back loop to the RED department that includes Lessons Learned (GC, Architect, consultants, PM, RS, Finance, CR) after each project within 1 month of completion. Feedback to be included in Lessons Learned SOP.",
+        "targetText": "85% satisfaction rate",
+        "startText": "1/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r9",
+        "page": 2,
+        "sourceNumber": "1",
+        "title": "All team members who want Leadership Development Plans have them.",
+        "targetText": "100% complete",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r11",
+        "page": 2,
+        "sourceNumber": "2",
+        "title": "Develop strategy and process for PM and Maintenance representative input (pre and post production) - inform revisions to HDC Design Guide Standards.",
+        "targetText": "Design Guide Revision updated Annually",
+        "startText": "5/1/2026",
+        "endText": "8/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r12",
+        "page": 2,
+        "sourceNumber": "3",
+        "title": "Develop construction value engineering guidelines to assess tradeoffs without compromising long term quality - inform revisions to the HDC Design Guide Standards.",
+        "targetText": "Design Guide Revision updated Annually",
+        "startText": "5/1/2026",
+        "endText": "8/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-real-estate-development-p2-t1-r13",
+        "page": 2,
+        "sourceNumber": "4",
+        "title": "Reduce insurance risk and cost by building an insurance risk assessment into the design phase checklist to mitgate insurance risk - Builder's risk and property insurance.",
+        "targetText": "SOP Written and Deployed",
+        "startText": "1/2/2026",
+        "endText": "6/30/2026",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 2
+  },
+  {
+    "id": "workplan-resident-services",
+    "filename": "Resident Services.pdf",
+    "department": "Resident Services",
+    "sha256": "8603337023c97af31a92a95531f012686183f7c793bf5a9bfbdd45cc1e857819",
+    "objectives": [
+      {
+        "id": "workplan-resident-services-p1-t1-r4",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Improve timeliness, communication and satisfaction with residents and departments around rehabiliation projects.",
+        "targetText": "85%",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r6",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Leverage Strategic Partnerships to offer support and services to residents in priority areas (Housing Stability/Financial Capability/Health & Wellness)-Programs & Services & Funds",
+        "targetText": "75% connection to partners",
+        "startText": "3/3/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r8",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Partner with CR on grant writing to bring contribute revenue for Resident Services",
+        "targetText": "$100,000",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r9",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Partner with CR on supporting the launch of a faith based giving H&O Fundraising Campaign",
+        "targetText": "$25,000",
+        "startText": "8/1/2026",
+        "endText": "12/15/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r10",
+        "page": 1,
+        "sourceNumber": "5",
+        "title": "Reduce accounts recieveable by working with residents who are behind to collect the rent through a documented and tracked referral process & Reduce number of troubled properties to <9. Collaborate with FIN and PM on developing a strategy for troubled properties - focusing on a detailed plan for 3 properties per quarter",
+        "targetText": "<9 & $1,100,000",
+        "startText": "2/9/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r11",
+        "page": 1,
+        "sourceNumber": "6",
+        "title": "Work with residents who are at risk of eviction or non-renewal to maintain housing stability.",
+        "targetText": "99% / prevent 60 evictions",
+        "startText": "1/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r12",
+        "page": 1,
+        "sourceNumber": "7",
+        "title": "Develop strategy to increase home-buyer educational opportunities.",
+        "targetText": "80% total Postive Move-out rate; 25% move-outs for home-buying",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r13",
+        "page": 1,
+        "sourceNumber": "8",
+        "title": "Improve rent collection by working with residents who are behind to collect the rent through a documented and tracked referral process.",
+        "targetText": "95/98%",
+        "startText": "2/9/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r15",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Resolve issues with tracking and follow-up with residents to service delivery partners and document outcomes. Implement referral management system to track residents connected to Service Delivery Partners that will create monthly reports and identify resident trends that might need to be addressed. (Res. Connect or TBD System)",
+        "targetText": "60%",
+        "startText": "5/1/2026",
+        "endText": "8/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r16",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Improve the data integrity and analysis of resident services key performance indicators. (monthly and quarterly reports with trend analysis)",
+        "targetText": "n/a",
+        "startText": "4/1/2026",
+        "endText": "8/30/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r17",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Optimize functionality of resident referral system to streamline process, follow up with residents, and close the loop to increase housing stability.",
+        "targetText": "XX hours saved",
+        "startText": "5/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r18",
+        "page": 1,
+        "sourceNumber": "4",
+        "title": "Improve service delivery partnership connection (Develop a partnership impact map tied to priorities)",
+        "targetText": "# referrals per area",
+        "startText": "2/2/2026",
+        "endText": "3/1/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r20",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Improve participation in HDC organized programs and events by direct outreach and personal connection to residents.(Response rate in surveys - GOAL 30%)",
+        "targetText": "60%",
+        "startText": "3/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r21",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Leverage Strategic Partnerships to offer support and services to residents in priority areas. Improve service delivery partnership connection (Develop a partnership impact",
+        "targetText": "75%",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r22",
+        "page": 1,
+        "sourceNumber": "2b",
+        "title": "map tied to priorities) (Housing Stability/Financial Capability/Health & Wellness)- Programs & Services & Funds . Retool resident onboarding experience",
+        "targetText": "90%",
+        "startText": "4/1/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r24",
+        "page": 1,
+        "sourceNumber": "1",
+        "title": "Increase #Resident Service Coordinators Engaged in Leadership Development Plans",
+        "targetText": "50% (7)",
+        "startText": "4/6/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r25",
+        "page": 1,
+        "sourceNumber": "2",
+        "title": "Strengthen team building of department",
+        "targetText": "85%",
+        "startText": "2/2/2026",
+        "endText": "12/31/2026",
+        "authority": "early-draft-reference-only"
+      },
+      {
+        "id": "workplan-resident-services-p1-t1-r26",
+        "page": 1,
+        "sourceNumber": "3",
+        "title": "Retool and implement more streamlined and supportive onboarding experience",
+        "targetText": "90%",
+        "startText": "3/2/2026",
+        "endText": "5/1/2026",
+        "authority": "early-draft-reference-only"
+      }
+    ],
+    "pages": 1
+  }
+]

@@ -9,6 +9,7 @@
   const position=()=>data.positions.find(p=>p.id===selected);
   const active=()=>document.querySelector('[data-surface="weekly"][aria-pressed="true"]');
   const fresh=()=>({capacity:'',note:'',entries:[]});
+  function actionDetails(e){return `${e.projectReference?`<p>Project or workplan: ${esc(e.projectReference)}</p>`:''}${e.tasks.length?`<details><summary>View action items</summary><ul>${e.tasks.map(t=>`<li><strong>${esc(t.title)}</strong><p>${esc(data.positions.find(p=>p.id===t.owner)?.title||t.owner)} · Due ${esc(t.due)} · ${esc(t.status.replaceAll('_',' '))}</p></li>`).join('')}</ul></details>`:''}`;}
   const entry=()=>({id:crypto.randomUUID(),title:'',desiredResult:'',objectiveId:'',projectReference:'',due:M.addDays(data.week,4),status:'good',support:'',tasks:[]});
   function resetDraft(){draft=structuredClone(record()?.draft||fresh());dirty=false;}
   function message(text,error=false){const el=root.querySelector('#weekly-message');if(el){el.hidden=!text;el.textContent=text;el.classList.toggle('error',error);}}
@@ -32,7 +33,7 @@
   function rollup(){return `<div class="rollup-list">${data.positions.map(p=>{
     const r=data.records.find(x=>x.positionId===p.id),s=r?.submitted;
     const status=r?.exempt?'Exempt':s?(s.capacity==='capacity'?'No enterprise capacity':'Submitted'):r?.expected?'Not submitted':'No required submission';
-    return `<article class="rollup-card"><h3>${esc(p.title)}</h3><p>${esc(status)}${r?.firstAt?' · '+esc(instant(r.firstAt)):''}</p>${s?`<p>${esc(s.note)}</p>${s.entries.map(e=>`<div class="rollup-entry"><strong>${esc(e.title)}</strong><p>${esc(e.desiredResult)}</p><p>${esc(data.objectives.find(o=>o.id===e.objectiveId)?.title||'Department work')} · Due ${esc(e.due)}</p><p>${e.tasks.filter(t=>t.status==='complete').length} / ${e.tasks.length} action items complete</p>${e.support?`<p>Support: ${esc(e.support)}</p>`:''}</div>`).join('')}`:''}${r?.draft&&r.revision!==r.submittedRevision?'<p class="weekly-note">Unpublished draft exists.</p>':''}</article>`;
+    return `<article class="rollup-card"><h3>${esc(p.title)}</h3><p>${esc(status)}${r?.firstAt?' · '+esc(instant(r.firstAt)):''}</p>${s?`<p>${esc(s.note)}</p>${s.entries.map(e=>`<div class="rollup-entry"><strong>${esc(e.title)}</strong><p>${esc(e.desiredResult)}</p><p>${esc(data.objectives.find(o=>o.id===e.objectiveId)?.title||'Department work')} · Due ${esc(e.due)}</p><p>${e.tasks.filter(t=>t.status==='complete').length} / ${e.tasks.length} action items complete</p>${actionDetails(e)}${e.support?`<p>Support: ${esc(e.support)}</p>`:''}</div>`).join('')}`:''}${r?.draft&&r.revision!==r.submittedRevision?'<p class="weekly-note">Unpublished draft exists.</p>':''}</article>`;
     }).join('')}</div>`;}
   function review(){return `<section class="weekly-panel"><h3>${esc(data.week.slice(0,4))} position review</h3><div class="review-table"><table><thead><tr><th>Position</th><th>Year change</th><th>Current points</th></tr></thead><tbody>${data.positions.filter(p=>p.points!==null).map(p=>`<tr><td>${esc(p.title)}</td><td>${data.events.filter(e=>e.positionId===p.id).reduce((s,e)=>s+e.points,0)}</td><td>${p.points}</td></tr>`).join('')}</tbody></table></div><p>Annual totals follow the cycle’s Monday date. Points never reset automatically.</p></section>`;}
   function render(){
