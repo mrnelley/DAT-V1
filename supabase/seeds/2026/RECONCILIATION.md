@@ -7,7 +7,7 @@
 - strategicObjectives: 42
 - strategicTargets: 19
 - KPISourceRows: 66
-- metricDefinitions: 137
+- metricDefinitions: 145
 - Q1ArchivedObjectives: 24
 - Q2ArchivedObjectives: 14
 - Q3Objectives: 14

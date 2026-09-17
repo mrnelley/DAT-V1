@@ -40,7 +40,7 @@ export function createUserHandler({createClient,env}) {
       }
       if(payload.action!=='create')return respond(400,{error:'Unknown action.'});
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.requestId||''))return respond(400,{error:'A request ID is required.'});
-      const roles=['admin','executive','elt','director','staff','external'];
+      const roles=['admin','executive','elt','olt','director','staff','external'];
       if(payload.positionIds!==undefined){
         if(!Array.isArray(payload.positionIds)||!payload.positionIds.length||payload.positionIds.some(id=>typeof id!=='string'))return respond(400,{error:'Select at least one position.'});
         const positionData=await user.rpc('compass_admin_positions');

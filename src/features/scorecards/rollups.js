@@ -1,18 +1,7 @@
 import { departmentMetrics, pillars, strategicMetrics, revenueMix } from '../planning/catalog.js';
+import { approvedAnnualDomains, annualMetricIds } from './annual2026.js';
 
-const ids = (prefix, indexes) => indexes.map(i => `${prefix}-${i}`);
-export const annualDomains = [
-  ['Resident Impact', ids('resident-services',[1,2,3,4,5,6,7,8,9,10,11,12,13])],
-  ['Financial Health', ids('finance',[1,2,3,4,8,12,13])],
-  ['Talent Management', departmentMetrics.filter(m=>m.department==='Human Resources').map(m=>m.id)],
-  ['Pipeline', ids('real-estate-development',[1,2,3,4,5,6,7,9])],
-  ['Portfolio Performance', [...departmentMetrics.filter(m=>m.department==='Property Management' && m.id!=='property-management-5').map(m=>m.id),...ids('finance',[7,9,10,11])]],
-  ['Brand Visibility', ids('community-relations',[13,14,15,16,17,18])],
-  ['Revenue', ['property-management-5','asset-management-fees','real-estate-development-8','finance-5','finance-6',...ids('community-relations',[1,6,7,8,9,10,11,12])]],
-  ['Advocacy', []],
-  ['Operational Efficiency', ids('operations',[1,2,3,4,5,6,7])],
-  ['Enterprise Priorities', []],
-].map(([name,metricIds])=>({name,metricIds}));
+export const annualDomains = approvedAnnualDomains.map(d=>({...d,metricIds:d.metrics.map(m=>m.id)}));
 
 // These are direct measures. Blended or cumulative outcomes remain independently reported.
 const bindings = {'strategic-metric-5':'human-resources-1','strategic-metric-6':'human-resources-12','strategic-metric-10':'finance-1','strategic-metric-18':'resident-services-2'};
@@ -50,6 +39,12 @@ export function initiativeRollups(data){
 export function annualRollups(data){
   return annualDomains.map(d=>({...d,metrics:d.metricIds.map(id=>{
     const readings=observations(data,id),target=data.targets?.find(t=>t.metricId===id);
-    return {...departmentMetrics.find(m=>m.id===id),readings,target,status:target&&readings.length===1?targetStatus(Number(readings[0].value),target):'pending'};
+    return {...d.metrics.find(m=>m.id===id),readings,target,status:target&&readings.length===1?targetStatus(Number(readings[0].value),target):'pending'};
   })})).map(d=>({...d,status:d.name==='Enterprise Priorities'?groupStatus(initiativeRollups(data)):groupStatus(d.metrics)}));
+}
+export function supplementalRollups(data){
+  return departmentMetrics.filter(m=>!annualMetricIds.has(m.id)&&!/^community-relations-[2-5]$/.test(m.id)).map(m=>{
+    const readings=observations(data,m.id),target=data.targets?.find(t=>t.metricId===m.id);
+    return {...m,readings,target,status:target&&readings.length===1?targetStatus(Number(readings[0].value),target):'pending'};
+  });
 }

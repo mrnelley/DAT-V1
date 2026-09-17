@@ -11,8 +11,11 @@ test('a vacant position is configured without collecting an email or creating an
  const store={positions:async()=>data,savePosition:async p=>{saved.push(p);const row={...p,id:'permanent-id',revision:1,occupants:[],read_scorecards:p.readScorecards};data.positions.push(row);return row;}};
  await w.positionUI.mountPositions(panel,store,{departments:['Finance']});panel.querySelector('#new-position').click();
  assert.equal(panel.querySelector('[type="email"]'),null);const form=panel.querySelector('form');form.elements.title.value='Finance lead';form.elements.department.value='Finance';form.elements['feature-annual'].value='false';
+ form.querySelector('[value="olt"]').checked=true;form.querySelector('[value="director"]').checked=true;
+ assert.equal(form.querySelector('[value="olt"]').parentElement.textContent,'OLT');assert.equal(form.querySelector('[value="director"]').parentElement.textContent,'Department Director');
  await form.onsubmit({preventDefault(){}});
  assert.equal(saved[0].title,'Finance lead');assert.equal(saved[0].features.annual,false);assert.equal('email' in saved[0],false);
+ assert.ok(saved[0].roles.includes('olt')&&saved[0].roles.includes('director'));
  assert.match(panel.textContent,/Vacant/);assert.match(panel.textContent,/Position saved/);dom.window.close();
 });
 test('metric governance assigns the same measure to multiple positions with separate write access',async()=>{

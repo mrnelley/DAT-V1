@@ -5,15 +5,17 @@ import {strategyObjectives,strategyAliases} from '../src/features/planning/strat
 import {q1,q2,q3,departmentQ1,continuity} from '../supabase/seeds/2026/quarterly-source.mjs';
 import {descriptions} from '../supabase/seeds/2026/strategy-descriptions.mjs';
 import {validateSeed} from './validate-2026-seed.mjs';
+import {approvedAnnualDomains} from '../src/features/scorecards/annual2026.js';
+import {properties} from '../supabase/seeds/2026/properties.mjs';
 import {apply2026Decisions} from '../supabase/seeds/2026/decisions.mjs';
 
 const dir=new URL('../supabase/seeds/2026/',import.meta.url);
 const source=JSON.parse(readFileSync(new URL('kpi-source.json',dir),'utf8'));
 const departments={HR:'Human Resources',PM:'Property Management',RS:'Resident Services',CR:'Community Relations',RED:'Real Estate Development',FIN:'Finance'};
 const positionRows=[
- ['hr','Director of Human Resources','HR',['director']],['pm','Director of Property Management','PM',['director']],
- ['rs','Director of Resident Services','RS',['director']],['cr','Director of Community Relations','CR',['director']],
- ['red','SVP of Real Estate Development','RED',['elt']],['project-management','Director of Project Management','RED',['director']],
+ ['hr','Director of Human Resources','HR',['director','olt']],['pm','Director of Property Management','PM',['director','olt']],
+ ['rs','Director of Resident Services','RS',['director','olt']],['cr','Director of Community Relations','CR',['director','olt']],
+ ['red','SVP of Real Estate Development','RED',['elt']],['project-management','Director of Project Management','RED',['director','olt']],
  ['coo','Chief Operating Officer',null,['executive','elt']],['cfo','Chief Financial Officer','FIN',['executive','elt']],
  ['mei','Manager, Enterprise Initiatives',null,['staff']],['ceo','Chief Executive Officer',null,['executive','elt']],
 ];
@@ -28,7 +30,7 @@ function assignment(code){
 const positions=positionRows.map(([key,title,dept,roles])=>({id:positionId(key),title,department:departments[dept]||null,roles,
  rolesStatus:key==='mei'?'admin-account-privilege-separate':'configured-role-type',
  importIdentity:{resolveExistingBy:'exact title and department',preserveExistingId:true,onAmbiguity:'stop'},
- active:true,occupants:[],requiredWeekly:roles.some(r=>['executive','elt','director'].includes(r)),
+ active:true,occupants:[],requiredWeekly:roles.some(r=>['executive','elt','olt'].includes(r)),
  scoringBegins:'Only when an active confirmed person is assigned; no retroactive scoring from this seed'}));
 const issues=[];
 function issue(id,scope,message){issues.push({id,scope,message,resolution:null,blocks:'affected-record-or-calculation'});return id;}
@@ -239,7 +241,7 @@ const seed={format:'compass-annual-seed',formatVersion:1,year:2026,status:'revie
   targets:strategicMetrics, revenueMix,financeWorkplanLinks},
  contributionCategories:contributedRevenueCategories.map(({id,label})=>({id,label})),
  contributedRevenue:{metricId:'community-relations-1',entryCategoryKey:'categoryId',separateProgramKey:'programId',programs:[{id:'resident-services-general',title:'Resident Services General Operating',target:100000},{id:'resident-services-ho',title:'H&O Fund',target:25000}],aggregation:'Sum categorized contribution entries once; program tags and category summaries are subsets, never additional revenue.'},
- metricDefinitions,kpiDefinitions,annualTargets,metricPositionGrants,quarterlyObjectives,quarterlyTargets:targets,reportedFacts,departmentWorkplanPriorities:workplanPriorities,
+ annualScorecard:{year:2026,source:"2026_annual_scorecard.pdf",domains:approvedAnnualDomains,autoIncludeWorkplanMetrics:false},properties,metricDefinitions,kpiDefinitions,annualTargets,metricPositionGrants,quarterlyObjectives,quarterlyTargets:targets,reportedFacts,departmentWorkplanPriorities:workplanPriorities,
  confirmedOwnershipDecisions:[{department:'Real Estate Development',accountablePositionId:'position-red',sharedMetricPositionId:'position-project-management',source:'user-confirmed-follow-up'}],
  objectiveContinuity:continuity.map(([from,to])=>({from,to,status:'proposed-from-work-scope'})),
  historicalWeeklySubmissions:[],people:[],positionOccupancies:[],points:[],reviewItems:issues,

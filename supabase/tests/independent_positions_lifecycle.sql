@@ -10,10 +10,10 @@ begin begin execute statement; exception when others then return; end; raise exc
 select set_config('test.auth_count',(select count(*)::text from auth.users),true);
 set local role authenticated;
 select set_config('request.jwt.claim.sub','81000000-0000-4000-8000-000000000001',true);
-select public.compass_admin_save_position('{"id":"test-position-finance","title":"Position test Finance","department":"Finance","roles":["director"],"features":{"annual":false}}');
+select public.compass_admin_save_position('{"id":"test-position-finance","title":"Position test Finance","department":"Finance","roles":["director","olt"],"features":{"annual":false}}');
 select public.compass_admin_save_position('{"id":"test-position-secondary","title":"Position test Secondary","department":"Finance","roles":["staff"]}');
-select public.compass_admin_save_position('{"id":"test-position-vacant","title":"Position test Vacant","department":"Finance","roles":["director"]}');
-select pg_temp.reject($q$select public.compass_admin_save_position('{"id":"test-position-finance","title":"Stale rename","roles":["director"]}')$q$);
+select public.compass_admin_save_position('{"id":"test-position-vacant","title":"Position test Vacant","department":"Finance","roles":["director","olt"]}');
+select pg_temp.reject($q$select public.compass_admin_save_position('{"id":"test-position-finance","title":"Stale rename","roles":["director","olt"]}')$q$);
 reset role;
 do $$ begin if (select count(*) from auth.users)<>current_setting('test.auth_count')::integer then raise exception 'Position creation created an Auth user'; end if; end $$;
 set local role authenticated;
@@ -44,9 +44,9 @@ select set_config('request.jwt.claim.sub','81000000-0000-4000-8000-000000000003'
 select public.compass_save_metric_entry('{"id":"82000000-0000-4000-8000-000000000001","metricId":"finance-1","department":"Finance","period":"2099-01","value":11,"description":"Shared edit","expectedRevision":1}');
 select pg_temp.reject($q$select public.compass_save_metric_entry('{"id":"82000000-0000-4000-8000-000000000001","metricId":"finance-1","department":"Finance","period":"2099-01","value":12,"description":"Stale overwrite","expectedRevision":1}')$q$);
 select pg_temp.reject('select public.compass_admin_positions()');
-select pg_temp.reject($q$select public.compass_admin_save_position('{"title":"Forbidden","roles":["director"]}')$q$);
+select pg_temp.reject($q$select public.compass_admin_save_position('{"title":"Forbidden","roles":["director","olt"]}')$q$);
 select set_config('request.jwt.claim.sub','81000000-0000-4000-8000-000000000001',true);
-select public.compass_admin_save_position('{"id":"test-position-finance","title":"Position test Finance renamed","department":"Finance","roles":["director"],"expectedRevision":1}');
+select public.compass_admin_save_position('{"id":"test-position-finance","title":"Position test Finance renamed","department":"Finance","roles":["director","olt"],"expectedRevision":1}');
 select public.compass_set_metric_member('{"userId":"81000000-0000-4000-8000-000000000002","roles":[],"positions":["test-position-secondary"]}');
 select set_config('request.jwt.claim.sub','81000000-0000-4000-8000-000000000002',true);
 select set_config('request.headers','{"x-compass-position":"test-position-finance"}',true);

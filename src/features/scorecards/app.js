@@ -1,10 +1,11 @@
+import { mountWorkspace, avatarMarkup } from '../profile/workspace.js';
 import { mountCommandCenter } from '../admin/commandCenter.js';
 import { describeAuthCallback } from '../metric-entry/authSession.js';
 import { mountSignIn } from '../metric-entry/signInView.js';
 import { pillars, strategicMetrics, departmentMetrics, quarterlyObjectives } from '../planning/catalog.js';
 import { strategyAliases, strategyObjectives } from '../planning/strategyObjectives.js';
 import { dictionaryTerms } from '../../data/learnDictionary.js';
-import { annualRollups, strategicRollups, initiativeRollups, mixRollup } from './rollups.js';
+import { annualRollups, strategicRollups, initiativeRollups, mixRollup, supplementalRollups } from './rollups.js';
 
 const outlet=document.querySelector('#surface'),store=window.CompassMetricStore;
 let root=outlet,authPhase='loading',sessionUser=null;
@@ -16,7 +17,7 @@ const monthNow=()=>new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digi
 let view=location.hash.slice(1)||'strategic',month=monthNow(),token=0,access=null,data=null,groups=[];
 if(describeAuthCallback(location).active)view='strategic';
 if(view==='record-progress')view='metrics';
-if(!['strategic','annual','weekly','metrics','learn','admin'].includes(view))view='strategic';
+if(!['strategic','annual','weekly','metrics','learn','admin','profile'].includes(view))view='strategic';
 const workspaceNav=document.querySelector('nav[aria-label="Compass"]');
 const positionLabel=document.createElement('label');positionLabel.className='position-switch';positionLabel.hidden=true;
 positionLabel.innerHTML='Position<select aria-label="Working position"></select>';document.querySelector('.account').append(positionLabel);
@@ -52,8 +53,11 @@ async function identity(expected=token){
   positionLabel.hidden=!(access.positions?.length>1);
   positionLabel.querySelector('select').innerHTML=(access.positions||[]).map(p=>`<option value="${esc(p.id)}" ${p.id===access.positionId?'selected':''}>${esc(p.title)}</option>`).join('');
   const profile=session.user?.user_metadata||{};
+  const profileLink=document.querySelector('.profile-link');
+  if(profileLink)profileLink.disabled=access.features?.myDashboard!==true||!!store.workspaceSession?.();
   const selected=store.workspaceSession?.();
-  document.querySelector('.account strong').textContent=selected?.name||selected?.email||profile.full_name||profile.name||session.user?.email||access.positionTitle;
+  document.querySelector('.account strong').textContent=selected?.name||selected?.email||access.profile?.displayName||profile.full_name||profile.name||session.user?.email||access.positionTitle;
+  document.querySelector('.avatar').innerHTML=avatarMarkup(selected?null:access.profile?.photo,document.querySelector('.account strong').textContent);
   document.querySelector('.account small').textContent=access.positionTitle+' · Connected to Compass';
   document.querySelector('[data-surface="admin"]').hidden=!access.admin;
   document.querySelector('[data-surface="weekly"]').hidden=!access.weekly;
@@ -94,7 +98,12 @@ function showInitiatives(){const items=initiativeRollups(data);detail('Enterpris
 function scorecards(){
   const strategic=view==='strategic';groups=strategic?strategicRollups(data):annualRollups(data);
   const priorities=initiativeRollups(data),reported=priorities.filter(p=>p.updates.length).length;
-  root.innerHTML=`<div class="hero"><div><h2>${strategic?'2030 Plan Scorecard':'Annual Scorecard'}</h2><p>${strategic?'Long-term outcomes':'Department measures and enterprise priorities'}</p></div><div class="hero-meta"><label>Reporting month <input id="report-month" type="month" value="${esc(month)}" required></label><div class="health-signals">${groups.map((g,i)=>`<button class="health-signal ${g.status}" data-group="${i}" aria-label="${esc(g.name)}: ${labels[g.status]}" title="${esc(g.name)}: ${labels[g.status]}"><span class="dot"></span></button>`).join('')}</div></div></div><div class="legend">${Object.keys(labels).map(s=>badge(s)).join('')}</div><p class="footnote">${strategic?'Signals compare reported values with 2030 targets.':'Values are reported for the selected month. Department measures await approved targets before receiving a status.'}</p><div class="cards ${strategic?'':'annual'}">${groups.map((g,i)=>`<article class="card"><button class="card-head" data-group="${i}"><span class="group-title"><h3>${esc(g.name)}</h3></span>${badge(g.status)}</button><div class="metrics">${g.metrics.map((m,j)=>`<button class="metric ${m.status}" data-item="${i}:${j}"><span class="metric-name"><span class="dot"></span>${esc(m.name)}</span><span class="metric-value"><strong>${m.mix?'View mix':m.readings.length===1?number(m.readings[0].value):m.readings.length?m.readings.length+' department updates':'Not reported'}</strong></span><span>${strategic?esc(targetText(m.target)):''}</span><span class="chevron">›</span></button>`).join('')}${g.name==='Enterprise Priorities'?`<button class="linked" data-priorities><strong>Priority initiatives on track</strong><span>${priorities.filter(p=>p.status==='good').length} / ${priorities.length}</span></button><p class="footnote">${reported} of ${priorities.length} have linked submissions this week.</p>`:g.name==='Advocacy'?'<p class="footnote">Advocacy work is tracked through linked enterprise priorities across departments.</p>':''}${g.name==='Revenue'?'<button class="linked" data-mix><strong>Revenue mix and contribution categories</strong><span>›</span></button>':''}</div></article>`).join('')}</div>`;
+  root.innerHTML=`<div class="hero"><div><h2>${strategic?'2030 Plan Scorecard':'Annual Scorecard'}</h2><p>${strategic?'Long-term outcomes':'2026 scorecard measures and enterprise priorities'}</p></div><div class="hero-meta"><label>Reporting month <input id="report-month" type="month" value="${esc(month)}" required></label><div class="health-signals">${groups.map((g,i)=>`<button class="health-signal ${g.status}" data-group="${i}" aria-label="${esc(g.name)}: ${labels[g.status]}" title="${esc(g.name)}: ${labels[g.status]}"><span class="dot"></span></button>`).join('')}</div></div></div><div class="legend">${Object.keys(labels).map(s=>badge(s)).join('')}</div><p class="footnote">${strategic?'Signals compare reported values with 2030 targets.':'Values are reported for the selected month. Department measures await approved targets before receiving a status.'}</p><div class="cards ${strategic?'':'annual'}">${groups.map((g,i)=>`<article class="card"><button class="card-head" data-group="${i}"><span class="group-title"><h3>${esc(g.name)}</h3></span>${badge(g.status)}</button><div class="metrics">${g.metrics.map((m,j)=>`<button class="metric ${m.status}" data-item="${i}:${j}"><span class="metric-name"><span class="dot"></span>${esc(m.name)}</span><span class="metric-value"><strong>${m.mix?'View mix':m.readings.length===1?number(m.readings[0].value):m.readings.length?m.readings.length+' department updates':'Not reported'}</strong></span><span>${strategic?esc(targetText(m.target)):''}</span><span class="chevron">›</span></button>`).join('')}${g.name==='Enterprise Priorities'?`<button class="linked" data-priorities><strong>Priority initiatives on track</strong><span>${priorities.filter(p=>p.status==='good').length} / ${priorities.length}</span></button><p class="footnote">${reported} of ${priorities.length} have linked submissions this week.</p>`:g.name==='Advocacy'?'<p class="footnote">Advocacy work is tracked through linked enterprise priorities across departments.</p>':''}${g.name==='Revenue'?'<button class="linked" data-mix><strong>Revenue mix and contribution categories</strong><span>›</span></button>':''}</div></article>`).join('')}</div>`;
+  if(!strategic){
+    const extras=supplementalRollups(data);
+    root.insertAdjacentHTML('beforeend',`<section class="supplemental-measures" aria-labelledby="other-measures-title"><h2 id="other-measures-title">Additional 2026 measures</h2><p>Department and workplan measures outside the annual scorecard.</p>${[...new Set(extras.map(m=>m.department||m.trackingArea))].map(department=>`<details class="card learn-card"><summary>${esc(department)}</summary>${extras.filter(m=>(m.department||m.trackingArea)===department).map(m=>`<button class="linked" data-extra="${esc(m.id)}"><strong>${esc(m.name)}</strong><span>${m.readings.length===1?number(m.readings[0].value):m.readings.length?m.readings.length+' department updates':'Not reported'}</span>${badge(m.status)}</button>`).join('')}</details>`).join('')}</section>`);
+    root.querySelectorAll('[data-extra]').forEach(b=>b.onclick=()=>{const m=extras.find(m=>m.id===b.dataset.extra);detail(m.name,readings(m.readings));});
+  }
   root.querySelector('#report-month').onchange=e=>{if(e.target.value){month=e.target.value;render();}};
   root.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{const g=groups[Number(b.dataset.group)];if(g.name==='Enterprise Priorities'){showInitiatives();return;}detail(g.name,g.metrics.map(m=>`<section class="detail-section"><h3>${esc(m.name)}</h3>${readings(m.readings)}${m.target?`<p>${view==='strategic'?'2030':'Annual'} target: ${esc(targetText(m.target))}</p>`:''}</section>`).join('')||'<p>Related weekly work appears under Enterprise Priorities.</p>');});
   root.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>{const [i,j]=b.dataset.item.split(':').map(Number),m=groups[i].metrics[j];detail(m.name,m.mix?showMix():`${readings(m.readings)}${m.target?`<p class="note">2030 target: ${esc(targetText(m.target))}</p>`:''}<p class="detail-summary">${esc(month)} · ${m.readings.length?'Saved metric updates.':'Record a metric update to begin tracking this measure.'}</p>`);});
@@ -105,9 +114,9 @@ async function render(){
   if(dialog.open)dialog.close();
   root=document.createElement('div');outlet.replaceChildren(root);
   const current=++token;document.querySelectorAll('[data-surface]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.surface===view)));
-  document.querySelector('.intro h1').textContent=({metrics:'Record progress',weekly:'Weekly accountability',admin:'Admin',learn:'Learn'})[view]||'Enterprise scorecards';
+  document.querySelector('.intro h1').textContent=({metrics:'Record progress',weekly:'Weekly accountability',admin:'Admin',learn:'Learn',profile:'My workspace'})[view]||'Enterprise scorecards';
   root.innerHTML='<p role="status">Loading Compass…</p>';
-  workspaceNav.hidden=true;signOutButton.hidden=true;positionLabel.hidden=true;
+  workspaceNav.hidden=true;signOutButton.hidden=true;positionLabel.hidden=true;document.querySelector('.profile-link').disabled=true;
   try{
     await identity(current);if(current!==token)return;
     if(!access){
@@ -119,6 +128,10 @@ async function render(){
     workspaceNav.hidden=false;signOutButton.hidden=false;
     const selectedTab=workspaceNav.querySelector(`[data-surface="${view}"]`);
     if(selectedTab?.hidden){const available=[...workspaceNav.querySelectorAll('[data-surface]')].find(b=>!b.hidden);if(available){view=available.dataset.surface;history.replaceState(null,'','/#'+view);await render();return;}}
+    if(view==='profile'){
+      if(access.features?.myDashboard!==true||store.workspaceSession?.()){root.innerHTML='<p>Your working dashboard has not been enabled yet.</p>';return;}
+      await mountWorkspace(root,store);return;
+    }
     if(view==='learn'){learn();return;}
     if(view==='metrics'){await window.CompassMetricEntry.mount(root);return;}
     if(access?.features?.[view]===false&&view!=='admin'){root.innerHTML='<p>This section is hidden for your account. Choose another section.</p>';return;}
@@ -127,11 +140,12 @@ async function render(){
     data=await store.scorecards(month);if(current===token)scorecards();
   }catch(error){if(current===token){signOutButton.hidden=!sessionUser;root.innerHTML=`${authPhase==='access-check'?'<h2>Your Microsoft sign-in is complete</h2><p>Compass could not open your assigned workspace. Contact Manager, Enterprise Initiatives if retrying does not resolve this.</p>':''}<p role="alert">${esc(error.message)}</p><button class="quiet-button" data-retry>Try again</button>`;}}
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-surface]');if(b){view=b.dataset.surface;history.replaceState(null,'','#'+view);render();}if(e.target.closest('[data-retry]'))render();});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-surface]');if(b&&!b.disabled){view=b.dataset.surface;history.replaceState(null,'','#'+view);render();}if(e.target.closest('[data-retry]'))render();});
 store.onAuthChange?.((event,session)=>{
   const nextUser=session?.user?.id||(session?'authenticated':null);
   if(event==='SIGNED_OUT'||(nextUser!==sessionUser&&event!=='INITIAL_SESSION')){access=null;data=null;sessionUser=nextUser;render();}
 });
+window.addEventListener('compass-profile-updated',()=>identity());
 window.addEventListener('compass-auth-required',()=>render());
 window.addEventListener('compass-position-changed',()=>{access=null;data=null;render();});
 window.addEventListener('compass-workspace-changed',()=>{

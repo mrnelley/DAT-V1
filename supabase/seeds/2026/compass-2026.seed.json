@@ -86,7 +86,8 @@
       "title": "Director of Human Resources",
       "department": "Human Resources",
       "roles": [
-        "director"
+        "director",
+        "olt"
       ],
       "rolesStatus": "configured-role-type",
       "importIdentity": {
@@ -104,7 +105,8 @@
       "title": "Director of Property Management",
       "department": "Property Management",
       "roles": [
-        "director"
+        "director",
+        "olt"
       ],
       "rolesStatus": "configured-role-type",
       "importIdentity": {
@@ -122,7 +124,8 @@
       "title": "Director of Resident Services",
       "department": "Resident Services",
       "roles": [
-        "director"
+        "director",
+        "olt"
       ],
       "rolesStatus": "configured-role-type",
       "importIdentity": {
@@ -140,7 +143,8 @@
       "title": "Director of Community Relations",
       "department": "Community Relations",
       "roles": [
-        "director"
+        "director",
+        "olt"
       ],
       "rolesStatus": "configured-role-type",
       "importIdentity": {
@@ -176,7 +180,8 @@
       "title": "Director of Project Management",
       "department": "Real Estate Development",
       "roles": [
-        "director"
+        "director",
+        "olt"
       ],
       "rolesStatus": "configured-role-type",
       "importIdentity": {
@@ -1104,6 +1109,434 @@
     ],
     "aggregation": "Sum categorized contribution entries once; program tags and category summaries are subsets, never additional revenue."
   },
+  "annualScorecard": {
+    "year": 2026,
+    "source": "2026_annual_scorecard.pdf",
+    "domains": [
+      {
+        "name": "Resident Impact",
+        "metrics": [
+          {
+            "id": "annual-rs-utilization-rate",
+            "name": "Resident Services Utilization Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "resident-services-2",
+            "name": "Resident Experience Score",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "resident-services-6",
+            "name": "Household (Resident) Engagement Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "resident-services-1",
+            "name": "Resident Satisfaction Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "resident-services-3",
+            "name": "Housing Stability Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "rs-positive-move-out-rate",
+            "name": "Positive Move-Out Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          },
+          {
+            "id": "annual-service-partner-connection-rate",
+            "name": "Service Delivery Partner Connection Rate",
+            "department": "Resident Services",
+            "unit": "percent"
+          }
+        ]
+      },
+      {
+        "name": "Financial Health",
+        "metrics": [
+          {
+            "id": "community-relations-8",
+            "name": "Predevelopment Capital Raised",
+            "department": "Community Relations",
+            "unit": "USD"
+          },
+          {
+            "id": "finance-3",
+            "name": "Accounts Receivable Reduction",
+            "department": "Finance",
+            "unit": "USD"
+          },
+          {
+            "id": "finance-1",
+            "name": "Days Cash on Hand",
+            "department": "Finance",
+            "unit": "days"
+          },
+          {
+            "id": "finance-parent-noi",
+            "name": "Net Operating Income",
+            "department": "Finance",
+            "unit": "USD"
+          },
+          {
+            "id": "finance-4",
+            "name": "Current Ratio",
+            "department": "Finance",
+            "unit": "ratio"
+          }
+        ]
+      },
+      {
+        "name": "Talent Management",
+        "metrics": [
+          {
+            "id": "human-resources-1",
+            "name": "Employee Satisfaction Rate",
+            "department": "Human Resources",
+            "unit": "percent"
+          },
+          {
+            "id": "human-resources-3",
+            "name": "Employee Engagement Rate",
+            "department": "Human Resources",
+            "unit": "percent"
+          },
+          {
+            "id": "hr-retention-12-month",
+            "name": "Employee Retention Rate (12-month)",
+            "department": "Human Resources",
+            "unit": "percent"
+          }
+        ]
+      },
+      {
+        "name": "Pipeline",
+        "metrics": [
+          {
+            "id": "annual-new-units-acquired-placed",
+            "name": "New Units Acquired or Placed in Service",
+            "department": "Real Estate Development",
+            "unit": "units"
+          },
+          {
+            "id": "real-estate-development-6",
+            "name": "Existing Units Rehabbed",
+            "department": "Real Estate Development",
+            "unit": "units"
+          },
+          {
+            "id": "annual-units-under-development",
+            "name": "Units Under Development (LIHTC Applied/Awarded)",
+            "department": "Real Estate Development",
+            "unit": "units"
+          },
+          {
+            "id": "real-estate-development-7",
+            "name": "Units in Closing",
+            "department": "Real Estate Development",
+            "unit": "units"
+          }
+        ]
+      },
+      {
+        "name": "Portfolio Performance",
+        "metrics": [
+          {
+            "id": "property-management-1",
+            "name": "Events of Noncompliance",
+            "department": "Property Management",
+            "unit": "count"
+          },
+          {
+            "id": "property-management-2",
+            "name": "Rent Collection Rate",
+            "department": "Property Management",
+            "unit": "percent"
+          },
+          {
+            "id": "property-management-3",
+            "name": "Vacancy Rate",
+            "department": "Property Management",
+            "unit": "percent"
+          },
+          {
+            "id": "finance-6",
+            "name": "Payment of Deferred Developer Fee",
+            "department": "Finance",
+            "unit": "USD"
+          },
+          {
+            "id": "finance-7",
+            "name": "Vacancy Loss",
+            "department": "Finance",
+            "unit": "USD"
+          }
+        ]
+      },
+      {
+        "name": "Brand Visibility",
+        "metrics": [
+          {
+            "id": "annual-resident-stories",
+            "name": "Resident Stories Collected & Shared",
+            "department": "Community Relations",
+            "unit": "count"
+          },
+          {
+            "id": "annual-positive-news",
+            "name": "Positive News Mentions",
+            "department": "Community Relations",
+            "unit": "count"
+          },
+          {
+            "id": "community-relations-13",
+            "name": "Brand Visibility & Reach Score",
+            "department": "Community Relations",
+            "unit": "percent"
+          }
+        ]
+      },
+      {
+        "name": "Revenue",
+        "metrics": [
+          {
+            "id": "property-management-5",
+            "name": "Property Management Fee",
+            "department": "Finance",
+            "unit": "USD"
+          },
+          {
+            "id": "real-estate-development-8",
+            "name": "Developer Fee Earned",
+            "department": "Real Estate Development",
+            "unit": "USD"
+          },
+          {
+            "id": "community-relations-1",
+            "name": "Contributed Revenue",
+            "department": "Community Relations",
+            "unit": "USD"
+          },
+          {
+            "id": "finance-5",
+            "name": "Excess Cash to Parent",
+            "department": "Finance",
+            "unit": "USD"
+          }
+        ]
+      },
+      {
+        "name": "Advocacy",
+        "metrics": [
+          {
+            "id": "annual-policy-engagements",
+            "name": "Engagements with Policy Decision-Makers",
+            "department": "Community Relations",
+            "unit": "count"
+          },
+          {
+            "id": "annual-testimonies-op-eds",
+            "name": "Testimonies / Op-Eds Delivered",
+            "department": "Community Relations",
+            "unit": "count"
+          }
+        ]
+      },
+      {
+        "name": "Operational Efficiency",
+        "metrics": [
+          {
+            "id": "operations-3",
+            "name": "User Engagement Rate (CRM & AM)",
+            "department": null,
+            "unit": "percent"
+          },
+          {
+            "id": "finance-technology-cost-savings",
+            "name": "Cost Savings from Technology",
+            "department": "Finance",
+            "unit": "USD"
+          }
+        ]
+      },
+      {
+        "name": "Enterprise Priorities",
+        "metrics": []
+      }
+    ],
+    "autoIncludeWorkplanMetrics": false
+  },
+  "properties": [
+    {
+      "name": "1528 West Apts",
+      "code": "1528",
+      "street": "1528 W Hamilton St",
+      "city": "Allentown",
+      "state": "PA",
+      "postalCode": "18102",
+      "population": "Senior 55+ Elderly & Handicapped",
+      "units": null
+    },
+    {
+      "name": "Beach Run",
+      "code": "BEACH",
+      "street": "325 N. Center St.",
+      "city": "Fredericksburg",
+      "state": "PA",
+      "postalCode": "17026",
+      "population": "General",
+      "units": null
+    },
+    {
+      "name": "Brandywine Ctr",
+      "code": "BHH",
+      "street": "744 E. Lincoln Hwy",
+      "city": "Coatesville",
+      "state": "PA",
+      "postalCode": "19320",
+      "population": "Senior 62+",
+      "units": null
+    },
+    {
+      "name": "Claymont Street Apartments",
+      "code": "CLAY",
+      "street": "1300 E. 16th St.",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19805",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "College Avenue Apartments",
+      "code": "COL",
+      "street": "213 College Ave",
+      "city": "Lancaster",
+      "state": "PA",
+      "postalCode": "17603",
+      "population": null,
+      "units": null
+    },
+    {
+      "name": "Duke Manor Apts.",
+      "code": "DMA",
+      "street": "716 Rockland St.",
+      "city": "Lancaster",
+      "state": "PA",
+      "postalCode": "17602",
+      "population": "Family HUD/Section 8",
+      "units": null
+    },
+    {
+      "name": "Exeter Apartments (Bond 5 LP)",
+      "code": "XTR",
+      "street": "222 Schooley Ave.",
+      "city": "Exeter",
+      "state": "PA",
+      "postalCode": "18643",
+      "population": "Senior Tax Credit",
+      "units": null
+    },
+    {
+      "name": "The Flats Phase I",
+      "code": "FLATS",
+      "street": "525 N Union St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19805",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "The Flats Phase II",
+      "code": "FLATS2",
+      "street": "601 N Union St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19805",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "The Flats Phase III",
+      "code": "FLATS3",
+      "street": "610 Bayard Ave",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19805",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "The Flats Phase IV",
+      "code": "FLATS4",
+      "street": "610 Ferris St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19805",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "Glenbrook Apartments",
+      "code": "GLEN",
+      "street": "463 Main St",
+      "city": "Atglen",
+      "state": "PA",
+      "postalCode": "19310",
+      "population": "General",
+      "units": null
+    },
+    {
+      "name": "Governors Gate Apartments",
+      "code": "GOVGATE",
+      "street": "405 Governors Park Drive",
+      "city": "Bellefonte",
+      "state": "PA",
+      "postalCode": "16823",
+      "population": "Family Section 8",
+      "units": null
+    },
+    {
+      "name": "Hamburg School Apartments",
+      "code": "HAMBURG",
+      "street": "690 E State Street",
+      "city": "Hamburg",
+      "state": "PA",
+      "postalCode": "19526",
+      "population": "General / Section 8",
+      "units": null
+    },
+    {
+      "name": "Henner Apts.",
+      "code": "HAA",
+      "street": "24 E. High St.",
+      "city": "Wolmelsdorf",
+      "state": "PA",
+      "postalCode": "19567",
+      "population": "Senior 55+ / Elderly & Handicapped",
+      "units": null
+    },
+    {
+      "name": "Heritage Point Apartments",
+      "code": "HPA",
+      "street": "94 McGarraher Street",
+      "city": "Wilkes-Barre",
+      "state": "PA",
+      "postalCode": "18702",
+      "population": "General / Section 8",
+      "units": null
+    }
+  ],
   "metricDefinitions": [
     {
       "id": "real-estate-development-1",
@@ -3664,6 +4097,340 @@
       "initialValueOrigin": "default-zero-not-an-observation"
     },
     {
+      "id": "annual-rs-utilization-rate",
+      "name": "Resident Services Utilization Rate",
+      "department": "Resident Services",
+      "trackingArea": null,
+      "unit": "percent",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "rs-positive-move-out-rate",
+      "name": "Positive Move-Out Rate",
+      "department": "Resident Services",
+      "trackingArea": null,
+      "unit": "percent",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog",
+        "attachment-kpi-44"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [
+        "attachment-kpi-44"
+      ],
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs",
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-service-partner-connection-rate",
+      "name": "Service Delivery Partner Connection Rate",
+      "department": "Resident Services",
+      "trackingArea": null,
+      "unit": "percent",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "finance-parent-noi",
+      "name": "Net Operating Income",
+      "department": "Finance",
+      "trackingArea": null,
+      "unit": "USD",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog",
+        "attachment-kpi-11"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [
+        "attachment-kpi-11"
+      ],
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "hr-retention-12-month",
+      "name": "Employee Retention Rate (12-month)",
+      "department": "Human Resources",
+      "trackingArea": null,
+      "unit": "percent",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-new-units-acquired-placed",
+      "name": "New Units Acquired or Placed in Service",
+      "department": "Real Estate Development",
+      "trackingArea": null,
+      "unit": "units",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-units-under-development",
+      "name": "Units Under Development (LIHTC Applied/Awarded)",
+      "department": "Real Estate Development",
+      "trackingArea": null,
+      "unit": "units",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-resident-stories",
+      "name": "Resident Stories Collected & Shared",
+      "department": "Community Relations",
+      "trackingArea": null,
+      "unit": "count",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-positive-news",
+      "name": "Positive News Mentions",
+      "department": "Community Relations",
+      "trackingArea": null,
+      "unit": "count",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-policy-engagements",
+      "name": "Engagements with Policy Decision-Makers",
+      "department": "Community Relations",
+      "trackingArea": null,
+      "unit": "count",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "annual-testimonies-op-eds",
+      "name": "Testimonies / Op-Eds Delivered",
+      "department": "Community Relations",
+      "trackingArea": null,
+      "unit": "count",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [],
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
+      "id": "finance-technology-cost-savings",
+      "name": "Cost Savings from Technology",
+      "department": "Finance",
+      "trackingArea": null,
+      "unit": "USD",
+      "year": 2026,
+      "sourceRefs": [
+        "prior-department-catalog",
+        "attachment-kpi-65"
+      ],
+      "calculationMode": "owner-reported",
+      "executableFormula": null,
+      "definitionRefs": [
+        "attachment-kpi-65"
+      ],
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "mappingStatus": "department-owned",
+      "cadence": null,
+      "statusMode": "manual",
+      "initialValue": 0,
+      "initialValueOrigin": "default-zero-not-an-observation"
+    },
+    {
       "id": "hr-health-insurance-claim-cost-change",
       "name": "Reduce Health Insurance Claim Costs",
       "department": "Human Resources",
@@ -3711,34 +4478,6 @@
       ],
       "ownerPositionIds": [
         "position-hr"
-      ],
-      "contributorPositionIds": [],
-      "cadence": null,
-      "mappingStatus": "source-definition",
-      "statusMode": "manual",
-      "initialValue": 0,
-      "initialValueOrigin": "default-zero-not-an-observation"
-    },
-    {
-      "id": "finance-parent-noi",
-      "name": "Net Operating Income (NOI)",
-      "department": "Finance",
-      "trackingArea": null,
-      "unit": "USD",
-      "year": 2026,
-      "sourceRefs": [
-        "attachment-kpi-11"
-      ],
-      "definitionRefs": [
-        "attachment-kpi-11"
-      ],
-      "calculationMode": "owner-reported",
-      "executableFormula": null,
-      "departmentIds": [
-        "Finance"
-      ],
-      "ownerPositionIds": [
-        "position-cfo"
       ],
       "contributorPositionIds": [],
       "cadence": null,
@@ -4293,35 +5032,6 @@
       "initialValueOrigin": "default-zero-not-an-observation"
     },
     {
-      "id": "rs-positive-move-out-rate",
-      "name": "Positive Move-Out Rate",
-      "department": "Resident Services",
-      "trackingArea": null,
-      "unit": null,
-      "year": 2026,
-      "sourceRefs": [
-        "attachment-kpi-44"
-      ],
-      "definitionRefs": [
-        "attachment-kpi-44"
-      ],
-      "calculationMode": "owner-reported",
-      "executableFormula": null,
-      "departmentIds": [
-        "Resident Services"
-      ],
-      "ownerPositionIds": [
-        "position-rs",
-        "position-pm"
-      ],
-      "contributorPositionIds": [],
-      "cadence": null,
-      "mappingStatus": "source-definition",
-      "statusMode": "manual",
-      "initialValue": 0,
-      "initialValueOrigin": "default-zero-not-an-observation"
-    },
-    {
       "id": "rs-hours-saved",
       "name": "Hours Saved",
       "department": "Resident Services",
@@ -4604,62 +5314,8 @@
       "initialValueOrigin": "default-zero-not-an-observation"
     },
     {
-      "id": "finance-technology-cost-savings",
-      "name": "Cost Savings (Direct + Indirect) from technology",
-      "department": "Finance",
-      "trackingArea": null,
-      "unit": "USD",
-      "year": 2026,
-      "sourceRefs": [
-        "attachment-kpi-65"
-      ],
-      "definitionRefs": [
-        "attachment-kpi-65"
-      ],
-      "calculationMode": "owner-reported",
-      "executableFormula": null,
-      "departmentIds": [
-        "Finance"
-      ],
-      "ownerPositionIds": [
-        "position-cfo"
-      ],
-      "contributorPositionIds": [],
-      "cadence": null,
-      "mappingStatus": "source-definition",
-      "statusMode": "manual",
-      "initialValue": 0,
-      "initialValueOrigin": "default-zero-not-an-observation"
-    },
-    {
       "id": "hr-retention-6-month",
       "name": "6-month employee retention",
-      "department": "Human Resources",
-      "trackingArea": null,
-      "year": 2026,
-      "unit": "percent",
-      "sourceRefs": [
-        "2026-calibration-decisions"
-      ],
-      "definitionRefs": [],
-      "calculationMode": "owner-reported",
-      "executableFormula": null,
-      "ownerPositionIds": [
-        "position-hr"
-      ],
-      "contributorPositionIds": [],
-      "departmentIds": [
-        "Human Resources"
-      ],
-      "cadence": null,
-      "mappingStatus": "user-confirmed",
-      "statusMode": "manual",
-      "initialValue": 0,
-      "initialValueOrigin": "default-zero-not-an-observation"
-    },
-    {
-      "id": "hr-retention-12-month",
-      "name": "12-month employee retention",
       "department": "Human Resources",
       "trackingArea": null,
       "year": 2026,
@@ -8496,6 +9152,158 @@
       "replaceExisting": false
     },
     {
+      "metricId": "annual-rs-utilization-rate",
+      "positionId": "position-rs",
+      "department": "Resident Services",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "rs-positive-move-out-rate",
+      "positionId": "position-rs",
+      "department": "Resident Services",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "rs-positive-move-out-rate",
+      "positionId": "position-pm",
+      "department": "Resident Services",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-service-partner-connection-rate",
+      "positionId": "position-rs",
+      "department": "Resident Services",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "finance-parent-noi",
+      "positionId": "position-cfo",
+      "department": "Finance",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "hr-retention-12-month",
+      "positionId": "position-hr",
+      "department": "Human Resources",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-new-units-acquired-placed",
+      "positionId": "position-red",
+      "department": "Real Estate Development",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-new-units-acquired-placed",
+      "positionId": "position-project-management",
+      "department": "Real Estate Development",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-units-under-development",
+      "positionId": "position-red",
+      "department": "Real Estate Development",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-units-under-development",
+      "positionId": "position-project-management",
+      "department": "Real Estate Development",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-resident-stories",
+      "positionId": "position-cr",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-resident-stories",
+      "positionId": "position-vp-impact-advancement",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-positive-news",
+      "positionId": "position-cr",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-positive-news",
+      "positionId": "position-vp-impact-advancement",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-policy-engagements",
+      "positionId": "position-cr",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-policy-engagements",
+      "positionId": "position-vp-impact-advancement",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-testimonies-op-eds",
+      "positionId": "position-cr",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "annual-testimonies-op-eds",
+      "positionId": "position-vp-impact-advancement",
+      "department": "Community Relations",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
+      "metricId": "finance-technology-cost-savings",
+      "positionId": "position-cfo",
+      "department": "Finance",
+      "canWrite": true,
+      "status": "position-permission",
+      "replaceExisting": false
+    },
+    {
       "metricId": "hr-health-insurance-claim-cost-change",
       "positionId": "position-cfo",
       "department": "Human Resources",
@@ -8507,14 +9315,6 @@
       "metricId": "hr-missed-premiums",
       "positionId": "position-hr",
       "department": "Human Resources",
-      "canWrite": true,
-      "status": "position-permission",
-      "replaceExisting": false
-    },
-    {
-      "metricId": "finance-parent-noi",
-      "positionId": "position-cfo",
-      "department": "Finance",
       "canWrite": true,
       "status": "position-permission",
       "replaceExisting": false
@@ -8760,22 +9560,6 @@
       "replaceExisting": false
     },
     {
-      "metricId": "rs-positive-move-out-rate",
-      "positionId": "position-rs",
-      "department": "Resident Services",
-      "canWrite": true,
-      "status": "position-permission",
-      "replaceExisting": false
-    },
-    {
-      "metricId": "rs-positive-move-out-rate",
-      "positionId": "position-pm",
-      "department": "Resident Services",
-      "canWrite": true,
-      "status": "position-permission",
-      "replaceExisting": false
-    },
-    {
       "metricId": "rs-hours-saved",
       "positionId": "position-rs",
       "department": "Resident Services",
@@ -8864,23 +9648,7 @@
       "replaceExisting": false
     },
     {
-      "metricId": "finance-technology-cost-savings",
-      "positionId": "position-cfo",
-      "department": "Finance",
-      "canWrite": true,
-      "status": "position-permission",
-      "replaceExisting": false
-    },
-    {
       "metricId": "hr-retention-6-month",
-      "positionId": "position-hr",
-      "department": "Human Resources",
-      "canWrite": true,
-      "status": "position-permission",
-      "replaceExisting": false
-    },
-    {
-      "metricId": "hr-retention-12-month",
       "positionId": "position-hr",
       "department": "Human Resources",
       "canWrite": true,

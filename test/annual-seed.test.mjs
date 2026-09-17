@@ -5,6 +5,13 @@ import {validateSeed} from '../scripts/validate-2026-seed.mjs';
 const s=JSON.parse(readFileSync(new URL('../supabase/seeds/2026/compass-2026.seed.json',import.meta.url),'utf8'));
 const source=JSON.parse(readFileSync(new URL('../supabase/seeds/2026/kpi-source.json',import.meta.url),'utf8'));
 const metric=id=>s.metricDefinitions.find(m=>m.id===id);
+test('annual presentation and the partial property seed are explicit, independent of workplan measures',()=>{
+ assert.equal(s.annualScorecard.domains.flatMap(d=>d.metrics).length,35);assert.equal(s.annualScorecard.autoIncludeWorkplanMetrics,false);
+ assert.equal(s.properties.length,16);assert.equal(new Set(s.properties.map(p=>p.code)).size,16);
+ assert.ok(s.properties.every(p=>p.units===null&&/^\d{5}$/.test(p.postalCode)));
+ assert.equal(s.properties.find(p=>p.code==='COL').population,null);
+ assert.ok(s.positions.filter(p=>p.roles.includes('director')).every(p=>p.roles.includes('olt')));
+});
 test('source definitions survive while only Q3 remains active and the skipped rollout stays out',()=>{
  const counts=validateSeed(s);assert.equal(counts.Q1ArchivedObjectives,24);assert.equal(counts.Q2ArchivedObjectives,14);assert.equal(counts.Q3Objectives,14);
  assert.equal(s.archives[0].departmentPriorities.length,40);

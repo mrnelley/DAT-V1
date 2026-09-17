@@ -41,8 +41,26 @@ test('Admin can enter a scoped workspace and return without another login',async
 test('hosted annual surface has ten signals and opens every configured priority',async()=>{
  const dom=await setup('#annual'),d=dom.window.document;
  assert.equal(d.querySelectorAll('.health-signal').length,10);assert.match(d.querySelector('#surface').textContent,/325/);
+ assert.equal(d.querySelectorAll('.cards.annual .metric').length,35);assert.match(d.querySelector('.supplemental-measures').textContent,/Open positions/);
  d.querySelector('[data-priorities]').click();assert.match(d.querySelector('#detail-body').textContent,/First priority/);assert.match(d.querySelector('#detail-body').textContent,/Second priority/);assert.match(d.querySelector('#detail-body').textContent,/No linked submission/);
  assert.doesNotMatch(d.body.textContent,/prototype|sample data|illustrative|demonstration only|demo\b/i);dom.window.close();
+});
+
+test('avatar opens the enabled position dashboard, profile edits persist, and Admin remains on the hub',async()=>{
+ let name='Initial name',revision=null;
+ const access=()=>({positionTitle:'Manager, Enterprise Initiatives',positionId:'mei',roles:['olt'],positions:[],admin:true,metrics:true,weekly:true,features:{myDashboard:true},profile:{displayName:name}});
+ const dom=await setup('#learn',{access:async()=>access(),myWorkspace:async()=>({access:access(),profile:{displayName:name,email:'person@example.invalid',bio:'',photo:null,revision},weekly:{week:'2026-09-14',records:[{positionId:'mei',draft:{entries:[{title:'Review measures',desiredResult:'Validated definitions',due:'2026-09-18',status:'good',tasks:[]}]}}]},properties:[]}),saveProfile:async p=>{name=p.displayName;revision=1;return {...p,revision};}});
+ const w=dom.window,d=w.document;assert.equal(d.querySelector('.profile-link').disabled,false);d.querySelector('.profile-link').click();await tick();
+ assert.match(d.querySelector('#surface').textContent,/Manager, Enterprise Initiatives/);assert.match(d.querySelector('#surface').textContent,/Review measures/);
+ assert.equal(d.querySelector('[data-surface="admin"]').hidden,false);
+ d.querySelector('[data-workspace-section="profile"]').click();const form=d.querySelector('#profile-form');form.elements.displayName.value='Updated name';await form.onsubmit({preventDefault(){}});await tick();
+ assert.match(form.textContent,/Profile saved/);assert.equal(d.querySelector('.account strong').textContent,'Updated name');
+ assert.equal(form.querySelector('[name="roles"]'),null);w.close();
+});
+
+test('dashboard rollout is off by default and a direct hash cannot load workspace records',async()=>{
+ let called=false;const dom=await setup('#profile',{myWorkspace:async()=>{called=true;throw new Error('Should not load');}}),d=dom.window.document;
+ assert.equal(d.querySelector('.profile-link').disabled,true);assert.equal(called,false);assert.match(d.querySelector('#surface').textContent,/has not been enabled/);dom.window.close();
 });
 test('Admin form persists overrides and role changes and reports errors honestly',async()=>{
  const saves=[];const dom=await setup('#admin',{saveMember:async p=>saves.push(p)}),w=dom.window,d=w.document;

@@ -1,3 +1,4 @@
+import { approvedAnnualMetrics } from '../scorecards/annual2026.js';
 // User-supplied September 16, 2026. Definitions only: no fabricated observations.
 export const pillars = [
   ['diversify-innovate', 'Diversify & Innovate', [
@@ -67,6 +68,12 @@ export const departmentMetrics = Object.entries(departmentLists).flatMap(([depar
     name: 'Asset management fees', definitionStatus: 'tracked', calculationType: null,
     cadence: null, unit: 'USD', ownerPositionId: null, actual: null },
 ]);
+
+// Restore approved scorecard measures that were absent from the workplan catalog.
+for (const metric of approvedAnnualMetrics) if (!departmentMetrics.some(m=>m.id===metric.id)) {
+  departmentMetrics.push({...metric, trackingArea: null, definitionStatus:'approved-2026-scorecard',
+    calculationType:null, cadence:null, ownerPositionId:null, actual:null});
+}
 
 export const contributedRevenueCategories = [
   { id: 'grant', label: 'Grant', metricId: 'community-relations-2' },

@@ -49,6 +49,8 @@ window.CompassMetricStore = {
     if(error) throw error;
   },
   async signOut() { const {error} = await client.auth.signOut({scope:'local'}); if(error) throw error; },
+  myWorkspace: () => rpc('compass_my_workspace'),
+  saveProfile: payload => rpc('compass_save_profile',{payload}),
   context: () => rpc('compass_metric_context'),
   access: () => rpc('compass_access_context'),
   async scorecards(month) {
