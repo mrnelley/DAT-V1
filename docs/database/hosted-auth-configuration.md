@@ -2,7 +2,9 @@
 
 ## Microsoft work-account sign-in
 
-Microsoft is the primary sign-in option. Supabase calls this provider `azure`. The browser requests the `email` scope and returns to `/auth/callback` on the origin where sign-in began. No authentication email is sent for this flow. Email sign-in remains under a secondary disclosure while the Microsoft rollout is verified.
+Microsoft is the launch sign-in option. Supabase calls this provider `azure`. The browser requests the `email` scope and returns to `/auth/callback` on the origin where sign-in began. No authentication email is sent for this flow. The app has one sign-in screen; metric entry contains only the entry form. Existing email callbacks remain supported, but the normal login screen does not offer email requests while email delivery is unconfigured.
+
+The workspace waits for both the Supabase session and Compass access assignment. Successful callbacks open scorecards, or the first permitted surface. Authenticated accounts without access see assignment guidance and Sign out. Session changes in another tab update the current tab on the same origin and browser profile; routine token refreshes preserve open forms. Email applications control where clicked links open, so Compass does not attempt to force an existing tab or close a user-opened tab.
 
 In Entra, register a single-tenant application for HDC. Its Web redirect URI is `https://vbkjyiurvcnwnjxqvajr.supabase.co/auth/v1/callback`. In Supabase's Azure provider, set the client ID, client secret value, and tenant URL `https://login.microsoftonline.com/HDC-TENANT-ID`. Follow Supabase's Azure guide for the verified email claim (`xms_edov`). Keep the secret in Supabase, never frontend environment variables.
 

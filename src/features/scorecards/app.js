@@ -32,6 +32,7 @@ async function identity(expected=token){
   sessionUser=session?.user?.id|| (session?'authenticated':null);
   if(!session){access=null;authPhase='signed-out';return;}
   authPhase='access-check';
+  access=null;
   let nextAccess;
   try{nextAccess=await store.access();}catch{await store.context();nextAccess=await store.access();}
   if(expected!==token)return;
@@ -82,6 +83,7 @@ function scorecards(){
   root.querySelector('[data-priorities]')?.addEventListener('click',showInitiatives);root.querySelector('[data-mix]')?.addEventListener('click',()=>detail('Revenue mix',showMix()));
 }
 async function render(){
+  if(dialog.open)dialog.close();
   root=document.createElement('div');outlet.replaceChildren(root);
   const current=++token;document.querySelectorAll('[data-surface]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.surface===view)));
   document.querySelector('.intro h1').textContent=({metrics:'Record progress',weekly:'Weekly accountability',admin:'Admin',learn:'Learn'})[view]||'Enterprise scorecards';

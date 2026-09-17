@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
+import { mountSignIn } from '../src/features/metric-entry/signInView.js';
 import { departmentMetrics, contributedRevenueCategories } from '../src/features/planning/catalog.js';
 const source=readFileSync('public/compass/metric-entry.js','utf8');
 const setup=store=>{
@@ -45,23 +46,24 @@ test('uncertain network retries reuse the same entry ID',async()=>{
 });
 test('signed-out users receive sign-in, not a browser-only save fallback',async()=>{
   const dom=setup({session:async()=>null});const root=dom.window.document.querySelector('#surface');
+  let requested=false;dom.window.addEventListener('compass-auth-required',()=>{requested=true;});
   await dom.window.CompassMetricEntry.mount(root);
-  assert.ok(root.querySelector('#metric-signin'));assert.equal(root.querySelector('#metric-entry'),null);
+  assert.equal(requested,true);assert.equal(root.querySelector('#metric-entry'),null);
   dom.window.close();
 });
 
 test('failed callbacks explain recovery beside a usable sign-in form',async()=>{
  const dom=setup({session:async()=>null,signInProblem:()=> 'This sign-in link has expired. Request a new email.'});
- const root=dom.window.document.querySelector('#surface');await dom.window.CompassMetricEntry.mount(root);
+ const root=dom.window.document.querySelector('#surface');mountSignIn(root,dom.window.CompassMetricStore);
  assert.match(root.querySelector('#signin-message').textContent,/expired/);
- assert.ok(root.querySelector('#metric-signin button'));dom.window.close();
+ assert.ok(root.querySelector('#microsoft-signin'));assert.equal(root.querySelector('input[type="email"]'),null);dom.window.close();
 });
 
 test('Microsoft is the primary sign-in action and does not request an email',async()=>{
  let microsoft=0,emails=0;
  const dom=setup({session:async()=>null,signInMicrosoft:async()=>{microsoft++;},sendCode:async()=>{emails++;}});
- const root=dom.window.document.querySelector('#surface');await dom.window.CompassMetricEntry.mount(root);
- assert.equal(root.querySelector('details').open,false);
+ const root=dom.window.document.querySelector('#surface');mountSignIn(root,dom.window.CompassMetricStore);
+ assert.equal(root.querySelector('#metric-signin'),null);
  const button=root.querySelector('#microsoft-signin');await button.onclick();
  assert.equal(microsoft,1);assert.equal(emails,0);assert.equal(button.disabled,true);
  assert.match(root.querySelector('#signin-message').textContent,/Opening Microsoft/);dom.window.close();
@@ -69,7 +71,7 @@ test('Microsoft is the primary sign-in action and does not request an email',asy
 
 test('Microsoft failures leave a retryable button and an accessible message',async()=>{
  const dom=setup({session:async()=>null,signInMicrosoft:async()=>{throw new Error('Provider unavailable');}});
- const root=dom.window.document.querySelector('#surface');await dom.window.CompassMetricEntry.mount(root);
+ const root=dom.window.document.querySelector('#surface');mountSignIn(root,dom.window.CompassMetricStore);
  const button=root.querySelector('#microsoft-signin');await button.onclick();
  assert.equal(button.disabled,false);assert.match(root.querySelector('[role="status"]').textContent,/Provider unavailable/);dom.window.close();
 });

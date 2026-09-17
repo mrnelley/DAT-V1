@@ -34,10 +34,30 @@ test('Learn preserves planning objectives and the searchable Dictionary',async()
  const dom=await setup('#learn'),w=dom.window,d=w.document;assert.match(d.querySelector('#surface').textContent,/Advance Strategic Acquisitions/);d.querySelector('[data-learn="dictionary"]').click();d.querySelector('input').value='Compass';d.querySelector('input').dispatchEvent(new w.Event('input'));assert.match(d.querySelector('#terms').textContent,/Compass/);dom.window.close();
 });
 
-test('app callback opens metric entry for sign-in codes and invitation tokens',async()=>{
+test('authenticated callbacks open the workspace without another sign-in form',async()=>{
  for(const callback of ['auth/callback?code=test-code','auth/callback#access_token=test-access&refresh_token=test-refresh&type=invite','auth/callback#error=access_denied&error_code=otp_expired','auth/callback']){
   const dom=await setup(callback);
-  assert.equal(dom.window.document.querySelector('#surface').textContent,'Metric entry mounted');
+  assert.match(dom.window.document.querySelector('#surface').textContent,/2030 Plan Scorecard/);
+  assert.equal(dom.window.document.querySelector('#microsoft-signin'),null);
   dom.window.close();
  }
+});
+
+test('another tab signing in updates the original tab and token refresh preserves the current form',async()=>{
+ let session=null,notify;
+ const dom=await setup('#metrics',{session:async()=>session,onAuthChange:listener=>{notify=listener;}}),d=dom.window.document;
+ assert.ok(d.querySelector('#microsoft-signin'));assert.equal(d.querySelector('nav[aria-label="Compass"]').hidden,true);
+ session={user:{id:'admin'}};notify('SIGNED_IN',session);await tick();
+ assert.equal(d.querySelector('#surface').textContent,'Metric entry mounted');assert.equal(d.querySelector('#microsoft-signin'),null);
+ const mounted=d.querySelector('#surface').firstChild;notify('TOKEN_REFRESHED',session);await tick();assert.equal(d.querySelector('#surface').firstChild,mounted);
+ session=null;notify('SIGNED_OUT',null);await tick();assert.ok(d.querySelector('#microsoft-signin'));
+ assert.equal(d.querySelector('.account strong').textContent,'Your workspace');dom.window.close();
+});
+
+test('authenticated users without an assignment see access guidance and can sign out',async()=>{
+ const denied=async()=>{throw new Error('Your account needs an active Admin assignment');};
+ const dom=await setup('',{access:denied,context:denied}),d=dom.window.document;
+ assert.match(d.querySelector('#surface').textContent,/could not open your assigned workspace/);
+ assert.equal(d.querySelector('#microsoft-signin'),null);
+ assert.equal(d.querySelector('.account button').hidden,false);dom.window.close();
 });
