@@ -29,6 +29,7 @@
       const form = root.querySelector('#metric-entry'); const f = form.elements;
       const message = root.querySelector('#entry-message');
       const save = form.querySelector('[type="submit"]');
+      const permitted=(metricId,department,writing=false)=>access.metricPermissions?access.metricPermissions.some(p=>p.metricId===metricId&&p.department===department&&(!writing||p.canWrite)):!writing||access.writableDepartments.includes(department);
       let entries = [], editing = null, retry = null, historyGeneration = 0, saving = false;
       const now = new Date(); f.period.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
       function context() {
@@ -37,10 +38,11 @@
         if(revenue) f.value.min='0'; else f.value.removeAttribute('min');
         root.querySelector('#value-label').textContent = revenue ? 'Contribution amount (USD)' : 'Recorded value';
         root.querySelector('#entry-context').textContent = revenue ? 'Record each contribution once, with its category. It contributes to Contributed revenue total.'
-          : f.metric.value==='finance-5' ? 'Finance · 2026 Financial resiliency · Excess cash to parent remains separately tracked.'
-          : 'Recorded independently for this department. Enter the value from your source.';
-        save.disabled = !access.writableDepartments.includes(f.department.value);
-        if(save.disabled) message.textContent = 'Read-only access for this department.';
+          : f.metric.value==='finance-5' ? 'Finance · 2026 Financial resiliency'
+          : 'Enter the value from your source.';
+        const viewingOnly=store.workspaceSession?.()?.allowWrites===false;
+        save.disabled = viewingOnly || !permitted(f.metric.value,f.department.value,true);
+        if(save.disabled) message.textContent = viewingOnly?'Viewing only. Return to Admin and enable saving to test changes.':'Read-only access for this department.';
       }
       function cancel() { editing=null; retry=null; f.department.disabled=false; f.metric.disabled=false;
         root.querySelector('#revision-note').hidden=true; root.querySelector('#cancel-edit').hidden=true;
@@ -52,12 +54,12 @@
           const result = await store.list(department);
           if(historyId!==historyGeneration || generationId!==generation) return;
           entries=result;
-          target.innerHTML=entries.length ? entries.map(e=>`<article class="note"><strong>${esc(e.label)}</strong><p>${esc(e.period)} · ${esc(e.value)}${e.categoryId ? ' USD' : ''} · Revision ${esc(e.revision)}</p><p>${esc(e.description)}</p>${access.writableDepartments.includes(department)?`<button class="tab" type="button" data-correct="${esc(e.id)}">Correct entry</button>`:''}</article>`).join('') : '<p>No entries for this department yet.</p>';
+          target.innerHTML=entries.length ? entries.map(e=>`<article class="note"><strong>${esc(e.label)}</strong><p>${esc(e.period)} · ${esc(e.value)}${e.categoryId ? ' USD' : ''} · Revision ${esc(e.revision)}</p><p>${esc(e.description)}</p>${permitted(e.metricId,department,true)?`<button class="tab" type="button" data-correct="${esc(e.id)}">Correct entry</button>`:''}</article>`).join('') : '<p>No entries for this department yet.</p>';
         } catch(error) { if(historyId===historyGeneration) target.textContent=error.message; }
       }
       async function department() {
         cancel(); message.textContent='';
-        f.metric.innerHTML=metrics.filter(m=>!m.department||m.department===f.department.value).map(m=>`<option value="${esc(m.id)}">${esc(m.name)}${!m.department?' · cross-department':''}</option>`).join('');
+        f.metric.innerHTML=metrics.filter(m=>(!m.department||m.department===f.department.value)&&permitted(m.id,f.department.value)).map(m=>`<option value="${esc(m.id)}">${esc(m.name)}${!m.department?' · cross-department':''}</option>`).join('');
         context(); await history();
       }
       f.department.onchange=department; f.metric.onchange=context;

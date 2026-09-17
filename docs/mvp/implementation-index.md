@@ -2,6 +2,16 @@
 
 Prepared September 14, 2026. Planning estimate; no implementation or deployment is authorized by this document itself.
 
+## Current checkpoint
+
+The estimates and baseline findings below describe the original planning stage, not the remaining workload. Hosted Microsoft sign-in, metric persistence, weekly drafts/submissions/scoring, scorecard rollups, Admin management and audited View as user are now implemented; frontend deployment status follows the deployed `dev` commit.
+
+Next: reconcile existing seed data, then import positions/departments, Q3 enterprise priorities, department objectives, 2026 KPI definitions and approved formulas, followed by linked weekly actions. Preserve source IDs and make repeated imports update or skip the same record rather than create duplicates. Historical weekly imports need explicit provenance and scoring treatment; the ordinary submission endpoint rejects weeks before the tracking start date. Do not invent missing formulas or submission times.
+
+Positions are now independently manageable, including vacancies without an email or Auth account. Admin configures position roles, navigation and scorecard access, and assigns metric read/write permissions to multiple positions per reporting department. Account assignments remain many-to-many, with a default and selectable working position. Weekly records and points retain their position/week identity through renaming and handoffs. Individual restrictions can narrow access; System Admin remains an explicit account privilege. The database release and account-connection function are deployed to development; deploy the matching frontend before using the new controls. Admin assignment changes remain undated controls, with an audit history of who changed them and when.
+
+Live collaboration is pending: private change notifications should trigger authorized refetches, preserve dirty forms, and retain revision checks. Reconcile on reconnect; a notification does not grant access or replace conflict handling. Checklist and finding workflows are deferred.
+
 ## Outcome and estimate
 
 A testable MVP connects five planning surfaces to one persisted data model: 2030 Strategic Plan, Annual Scorecard, Department Workplans, Project Plans, and Weekly Accountability. A tester can create and approve work, enter actual results, submit a week, switch test positions, and verify the same records in another session. Scores, permissions, history, and rollups must survive refresh and cannot depend on browser-local data.

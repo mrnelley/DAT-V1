@@ -17,7 +17,7 @@
     "validate:database": "node scripts/validate-weekly-database.mjs",
     "check": "npm run lint && npm test && npm run test:prototype && npm run test:planning && npm run test:weekly-hosted && npm run test:scorecards && npm run test:admin && npm run build",
     "test:scorecards": "node --test test/scorecard-rollups.test.mjs test/scorecard-ui.test.mjs",
-    "test:admin": "node --test test/admin-user-handler.test.mjs test/admin-command-center.test.mjs test/admin-auth-flow.test.mjs test/auth-browser-lifecycle.test.mjs"
+    "test:admin": "node --test test/admin-user-handler.test.mjs test/admin-command-center.test.mjs test/admin-auth-flow.test.mjs test/auth-browser-lifecycle.test.mjs test/workspace-session.test.mjs test/positions-ui.test.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.23.0",

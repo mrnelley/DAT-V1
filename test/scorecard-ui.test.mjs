@@ -14,6 +14,30 @@ const setup=async(hash='',overrides={})=>{
  w.CompassMetricStore.adminWorkspace ||= async()=>({teams:[],properties:[],features:[],audit:[]});
  w.eval(code);await tick();return dom;
 };
+
+test('Admin can enter a scoped workspace and return without another login',async()=>{
+ let selected=null,dom;
+ dom=await setup('#admin',{
+  session:async()=>({user:{id:'real-admin',user_metadata:{full_name:'Admin Name'}}}),
+  workspaceSession:()=>selected,
+  access:async()=>selected?{positionTitle:'Director, Finance',admin:false,metrics:true,weekly:false,features:{annual:false}}:{positionTitle:'Manager',admin:true,metrics:true,weekly:true},
+  startWorkspace:async(userId,allowWrites)=>{selected={id:'session',userId,name:'Director Name',positionTitle:'Director, Finance',allowWrites};dom.window.dispatchEvent(new dom.window.Event('compass-workspace-changed'));},
+  endWorkspace:async()=>{selected=null;dom.window.dispatchEvent(new dom.window.Event('compass-workspace-changed'));},
+ });
+ const w=dom.window,d=w.document;
+ d.querySelector('#admin-user').value='u1';d.querySelector('#admin-user').dispatchEvent(new w.Event('change'));
+ d.querySelector('#open-workspace').click();await tick();
+ assert.equal(selected.allowWrites,false);
+ assert.equal(d.querySelector('.account strong').textContent,'Director Name');
+ assert.equal(d.querySelector('[data-surface="admin"]').hidden,true);
+ assert.equal(d.querySelector('[data-surface="annual"]').hidden,true);
+ assert.match(d.querySelector('.workspace-banner').textContent,/View only/);
+ assert.equal(d.querySelectorAll('.health-signal').length,5);
+ d.querySelector('.workspace-banner button').click();await tick();
+ assert.equal(selected,null);assert.equal(d.querySelector('.account strong').textContent,'Admin Name');
+ assert.ok(d.querySelector('#admin-user'));assert.equal(d.querySelector('.workspace-banner').hidden,true);
+ assert.equal(d.querySelector('#microsoft-signin'),null);w.close();
+});
 test('hosted annual surface has ten signals and opens every configured priority',async()=>{
  const dom=await setup('#annual'),d=dom.window.document;
  assert.equal(d.querySelectorAll('.health-signal').length,10);assert.match(d.querySelector('#surface').textContent,/325/);
@@ -23,8 +47,8 @@ test('hosted annual surface has ten signals and opens every configured priority'
 test('Admin form persists overrides and role changes and reports errors honestly',async()=>{
  const saves=[];const dom=await setup('#admin',{saveMember:async p=>saves.push(p)}),w=dom.window,d=w.document;
  d.querySelector('#admin-user').value='u1';d.querySelector('#admin-user').dispatchEvent(new w.Event('change'));
- const form=d.querySelector('#admin-form');form.elements.readWeekly.value='false';form.querySelector('[name="roles"][value="elt"]').checked=true;form.dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
- assert.equal(saves.length,1);assert.equal(saves[0].readWeekly,false);assert.ok(saves[0].roles.includes('elt'));assert.match(d.querySelector('#admin-result').textContent,/saved/);
+ const form=d.querySelector('#admin-form');form.elements.readWeekly.value='false';form.querySelector('[name="roles"][value="admin"]').checked=true;form.dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+ assert.equal(saves.length,1);assert.equal(saves[0].readWeekly,false);assert.ok(saves[0].roles.includes('admin'));assert.match(d.querySelector('#admin-result').textContent,/saved/);
  w.CompassMetricStore.saveMember=async()=>{throw new Error('Permission denied');};form.dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.match(d.querySelector('#admin-result').textContent,/Permission denied/);dom.window.close();
 });
 test('signed-out root contains no fabricated scorecard values and hides Admin',async()=>{

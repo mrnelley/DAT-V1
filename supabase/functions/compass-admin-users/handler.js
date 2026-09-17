@@ -41,6 +41,15 @@ export function createUserHandler({createClient,env}) {
       if(payload.action!=='create')return respond(400,{error:'Unknown action.'});
       if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.requestId||''))return respond(400,{error:'A request ID is required.'});
       const roles=['admin','executive','elt','director','staff','external'];
+      if(payload.positionIds!==undefined){
+        if(!Array.isArray(payload.positionIds)||!payload.positionIds.length||payload.positionIds.some(id=>typeof id!=='string'))return respond(400,{error:'Select at least one position.'});
+        const positionData=await user.rpc('compass_admin_positions');
+        if(positionData.error)return respond(403,{error:'Unable to inspect position assignments.'});
+        const selected=(positionData.data?.positions||[]).filter(p=>p.active&&payload.positionIds.includes(p.id));
+        if(new Set(payload.positionIds).size!==selected.length)return respond(400,{error:'Choose active positions.'});
+        payload.positionTitle=selected[0].title;payload.roles=['staff'];
+        payload.departments=[...new Set(selected.map(p=>p.department).filter(Boolean))];
+      }
       const departments=['Real Estate Development','Property Management','Human Resources','Resident Services','Community Relations','Finance'];
       if(typeof payload.positionTitle!=='string'||!payload.positionTitle.trim()||payload.positionTitle.trim().length>150||!Array.isArray(payload.roles)||!payload.roles.length||payload.roles.some(r=>!roles.includes(r))||!Array.isArray(payload.departments)||payload.departments.some(d=>!departments.includes(d)))return respond(400,{error:'Provide a position, valid roles and department scope.'});
       let id=lookup.data?.id;
@@ -51,10 +60,10 @@ export function createUserHandler({createClient,env}) {
         if(created.error)return respond(400,{error:created.error.message});
         id=created.data.user.id;
       }
-      const assigned=await user.rpc('compass_set_metric_member',{payload:{userId:id,positionTitle:payload.positionTitle.trim(),roles:payload.roles,departments:payload.departments,active:true,positions:[]}});
+      const assigned=await user.rpc('compass_set_metric_member',{payload:{userId:id,positionTitle:payload.positionTitle.trim(),roles:payload.roles,departments:payload.departments,active:true,positions:payload.positionIds||[]}});
       if(assigned.error)return respond(422,{userId:id,error:'Account created, but access could not be saved. Retry to finish: '+assigned.error.message});
       await user.rpc('compass_admin_log_user_event',{target_user:id,event_name:'user_created'});
-      return respond(200,{userId:id,message:'Account created. The user can sign in with their email, or you can send an invitation.'});
+      return respond(200,{userId:id,message:'Account connected. The person can sign in with Microsoft.'});
     }catch{return respond(500,{error:'User management could not finish. Retry the same request.'});}
   };
 }

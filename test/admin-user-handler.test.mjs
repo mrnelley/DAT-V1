@@ -7,6 +7,7 @@ const setup=(options={})=>{
  const user={auth:{getUser:async()=>options.invalid?{error:{}}:{data:{user:{id:'caller'}}}},rpc:async(name,args)=>{
   calls.push({name,args});if(name==='compass_access_context')return {data:{admin:!options.notAdmin}};
   if(name==='compass_admin_user_lookup')return {data:account};
+  if(name==='compass_admin_positions')return {data:{positions:[{id:'finance-position',title:'Finance position',department:'Finance',active:true},{id:'archived-position',title:'Archived position',active:false}]}};
   if(name==='compass_set_metric_member'){if(options.assignmentFailure)return {error:{message:'Denied'}};account.assigned=true;return {data:null};}
   return {data:null};
  }};
@@ -20,6 +21,24 @@ test('same request retry returns the created account without replacing access',a
 test('different request cannot overwrite an existing account',async()=>{const {send,calls}=setup({account:{id:'existing',requestId:'different',assigned:true}});assert.equal((await send()).status,409);assert.equal(calls.filter(c=>c.name==='createUser'||c.name==='compass_set_metric_member').length,0);});
 test('missing authentication, invalid sessions, non-Admins and unknown origins cannot create users',async()=>{for(const option of [{invalid:true},{notAdmin:true}]){const {send,calls}=setup(option);assert.ok([401,403].includes((await send()).status));assert.equal(calls.filter(c=>c.name==='createUser').length,0);}const {send}=setup();assert.equal((await send(payload,{})).status,401);assert.equal((await send(payload,{authorization:'Bearer token',origin:'https://other.invalid'})).status,403);});
 test('invalid roles and departments are rejected before account creation',async()=>{for(const change of [{roles:['superuser']},{departments:['Operations']},{positionTitle:''}]){const {send,calls}=setup();assert.equal((await send({...payload,...change})).status,400);assert.equal(calls.filter(c=>c.name==='createUser').length,0);}});
+
+test('connecting a person uses an existing position without requiring a title or department payload',async()=>{
+ const {send,calls}=setup();
+ const response=await send({action:'create',email:payload.email,requestId:payload.requestId,positionIds:['finance-position']});
+ assert.equal(response.status,200);
+ const assignment=calls.find(c=>c.name==='compass_set_metric_member').args.payload;
+ assert.deepEqual(assignment.positions,['finance-position']);
+ assert.equal(assignment.positionTitle,'Finance position');
+ assert.equal(calls.filter(c=>c.name==='invite').length,0);
+});
+
+test('missing, unknown and archived position selections cannot create an account',async()=>{
+ for(const positionIds of [[],['unknown'],['archived-position']]){
+  const {send,calls}=setup();
+  assert.equal((await send({action:'create',email:payload.email,requestId:payload.requestId,positionIds})).status,400);
+  assert.equal(calls.filter(c=>c.name==='createUser').length,0);
+ }
+});
 test('assignment failures leave a recoverable account and report failure',async()=>{const {send}=setup({assignmentFailure:true});const response=await send();assert.equal(response.status,422);assert.match((await response.json()).error,/access could not be saved/);});
 test('invitations require an existing assigned unconfirmed account',async()=>{const {send,calls}=setup({account:{id:'new-id',assigned:true,confirmed:false}});assert.equal((await send({action:'invite',email:payload.email})).status,200);assert.equal(calls.filter(c=>c.name==='invite').length,1);const missing=setup();assert.equal((await missing.send({action:'invite',email:payload.email})).status,404);});
 

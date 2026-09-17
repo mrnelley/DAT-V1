@@ -39,6 +39,10 @@
     root.innerHTML=`<div id="weekly-workspace"><div class="hero"><div><h2>Weekly accountability</h2><p>Due ${esc(instant(data.boundaries.deadline_at))}</p></div></div><div class="weekly-toolbar"><div class="weekly-controls"><label class="field">Week beginning<input type="date" id="weekly-week" value="${esc(data.week)}" min="${esc(data.startsOn)}" step="7"></label><label class="field">Position<select id="weekly-position">${data.positions.map(p=>option(p.id,p.title,selected)).join('')}</select></label></div><nav class="weekly-subnav" aria-label="Weekly views">${[['mine','My priorities'],['rollup','Team rollup'],['review','Annual review']].map(([id,label])=>`<button type="button" class="quiet-button" data-view="${id}" aria-pressed="${view===id}">${label}</button>`).join('')}</nav></div><div id="weekly-message" class="weekly-message" role="status" hidden></div>${view==='mine'?mine():view==='rollup'?rollup():review()}</div>`;
     const form=root.querySelector('#weekly-form');
     if(form){form.oninput=()=>{dirty=true;};form.onchange=()=>{dirty=true;};form.onsubmit=e=>{e.preventDefault();save(true);};}
+    if(form&&store().workspaceSession?.()?.allowWrites===false){
+      form.querySelector('[type="submit"]').disabled=true;form.querySelector('[data-save-draft]').disabled=true;
+      message('Viewing only. Return to Admin and enable saving to test changes.');
+    }
     root.querySelector('#weekly-week').onchange=async e=>{if(dirty&&!confirm('Discard unsaved changes?')){e.target.value=data.week;return;}await load(e.target.value);};
     root.querySelector('#weekly-position').onchange=e=>{if(dirty&&!confirm('Discard unsaved changes?')){e.target.value=selected;return;}selected=e.target.value;resetDraft();render();};
     root.querySelector('#weekly-workspace').onclick=async event=>{

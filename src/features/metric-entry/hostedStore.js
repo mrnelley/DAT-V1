@@ -1,21 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 import { authFlowForHash, signInWithMicrosoft } from './authFlow.js';
 import { createAuthSession, describeAuthCallback } from './authSession.js';
+import { createWorkspaceSession } from '../admin/workspaceSession.js';
 const callback = describeAuthCallback(location);
 const client = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY, {
   auth: { flowType: authFlowForHash(location.hash), storageKey: 'compass-hosted-auth' },
 });
 const authSession = createAuthSession(client.auth, callback, () => history.replaceState(null, '', '/#strategic'));
-async function rpc(name, args) {
-  const { data, error } = await client.rpc(name, args);
-  if (error) throw new Error(error.message);
+let selectedPosition=null;
+async function directRpc(name, args) {
+  const request=client.rpc(name,args);
+  if(selectedPosition)request.setHeader('x-compass-position',selectedPosition);
+  const { data, error } = await request;
+  if (error) {if(error.message.startsWith('This position is no longer assigned'))selectedPosition=null;throw new Error(error.message);}
   return data;
 }
+const workspace = createWorkspaceSession(directRpc, () => window.dispatchEvent(new Event('compass-workspace-changed')));
+const rpc = (name, args) => workspace.call(name, args);
 window.CompassMetricStore = {
   session: () => authSession.session(),
+  workspaceSession: () => workspace.current(),
+  startWorkspace: (userId, allowWrites) => {selectedPosition=null;return workspace.start(userId, allowWrites);},
+  endWorkspace: () => {selectedPosition=null;return workspace.end();},
+  selectPosition(positionId) {selectedPosition=positionId||null;window.dispatchEvent(new Event('compass-position-changed'));},
+  positions: () => rpc('compass_admin_positions'),
+  savePosition: payload => rpc('compass_admin_save_position',{payload}),
+  setMetricPositions: payload => rpc('compass_admin_set_metric_positions',{payload}),
   signInProblem: () => authSession.problem(),
   onAuthChange(listener) {
     const { data } = client.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {workspace.clear();selectedPosition=null;}
       // Leave Supabase's callback before making further authenticated requests.
       setTimeout(() => listener(event, session), 0);
     });
@@ -51,6 +65,7 @@ window.CompassMetricStore = {
   setFeature: (userId,key,value) => rpc('compass_admin_set_feature',{target_user:userId,feature:key,enabled_value:value}),
   adminRecords: (kind,page=0,search='') => rpc('compass_admin_records',{record_kind:kind,page_number:page,search_text:search}),
   async manageUser(payload) {
+    if(workspace.current())throw new Error('Return to your Admin account to manage users.');
     const {data,error}=await client.functions.invoke('compass-admin-users',{body:payload});
     if(error){let message=error.message;try{const body=await error.context.json();message=body.error||message;}catch{/* Network errors have no response body. */}throw new Error(message);}
     if(data?.error)throw new Error(data.error);
