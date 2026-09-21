@@ -90,7 +90,19 @@ insert into compass_private.metric_definitions(id,name,department,tracking_area,
 ('operations-5','Project plans completed on time (%)',null,'Operations',null),
 ('operations-6','Project plans submitted on time (%)',null,'Operations',null),
 ('operations-7','Projects on track (%)',null,'Operations',null),
-('asset-management-fees','Asset management fees',null,'Management fees','USD')
+('asset-management-fees','Asset management fees',null,'Management fees','USD'),
+('annual-rs-utilization-rate','Resident Services Utilization Rate','Resident Services',null,'percent'),
+('rs-positive-move-out-rate','Positive Move-Out Rate','Resident Services',null,'percent'),
+('annual-service-partner-connection-rate','Service Delivery Partner Connection Rate','Resident Services',null,'percent'),
+('finance-parent-noi','Net Operating Income','Finance',null,'USD'),
+('hr-retention-12-month','Employee Retention Rate (12-month)','Human Resources',null,'percent'),
+('annual-new-units-acquired-placed','New Units Acquired or Placed in Service','Real Estate Development',null,'units'),
+('annual-units-under-development','Units Under Development (LIHTC Applied/Awarded)','Real Estate Development',null,'units'),
+('annual-resident-stories','Resident Stories Collected & Shared','Community Relations',null,'count'),
+('annual-positive-news','Positive News Mentions','Community Relations',null,'count'),
+('annual-policy-engagements','Engagements with Policy Decision-Makers','Community Relations',null,'count'),
+('annual-testimonies-op-eds','Testimonies / Op-Eds Delivered','Community Relations',null,'count'),
+('finance-technology-cost-savings','Cost Savings from Technology','Finance',null,'USD')
 on conflict(id) do update set name=excluded.name,department=excluded.department,tracking_area=excluded.tracking_area,unit=excluded.unit;
 insert into compass_private.contribution_categories(id,label) values ('grant','Grant'),('neighborworks','NeighborWorks'),('individual','Individual gift'),('corporate','Corporate contribution'),('other','Other contribution') on conflict(id) do update set label=excluded.label;
 insert into compass_private.releases(version) values('20260916_metric_catalog') on conflict do nothing;
