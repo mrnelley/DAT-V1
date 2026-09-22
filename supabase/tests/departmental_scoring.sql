@@ -1,0 +1,42 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at) values('86000000-0000-4000-8000-000000000001','department-points-test@example.invalid',now());
+insert into compass_private.members(user_id,position_title,roles,departments) values('86000000-0000-4000-8000-000000000001','Department points test',array['admin'],'{}');
+insert into compass_private.positions(id,title,roles,required) values('test-department-points','Department points test position',array['olt'],false);
+select set_config('request.jwt.claim.sub','86000000-0000-4000-8000-000000000001',true);
+do $$ declare cycle date; b record; item jsonb; payload jsonb; saved jsonb; points integer; outcome text; rejected boolean:=false; begin
+ select date_trunc('week',greatest(current_date,starts_on))::date+7 into cycle from compass_private.weekly_settings;
+ select * into b from compass_private.weekly_boundaries(cycle);
+ item:=jsonb_build_object('id','dept-1','title','Department priority','desiredResult','Workplan progress','objectiveId','','projectReference','2026 Finance workplan','due',(cycle+4)::text,'status','good','tasks','[]'::jsonb);
+ payload:=jsonb_build_object('positionId','test-department-points','week',cycle,'expectedRevision',0,'draft',jsonb_build_object('capacity','capacity','note','','entries',jsonb_build_array(item,item||'{"id":"dept-2"}'::jsonb)));
+ saved:=compass_private.save_weekly(payload,false,b.deadline_at-interval '1 hour');
+ if exists(select 1 from compass_private.weekly_points where position_id='test-department-points') then raise exception 'Draft earned points'; end if;
+ payload:=jsonb_set(payload,'{expectedRevision}',saved->'revision');
+ saved:=compass_private.save_weekly(payload,true,b.deadline_at);
+ perform compass_private.save_weekly(payload,true,b.deadline_at);
+ select p.points,p.outcome into points,outcome from compass_private.weekly_points p where position_id='test-department-points' and week=cycle;
+ if points<>3 or outcome<>'on_time_departmental' then raise exception 'Departmental award not applied'; end if;
+ if (select count(*) from compass_private.weekly_points where position_id='test-department-points')<>1 then raise exception 'Duplicate award'; end if;
+ -- A later enterprise edit must not increase the departmental award after cutoff.
+ payload:=jsonb_set(payload,'{expectedRevision}',saved->'revision');
+ payload:=jsonb_set(jsonb_set(payload,'{draft,capacity}','"enterprise"'),'{draft,entries,0,objectiveId}','"2026-Q3-7"');
+ perform compass_private.save_weekly(payload,true,b.deadline_at+interval '1 second');
+ if (select p.points from compass_private.weekly_points p where position_id='test-department-points' and week=cycle)<>3 then raise exception 'Late edit changed award'; end if;
+ -- A mixed submission before the deadline earns five total.
+ payload:=jsonb_set(jsonb_set(payload,'{week}',to_jsonb((cycle+7)::text)),'{expectedRevision}','0');
+ perform compass_private.save_weekly(payload,true,b.deadline_at+interval '7 days');
+ if (select p.points from compass_private.weekly_points p where position_id='test-department-points' and week=cycle+7)<>5 then raise exception 'Mixed submission stacked awards'; end if;
+ payload:=jsonb_set(jsonb_set(payload,'{draft,capacity}','"capacity"'),'{draft,entries}',jsonb_build_array(item));
+ payload:=jsonb_set(payload,'{week}',to_jsonb((cycle+14)::text));
+ perform compass_private.save_weekly(payload,true,b.deadline_at+interval '14 days 1 second');
+ if (select p.points from compass_private.weekly_points p where position_id='test-department-points' and week=cycle+14)<>-3 then raise exception 'Late department submission was rewarded'; end if;
+ payload:=jsonb_set(payload,'{week}',to_jsonb((cycle+21)::text))||'{"correctionReason":"Late correction"}'::jsonb;
+ perform compass_private.save_weekly(payload,true,b.grace_at+interval '21 days 1 second');
+ if (select p.points from compass_private.weekly_points p where position_id='test-department-points' and week=cycle+21)<>-10 then raise exception 'Missed department submission was rewarded'; end if;
+ payload:=jsonb_set(jsonb_set(payload,'{week}',to_jsonb((cycle+28)::text)),'{draft,entries}','[]');
+ perform compass_private.save_weekly(payload,true,b.deadline_at+interval '28 days');
+ if (select p.points from compass_private.weekly_points p where position_id='test-department-points' and week=cycle+28)<>0 then raise exception 'Empty opt-out rewarded'; end if;
+ payload:=jsonb_set(jsonb_set(payload,'{week}',to_jsonb((cycle+35)::text)),'{draft,entries}',jsonb_build_array(item||'{"title":""}'::jsonb));
+ begin perform compass_private.save_weekly(payload,true,b.deadline_at+interval '35 days'); exception when others then rejected:=true; end;
+ if not rejected then raise exception 'Invalid entry rewarded'; end if;
+end $$;
+rollback;

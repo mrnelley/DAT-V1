@@ -34,9 +34,9 @@ This is a source audit, not a passing runtime validation. Several new fields and
 | Timeliness | Immutable, server-recorded first submission time and separate update time. Deadline: Friday 17:00 in `America/New_York`, including DST. At exactly 17:00 is on time. |
 | Weekly results | Persist desired result, support required, project relationship, priority health, and action items. Current entry schema has no dedicated desired-result field. |
 | Team rollup | Read submitted snapshots, separately display drafts/missing submissions/capacity declarations/late submissions, and preserve prior weeks. |
-| Points | Start at 100 per position. On-time priority `+5`; on-time opt-out `0`; grace-window submission `-3`; missed after Monday 9 a.m. `-10`. Carry balance forward and group activity yearly. |
+| Points | Start at 100 per position. On-time enterprise priority `+5`; departmental-only priorities `+3`; empty on-time opt-out `0`; grace-window submission `-3`; missed after Monday 9 a.m. `-10`. Carry balance forward and group activity yearly. |
 | Ledger integrity | Unique position/week/rule event, transactional with submission, server-assessed timing, policy version/amount snapshot, no duplicate penalty on edit or concurrent retry. Clients cannot assign themselves scores. |
-| Capacity and points | An on-time opt-out is neutral. A late submission, including a late opt-out, receives the same `-3` grace-window event. |
+| Capacity and points | An on-time opt-out with no priorities is neutral; validated departmental-only work earns +3. A late submission, including a late opt-out, receives the same `-3` grace-window event. |
 | Annual priority scorecard | Count the same tracked initiative records displayed in the drill-through list. Do not derive initiative health or KPI actuals from weekly task completion. |
 
 ## Runtime acceptance checks still required

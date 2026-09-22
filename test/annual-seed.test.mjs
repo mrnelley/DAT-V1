@@ -5,6 +5,16 @@ import {validateSeed} from '../scripts/validate-2026-seed.mjs';
 const s=JSON.parse(readFileSync(new URL('../supabase/seeds/2026/compass-2026.seed.json',import.meta.url),'utf8'));
 const source=JSON.parse(readFileSync(new URL('../supabase/seeds/2026/kpi-source.json',import.meta.url),'utf8'));
 const metric=id=>s.metricDefinitions.find(m=>m.id===id);
+
+test('department priority catalog keeps ownership separate from annual targets and historical work',()=>{
+ const rows=s.departmentWorkplanPriorities;
+ assert.equal(rows.length,180);assert.equal(new Set(rows.map(r=>r.id)).size,180);assert.equal(new Set(rows.map(r=>r.department)).size,6);
+ for(const row of rows){assert.equal(row.year,2026);assert.ok(row.sourceRefs.length);assert.equal(row.ownerPositionIds.length,1);assert.ok(!('target' in row));}
+ assert.ok(!rows.some(r=>r.id==='2026-workplan-resident-services-p1-t1-r22'));
+ assert.ok(rows.find(r=>r.id==='2026-workplan-resident-services-p1-t1-r21').sourceRefs.includes('workplan-resident-services-p1-t1-r22'));
+ assert.equal(s.annualScorecard.domains.flatMap(d=>d.metrics).length,35);
+ assert.equal(s.archives[0].departmentPriorities.length,40);
+});
 test('annual presentation and the partial property seed are explicit, independent of workplan measures',()=>{
  assert.equal(s.annualScorecard.domains.flatMap(d=>d.metrics).length,35);assert.equal(s.annualScorecard.autoIncludeWorkplanMetrics,false);
  assert.equal(s.properties.length,16);assert.equal(new Set(s.properties.map(p=>p.code)).size,16);

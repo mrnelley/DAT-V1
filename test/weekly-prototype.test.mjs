@@ -31,6 +31,22 @@ test('an on-time enterprise priority earns five points once', () => {
   assert.equal(state.events[0].points, 5);
   assert.equal(M.score(state, 'coo'), 105);
 });
+
+test('departmental work earns three once, mixed work earns five, and timing still controls deductions',()=>{
+ const department=draft();department.capacity='capacity';department.entries[0].initiativeId='';
+ department.entries.push({...department.entries[0],id:'second',title:'Another departmental priority'});
+ let state=M.submit(M.empty(),'2026-09-14','coo',department,initiatives,new Date('2026-09-18T20:00:00Z'));
+ state=M.submit(state,'2026-09-14','coo',department,initiatives,new Date('2026-09-18T21:00:00Z'));
+ assert.equal(state.events.length,1);assert.equal(state.events[0].type,'on_time_departmental');assert.equal(M.score(state,'coo'),103);
+ state=M.submit(state,'2026-09-14','coo',draft(),initiatives,new Date('2026-09-18T21:00:00.001Z'));
+ assert.equal(M.score(state,'coo'),103,'Post-deadline edits preserve the original award');
+ const mixed=draft();mixed.entries.push({...department.entries[0],id:'departmental'});
+ assert.equal(M.score(M.submit(M.empty(),'2026-09-14','coo',mixed,initiatives,new Date('2026-09-18T21:00:00Z')),'coo'),105);
+ const late=M.submit(M.empty(),'2026-09-14','coo',department,initiatives,new Date('2026-09-18T21:00:00.001Z'));
+ assert.equal(late.events[0].points,-3);
+ const missed=M.submit(M.empty(),'2026-09-14','coo',department,initiatives,new Date('2026-09-21T13:00:00.001Z'));
+ assert.equal(missed.events[0].points,-10);
+});
 test('a grace-window submission deducts three points and editing never duplicates it', () => {
   let state = M.submit(M.empty(), '2026-09-14', 'coo', draft(), initiatives, new Date('2026-09-18T21:00:00.001Z'));
   const first = state.records['2026-09-14:coo'].submitted.firstAt;

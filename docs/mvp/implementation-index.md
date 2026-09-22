@@ -120,7 +120,8 @@ These are conceptual entities; final physical tables should reuse suitable exist
 | --- | --- | --- |
 | Submission cycle | Monday 12 a.m. through Friday 5 p.m. in the organization timezone | Server derives report timestamps with IANA/DST handling |
 | On-time priority | A real enterprise priority submitted by Friday 5 p.m. | +5 points; requires at least one linked enterprise priority |
-| On-time opt-out | People may explicitly declare no enterprise priority this week | 0 points; neutral and still counts as submitted |
+| On-time departmental priority | Valid departmental-only weekly work | +3 points once per position/week |
+| On-time opt-out | Explicit opt-out with no priorities | 0 points; neutral and still counts as submitted |
 | Grace window | Friday after 5 p.m. through Monday 9 a.m. | -3 points for the first valid submission in this window |
 | Missed | No valid submission when Monday 9 a.m. passes | -10 points, assessed once by a server job/function |
 | Edit behavior | People may iterate before the deadline | 0 edit penalty; one weekly ledger key prevents duplicate score events |

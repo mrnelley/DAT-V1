@@ -1,0 +1,40 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at) values('87000000-0000-4000-8000-000000000001','department-catalog-test@example.invalid',now());
+insert into compass_private.members(user_id,position_title,roles,departments) values('87000000-0000-4000-8000-000000000001','Department catalog test',array['admin'],'{}');
+insert into compass_private.positions(id,title,roles,required) values('test-department-catalog','Department catalog test position',array['olt'],false);
+select set_config('request.jwt.claim.sub','87000000-0000-4000-8000-000000000001',true);
+do $$ declare cycle date; b record; item jsonb; document jsonb; payload jsonb; saved jsonb; context jsonb; catalog_id text; rejected boolean; begin
+ if (select count(*) from compass_private.departmental_priorities where year=2026)<>180 then raise exception 'Catalog count mismatch'; end if;
+ if (select count(distinct department) from compass_private.departmental_priorities where year=2026)<>6 then raise exception 'Department count mismatch'; end if;
+ if has_table_privilege('authenticated','compass_private.departmental_priorities','INSERT') or has_table_privilege('anon','compass_private.departmental_priorities','SELECT') then raise exception 'Catalog permissions exposed'; end if;
+ select id into catalog_id from compass_private.departmental_priorities where department='Finance' and year=2026 order by id limit 1;
+ select date_trunc('week',greatest(date '2026-09-21',starts_on))::date into cycle from compass_private.weekly_settings;
+ select * into b from compass_private.weekly_boundaries(cycle);
+ item:=jsonb_build_object('id','dept-catalog-1','title','Weekly finance work','desiredResult','Workplan progress','commitmentType','department','departmentPriorityId',catalog_id,'objectiveId','','due',(cycle+4)::text,'status','good','tasks','[]'::jsonb);
+ document:=jsonb_build_object('capacity','capacity','note','','entries',jsonb_build_array(item));
+ payload:=jsonb_build_object('positionId','test-department-catalog','week',cycle,'expectedRevision',0,'draft',document);
+ saved:=compass_private.save_weekly(payload,false,b.deadline_at-interval '1 hour');
+ payload:=jsonb_set(payload,'{expectedRevision}',saved->'revision');
+ saved:=compass_private.save_weekly(payload,true,b.deadline_at);
+ if saved#>>'{submitted,entries,0,departmentPriorityId}'<>catalog_id then raise exception 'Workplan link did not persist'; end if;
+ if (select points from compass_private.weekly_points where position_id='test-department-catalog' and week=cycle)<>3 then raise exception 'Department scoring regressed'; end if;
+ context:=public.compass_weekly_context(cycle);
+ if jsonb_array_length(context->'departmentalObjectives')<>180 then raise exception 'Catalog missing from context'; end if;
+ if not exists(select 1 from jsonb_array_elements(context->'departmentalObjectives') d where d->>'id'=catalog_id and d->>'department'='Finance') then raise exception 'Owner missing from context'; end if;
+ -- Drafts can be unfinished, but submissions must select a real workplan priority.
+ perform compass_private.validate_weekly_document(jsonb_set(document,'{entries,0,departmentPriorityId}','""'),false);
+ rejected:=false;begin perform compass_private.validate_weekly_document(jsonb_set(document,'{entries,0,departmentPriorityId}','""'),true);exception when others then rejected:=true;end;
+ if not rejected then raise exception 'Missing link accepted'; end if;
+ rejected:=false;begin perform compass_private.validate_weekly_document(jsonb_set(document,'{entries,0,departmentPriorityId}','"unknown"'),false);exception when others then rejected:=true;end;
+ if not rejected then raise exception 'Unknown link accepted'; end if;
+ rejected:=false;begin perform compass_private.validate_weekly_document(jsonb_set(document,'{entries,0,objectiveId}','"2026-Q3-7"'),true);exception when others then rejected:=true;end;
+ if not rejected then raise exception 'Mixed link on one priority accepted'; end if;
+ rejected:=false;begin perform compass_private.save_weekly(jsonb_set(payload,'{week}','"2027-01-04"'),false,b.deadline_at);exception when others then rejected:=sqlerrm='Choose a departmental priority for the submission year';end;
+ if not rejected then raise exception 'Wrong-year link accepted or failed unexpectedly'; end if;
+ -- Older published entries without typed links stay readable and valid.
+ perform compass_private.validate_weekly_document(jsonb_set(document,'{entries}',jsonb_build_array(item-'commitmentType'-'departmentPriorityId')),true);
+ update compass_private.members set roles=array['staff'] where user_id=auth.uid();
+ rejected:=false;begin perform public.compass_weekly_context(cycle);exception when insufficient_privilege then rejected:=true;end;
+ if not rejected then raise exception 'Staff gained weekly catalog access'; end if;
+end $$;
+rollback;

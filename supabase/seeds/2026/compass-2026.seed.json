@@ -10431,7 +10431,3770 @@
       "eligibleForAutomaticRollup": false
     }
   ],
-  "departmentWorkplanPriorities": [],
+  "departmentWorkplanPriorities": [
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r19",
+      "year": 2026,
+      "title": "Acquisition: Recruit 3-5 new Groundbreakers Giving Circle members",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r19"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r13",
+      "year": 2026,
+      "title": "Acquisition: Secure 2-4 major sponsors at the $10,000+ level",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r13"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r12",
+      "year": 2026,
+      "title": "Acquisition: Secure 3-5 new corporate sponsors",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r17",
+      "year": 2026,
+      "title": "Build individual giving through a mix of acquisition and retention strategies, including revamping the Groundbreaker Giving Circle, strengthening the ExtraGive campaign, and executing targeted year-end digital solicitations",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r17"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r33",
+      "year": 2026,
+      "title": "Complete Leadership Development Plans for CR team members",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r33"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r24",
+      "year": 2026,
+      "title": "Craft a data-driven SROI case for support to highlight measurable impact and engage funders seeking innovative opportunities",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r39",
+      "year": 2026,
+      "title": "Create 2026 advocacy engagement calendar, key targets, touch points and tracking tool for meetings, site visits, tours, etc.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r39"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r31",
+      "year": 2026,
+      "title": "Create and distribute trauma-informed, value-aligned, HDC branded communication templates for residents (door sign, resident memo, resident letter, follow-up card)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r31"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r27",
+      "year": 2026,
+      "title": "Cross-departmental Event Planning Protocol developed and implemented",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r27"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r38",
+      "year": 2026,
+      "title": "Develop and implement board-approved policy and advocacy priorities, inclusive of communications strategy and messaging approach - federal, state, and local",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r38"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r35",
+      "year": 2026,
+      "title": "Develop and implement Corporate/Leadership Recognition Strategy: Identify opportunities and create plan and secure \"wins\" to elevate programs/projects and leadership for external recognization, \"under 40\" \"under 30\", \"trail-blazer\" leadership awards, \"best in affordable housing\", \"best multifamily community\", etc.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r35"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r29",
+      "year": 2026,
+      "title": "Develop and launch resident communication channel in collaboration with PM and RS",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r29"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r4",
+      "year": 2026,
+      "title": "Develop media announcement regarding LIHTC awards and other key project awards",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r34",
+      "year": 2026,
+      "title": "Develop recruitment digital marketing strategy with HR to attract new talent, which includes testimonials, video, quotes, in writing",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r34"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r18",
+      "year": 2026,
+      "title": "Ensure full board engagement in philanthropy by achieving 100% participation in annual giving",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r5",
+      "year": 2026,
+      "title": "Enterprise level predevelopment fund for real estate development pipeline",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r5"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r22",
+      "year": 2026,
+      "title": "Establish a framework to guide a planned giving strategy; evaluate the potential for a recognition society centered on estate giving (planned gifts)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r7",
+      "year": 2026,
+      "title": "Expand earned media reach through proactive media outreach",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r7"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r1",
+      "year": 2026,
+      "title": "Facebook - Track and analyze performance metrics, and implement strategies to increase followers and engagement of key partners, residents, and elected officials.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r1"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r49",
+      "year": 2026,
+      "title": "Facilitate the production and communications strategy of annual collateral, including the Impact Report and Strategic Plan, to ensure brand consistency and effectively communicate the organization’s mission, vision, and values to external stakeholders.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r49"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r26",
+      "year": 2026,
+      "title": "Form a cross-functional team to evaluate grant opportunities and relationship engagement status on a quarterly basis, ensuring they align with organizational priorities",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r26"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r6",
+      "year": 2026,
+      "title": "Groundbreaking events for Cornerstone and CA 2 (possibly)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r9",
+      "year": 2026,
+      "title": "Grow corporate sponsorship revenue by renewing key partners, upgrading existing sponsors, and cultivating new relationships through the #BetterTogether Corporate Giving Campaign",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r9"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r2",
+      "year": 2026,
+      "title": "Grow Facebook followers",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r2"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r52",
+      "year": 2026,
+      "title": "Grow LinkedIn followers",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r52"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r40",
+      "year": 2026,
+      "title": "Identify and cultivate residents who are willing to document, speak and share/produce their stories with elected officials",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r40"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r44",
+      "year": 2026,
+      "title": "Identify and develop advocacy-specific collateral to support priorities (PA & DE Fact Sheets; 5 Project Fact Sheets; 10 new Resident Stories)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r44"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r25",
+      "year": 2026,
+      "title": "Implementation and integration of a CRM platform to strengthen relationship management and enhance cross- departmental collaboration",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r25"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r16",
+      "year": 2026,
+      "title": "Increase grant success rate and yield rate. (industry standard success 42%; yield rate is 38%)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r16"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r48",
+      "year": 2026,
+      "title": "Increase unique website users through improved navigation and content",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r48"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r47",
+      "year": 2026,
+      "title": "Increase website sessions following the website redesign",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r47"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r42",
+      "year": 2026,
+      "title": "Issue and track sign-on support letters for policy and advocacy priorities to achieve policy wins",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r42"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r14",
+      "year": 2026,
+      "title": "Launch a faith based corporate giving campaign focused on securing gifts for Hope & Opportunity Fund (Q4)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r14"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r51",
+      "year": 2026,
+      "title": "LinkedIn - Implement a social media strategy utilizing ELT to elevate HDC's brand, expand audience reach, and grow reach and followers, with performance tracked through key growth metrics.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r51"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r41",
+      "year": 2026,
+      "title": "Participate and increase executive leadership in coalition/alliances: PA Developer's Council, National NeighborWorks Association, Affordable Housing Tax Credit Coalition, Up for Growth, PA Housing Choice Campaign, Delaware NonProfit Affordable Housing Group, Housing Partnership Network Policy Group, Coalition for Sustainable Housing (Lancaster)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r41"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r4",
+      "year": 2026,
+      "title": "Post Engagement (Increase post engagements to approximately 456 per month in 2026, targeting a total of 5,472 engagements for the year - 15% growth)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r53",
+      "year": 2026,
+      "title": "Post Engagement Rate (Increase LinkedIn engagement rate from 11.03% to 13% in 2026, maintaining at least 13% each month)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r53"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r54",
+      "year": 2026,
+      "title": "Post Impressions (Increase LinkedIn post impressions to approximately 6,300 per month in 2026, targeting a total of 75,500 impressions for the year -15% growth)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r54"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r5",
+      "year": 2026,
+      "title": "Post impressions (Increase post impressions to approximately 4,050 per month in 2026, targeting a total of 48,600 impressions for the year -15% growth) * Facebook has transitioned from reporting “impressions” to “views,” which more accurately reflect content that was actively seen rather than simply displayed.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r5"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r3",
+      "year": 2026,
+      "title": "Post Reach (Increase Facebook post reach to approximately 28,950 people in 2026, with an average of 2,400 people per month -15% growth)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r3"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r43",
+      "year": 2026,
+      "title": "Produce board-driven, resident-centered op-eds related to advocacy",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r43"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r50",
+      "year": 2026,
+      "title": "Produce four external newsletters annually to educate and keep stakeholders informed, driving engagement and actionable support, with open rates used to measure effectiveness. (16% increase)",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r50"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r46",
+      "year": 2026,
+      "title": "Redesign the website to improve user experience, update content, modernize the look, and support 5-year strategic plan.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r46"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r10",
+      "year": 2026,
+      "title": "Retain and renew corporate sponsors",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r10"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r20",
+      "year": 2026,
+      "title": "Retain ExtraGive donors",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r20"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r21",
+      "year": 2026,
+      "title": "Secure NW Flexible Impact and Capital Grant",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r21"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r15",
+      "year": 2026,
+      "title": "Secure philanthropic grants to advance resident services, strengthen general operations, and drive program innovation",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p2-t1-r6",
+      "year": 2026,
+      "title": "Subject Matter Expertise Produce 25 thought leadership presentations in 2026, supported by a proactive strategy to identify, organize, and leverage thought leadership opportunities across all departments to build brand awareness.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p2-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r7",
+      "year": 2026,
+      "title": "Support ribbon cutting for Flats 5 in DE",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r7"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r30",
+      "year": 2026,
+      "title": "Transfer ownership of corporate Google reviews to Property Management, and develop a strategy for Community Managers to take ownership of Google review goals for their individual sites.",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r30"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-community-relations-p1-t1-r11",
+      "year": 2026,
+      "title": "Upgrades: Attain a 20% rate of increased giving among renewing sponsors",
+      "department": "Community Relations",
+      "departmentIds": [
+        "Community Relations"
+      ],
+      "ownerPositionIds": [
+        "position-cr"
+      ],
+      "contributorPositionIds": [
+        "position-vp-impact-advancement"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Community Relations.pdf",
+      "sourceRefs": [
+        "workplan-community-relations-p1-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r12",
+      "year": 2026,
+      "title": "Analyze all properties below 10% PM fee to determine potential increased fee; priortize properties and obtain approvals to increase fee and timeline to execute. Develop a financial performance dashboard by region to include: PM%, Rent Collection %, Vacancy loss, controllable cost per unit, >AR",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r36",
+      "year": 2026,
+      "title": "Complete Leadership Development Plans for FIN team members",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r36"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r28",
+      "year": 2026,
+      "title": "Develop a strategy to capture efficiencies from acquisition integration",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r28"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r14",
+      "year": 2026,
+      "title": "Develop and execute a coordinated stabilization and hand off process for each development project from closing to post construction to ensure equity installments and perm loan closing milestones are achieved.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r14"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r44",
+      "year": 2026,
+      "title": "Develop and implement new organizational structure of department focusing on efficiencies",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r44"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r42",
+      "year": 2026,
+      "title": "Develop and test an incident response plan according to the BCDR",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r42"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r39",
+      "year": 2026,
+      "title": "Develop long term strategy for asset (IT) replacement",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r39"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r30",
+      "year": 2026,
+      "title": "Develop plan to implement Yardi efficiencies and optimization",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r30"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r24",
+      "year": 2026,
+      "title": "Develop strategy and implement new Asset Management software system.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r29",
+      "year": 2026,
+      "title": "Develop strategy for Asset Management Line of Business financials",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r29"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r5",
+      "year": 2026,
+      "title": "Develop workplan for addressing accounts receivable that includes rent collection, controllable costs, insurance, and taxes.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r5"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r20",
+      "year": 2026,
+      "title": "Economic Occupancy Rate",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r20"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r21",
+      "year": 2026,
+      "title": "Evaluate feasibility and sustainability of 3rd party property management in collaboration with PM.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r21"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r40",
+      "year": 2026,
+      "title": "Identify cost savings related to IT vendor contract",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r40"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r6",
+      "year": 2026,
+      "title": "Identify properties that have ability to produce excess cash and manage the 7 of properties to maximize cash to parent.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r7",
+      "year": 2026,
+      "title": "Identify properties that have deferred developer fee and manage 3 of properties to maximize deferred fee payment.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r7"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r43",
+      "year": 2026,
+      "title": "Implement automatic encryption system for sensitive information in emails and training for all employees",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r43"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r33",
+      "year": 2026,
+      "title": "Improve internal relationship through customer service training",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r33"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r8",
+      "year": 2026,
+      "title": "Increase cash on hand from 85 to 110 through reducing A/R, increases in dev fee paid, and excess cash.",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r8"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r41",
+      "year": 2026,
+      "title": "Increase security Awareness scoring",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r41"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r19",
+      "year": 2026,
+      "title": "Maintain average controllable cost",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r19"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r16",
+      "year": 2026,
+      "title": "Properties meeting budgeted NOI",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r16"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r32",
+      "year": 2026,
+      "title": "Reduce late fees by implementing a streamlined accounts payable process",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r32"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r17",
+      "year": 2026,
+      "title": "Reduce properties with negative NOI from 9",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r17"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r27",
+      "year": 2026,
+      "title": "Reduce time to close each property",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r27"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r18",
+      "year": 2026,
+      "title": "Reduce troubled property list from 11",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r15",
+      "year": 2026,
+      "title": "Reduce Vacancy loss through a coordinated strategy with PM",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r26",
+      "year": 2026,
+      "title": "Staff time reallocation/productivity gains in process or procedures related to techology optimization (ADP, Yardi: payroll, AP)",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r26"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-finance-p1-t1-r25",
+      "year": 2026,
+      "title": "User adoption rate (software systems)",
+      "department": "Finance",
+      "departmentIds": [
+        "Finance"
+      ],
+      "ownerPositionIds": [
+        "position-cfo"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Finance.pdf",
+      "sourceRefs": [
+        "workplan-finance-p1-t1-r25"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r19",
+      "year": 2026,
+      "title": "Build capacity of HR Coordinator by further define HR roles more clearly and perform cross-training",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r19"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r29",
+      "year": 2026,
+      "title": "Build out performance management module in ADP",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r29"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r32",
+      "year": 2026,
+      "title": "Collaborate with One2One on developing and delivering AI Training and Education",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r32"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r24",
+      "year": 2026,
+      "title": "Continue development of Leadership Develop Plans for employees and develop tracking system with updates",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r25",
+      "year": 2026,
+      "title": "Create strategy to build relationships with College & Tech Schools throughout Geographic footprint",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r25"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r11",
+      "year": 2026,
+      "title": "Define a better process for tracking FMLA",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r28",
+      "year": 2026,
+      "title": "Develop a formal Employee Value Proposition that highlights HDC's mission, culture, flexibility, and impact",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r28"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r14",
+      "year": 2026,
+      "title": "Develop and Implement Comprehensive Customer Service Training Framework Strategy - could include monthly/quarterly customer service training or undercover boss/secret shopper strategy.",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r14"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r20",
+      "year": 2026,
+      "title": "Develop and implement cross-training program.",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r20"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r30",
+      "year": 2026,
+      "title": "Develop calendar for monthly HR Training (supervisor training, benefit training, wellness training)",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r30"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r21",
+      "year": 2026,
+      "title": "Develop Departmental Career Pathways (PM is complete) and cross- departmental path",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r21"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r15",
+      "year": 2026,
+      "title": "Develop more enhanced customer Service Feedback Loop with Residents (work with CR and PM)",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r27",
+      "year": 2026,
+      "title": "Develop recruitment marketing strategy with CR to attract new talent",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r27"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r23",
+      "year": 2026,
+      "title": "Develop strategy for increasing employee engagement by highlight employee stories and experiences - once a month.",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r23"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p2-2.c",
+      "year": 2026,
+      "title": "Employee spotlight or show and tell on FMM",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p2-2.c"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r9",
+      "year": 2026,
+      "title": "Implement carrier connections for all ancillary benefits including 401k",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r9"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r8",
+      "year": 2026,
+      "title": "Implement optimization in ADP to include recruitment, compensation management and performance management (exact strategies TBD after assessement)",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r8"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r12",
+      "year": 2026,
+      "title": "Implement protocol/process to eliminate missed premium payments by employees (new hires, EE on leave)",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r17",
+      "year": 2026,
+      "title": "Improve 6 month employee retention rate by hiring the right people for the right position. (Develop Interview Guide for Hiring Managers)",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r17"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r33",
+      "year": 2026,
+      "title": "Improve employee engagement around policies, programs, \"fun\" engagement, inclusion & belonging, and culture.",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r33"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r18",
+      "year": 2026,
+      "title": "Improve employee retention by continuing the Training Check-ins at 2 weeks, 30, 60, and 90 days (new hire, hiring manager, and trainer) and stay interviews 1, 3 and 5 years",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r22",
+      "year": 2026,
+      "title": "Launch LEAD cohort #2",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p2-2.b",
+      "year": 2026,
+      "title": "Monthly Property Spotlight during FMM: site staff present their property",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p2-2.b"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r6",
+      "year": 2026,
+      "title": "Reduce health insurance claim costs through employee health benefits training",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r26",
+      "year": 2026,
+      "title": "Research and implement assessment tools on skills and culture fit",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r26"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-hr-p1-t1-r10",
+      "year": 2026,
+      "title": "Revise SOP to clearly define roles and responsibilities between finance, HR, and hiring managers as it relates payroll, HRIS",
+      "department": "Human Resources",
+      "departmentIds": [
+        "Human Resources"
+      ],
+      "ownerPositionIds": [
+        "position-hr"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "HR.pdf",
+      "sourceRefs": [
+        "workplan-hr-p1-t1-r10"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r35",
+      "year": 2026,
+      "title": "All PM staff who want Leadership Development Plans have one",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r35"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r27",
+      "year": 2026,
+      "title": "All properties subject to NSPIRE scores achieve 95 or higher.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r27"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r8",
+      "year": 2026,
+      "title": "Analyze all properties below 10% PM fee to determine potential increased fee; priortize properties and obtain approvals to increase fee and timeline to execute",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r8"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r22",
+      "year": 2026,
+      "title": "Complete planned capital expenditure projects",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r38",
+      "year": 2026,
+      "title": "Create a PM Learning and Growth Dashboard to track growth and capacity building within the departments.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r38"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r26",
+      "year": 2026,
+      "title": "Develop plan to implement Yardi efficiencies and optimization",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r26"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r13",
+      "year": 2026,
+      "title": "Develop workplan for addressing accounts receivable that includes rent collection, controllable costs, insurance, and taxes.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r13"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r21",
+      "year": 2026,
+      "title": "Ensure housing stability rate by coordinating with resident services to minimize risk of eviction.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r21"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r5",
+      "year": 2026,
+      "title": "Ensure that all income certifications are completed 90 days after financial closing.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r5"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r4",
+      "year": 2026,
+      "title": "Implement lease up strategy on Flats 5 to exceed milestones - create lease-up dashboard",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r36",
+      "year": 2026,
+      "title": "Improve employee retention by building technical skills and training for MTs in order to perform in-house repairs.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r36"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r37",
+      "year": 2026,
+      "title": "Improve employee retention by ensuring comprehensive training plan for property management staff.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r37"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r15",
+      "year": 2026,
+      "title": "Improve housing authority response time related to vacancy claims, vacant units, and applicants.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r30",
+      "year": 2026,
+      "title": "Improve resident centered customer service approach by launching a customer service training program in collaboration with HR",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r30"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r31",
+      "year": 2026,
+      "title": "Improve resident satisfaction by resolving complaints",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r31"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r6",
+      "year": 2026,
+      "title": "Improve timeliness, communication and satisfaction with residents and departments around rehabiliation projects. Develop a Rehab resident engagement SOP (pre-notification, communication touchpoints, post-completion survey)",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r14",
+      "year": 2026,
+      "title": "Increase accountability with maintenance technicians, community managers, and regional managers to hit target turn times inclusive of an action plan.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r14"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r33",
+      "year": 2026,
+      "title": "Increase Positive move-outs by connecting residents to resources that would promote economic mobility- homebuyer courses at sites annually",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r33"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r32",
+      "year": 2026,
+      "title": "Increase resident satisfaction by holding quarterly Community Meetings.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r32"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r10",
+      "year": 2026,
+      "title": "Lower insurance claims through maintenance technician and resident training",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r10"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r20",
+      "year": 2026,
+      "title": "Maintain or increase rent collection targets",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r20"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r18",
+      "year": 2026,
+      "title": "Reduce average controllable cost by Implementing Enterprise-level contract opportunities and bulk purchase opportunities",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r11",
+      "year": 2026,
+      "title": "Reduce repair and restoration costs for water damage and restorations costs by performing work in house.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r12",
+      "year": 2026,
+      "title": "Reduce repairs and maintenance line item in budgets by 5%.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r28",
+      "year": 2026,
+      "title": "Reduce time to fill for PM staffing vacancies and plan for coverage of vacancy which includes communications to residents.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r28"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r16",
+      "year": 2026,
+      "title": "Reduce vacancy loss and economic vacancy by holding regional managers accountable for filling vacant units.",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r16"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r19",
+      "year": 2026,
+      "title": "Reduce vendor use by increasing capacity and training of maintainance techs. 5%",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r19"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-property-management-p1-t1-r24",
+      "year": 2026,
+      "title": "Zero noncompliance",
+      "department": "Property Management",
+      "departmentIds": [
+        "Property Management"
+      ],
+      "ownerPositionIds": [
+        "position-pm"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Property Management.pdf",
+      "sourceRefs": [
+        "workplan-property-management-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r9",
+      "year": 2026,
+      "title": "All team members who want Leadership Development Plans have them.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r9"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r5",
+      "year": 2026,
+      "title": "Close and NTP Issued for College Ave Phase 2 - 10% construction complete by year end",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r5"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r4",
+      "year": 2026,
+      "title": "Close and NTP Issued for Cornerstone Apartments - 100% closed by 12/31/26",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r10",
+      "year": 2026,
+      "title": "Close and NTP Issued for NEPA Preservation Deal - 65% complete by year end",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r10"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r4",
+      "year": 2026,
+      "title": "Create an evaluation tool to determine the efficiency of the new department structure.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r21",
+      "year": 2026,
+      "title": "Create and implement a page-turn policy during design to reduce change orders",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r21"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r13",
+      "year": 2026,
+      "title": "Deliver Projected Development Fee Revenue as Planned",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r13"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r2",
+      "year": 2026,
+      "title": "Develop a compliance and policy checklist for RED deals at different stages (application, predevelopment, construction, and stabilization)",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r2"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r19",
+      "year": 2026,
+      "title": "Develop a policy of non-negotiables for LPAs",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r19"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r1",
+      "year": 2026,
+      "title": "Develop and implement contractor performance scorecards and debriefs after project completion.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r1"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r12",
+      "year": 2026,
+      "title": "Develop construction value engineering guidelines to assess tradeoffs without compromising long term quality - inform revisions to the HDC Design Guide Standards.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r17",
+      "year": 2026,
+      "title": "Develop coordinated policy for protocol and coordinating between FIN, RED and CR to approach banks/foundations with aligned asks, prioritizing either development or operations based on donor fit and impact.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r17"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r14",
+      "year": 2026,
+      "title": "Develop enterprise level capital strategy in collaboration with FIN for revolving loan to support early stage predevelopment (temporary loan to permanent financing).",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r14"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r11",
+      "year": 2026,
+      "title": "Develop portfolio mix metrics that can be used as part of the evaluation of prospective RED projects of acquisitions",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r23",
+      "year": 2026,
+      "title": "Develop process so that all invoices will be processed within 7 days of receipt",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r23"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r11",
+      "year": 2026,
+      "title": "Develop strategy and process for PM and Maintenance representative input (pre and post production) - inform revisions to HDC Design Guide Standards.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r6",
+      "year": 2026,
+      "title": "Develop strategy and process for resident feedback loop (pre and post production) - inform revisions to HDC Design Guide Standards. Track number of design changes informed by residents.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r3",
+      "year": 2026,
+      "title": "Develop strategy for preparing for financial and PM hand off protocol for development hand off post construction.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r3"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r15",
+      "year": 2026,
+      "title": "Develop strategy to maximize permanent debt on LIHTC deals (consider Market Rate Units, internal reserves to increase income) 2026 baseline measurement - year over year increase moving forward.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r18",
+      "year": 2026,
+      "title": "Diversify deal structure by researching and identifying 5 new funding resources and 3 new deal structures to enable deals to be feasible in the uncertain financial times.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r8",
+      "year": 2026,
+      "title": "Flats 5- 100% construction completion and placed in service",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r8"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r9",
+      "year": 2026,
+      "title": "HOP-New Freedom, Landisville 1, St. Stanislaus",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r9"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r22",
+      "year": 2026,
+      "title": "Implement schedule to ensure applications will be complete 1 week before due date",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r7",
+      "year": 2026,
+      "title": "Improve satisfaction with external and internal partners. Create a continuous improvement feed back loop to the RED department that includes Lessons Learned (GC, Architect, consultants, PM, RS, Finance, CR) after each project within 1 month of completion. Feedback to be included in Lessons Learned SOP.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r7"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r16",
+      "year": 2026,
+      "title": "NEPA Preservation deal achieved at closing within deferred dev target",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r16"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r7",
+      "year": 2026,
+      "title": "Prepare and submit 9% LIHTC Application for Bucks Co (PA)",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r7"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r6",
+      "year": 2026,
+      "title": "Prepare and submit 9% LIHTC Application for Smyrna Phase 2 (DE)",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p2-t1-r13",
+      "year": 2026,
+      "title": "Reduce insurance risk and cost by building an insurance risk assessment into the design phase checklist to mitgate insurance risk - Builder's risk and property insurance.",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p2-t1-r13"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-real-estate-development-p1-t1-r24",
+      "year": 2026,
+      "title": "Reduce time to execute development related documents by implementing Electronic Signature Protocol for HDC RED staff and partners",
+      "department": "Real Estate Development",
+      "departmentIds": [
+        "Real Estate Development"
+      ],
+      "ownerPositionIds": [
+        "position-red"
+      ],
+      "contributorPositionIds": [
+        "position-project-management"
+      ],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Real Estate Development.pdf",
+      "sourceRefs": [
+        "workplan-real-estate-development-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r12",
+      "year": 2026,
+      "title": "Develop strategy to increase home-buyer educational opportunities.",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r12"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r20",
+      "year": 2026,
+      "title": "Improve participation in HDC organized programs and events by direct outreach and personal connection to residents.(Response rate in surveys - GOAL 30%)",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r20"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r13",
+      "year": 2026,
+      "title": "Improve rent collection by working with residents who are behind to collect the rent through a documented and tracked referral process.",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r13"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r18",
+      "year": 2026,
+      "title": "Improve service delivery partnership connection (Develop a partnership impact map tied to priorities)",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r18"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r16",
+      "year": 2026,
+      "title": "Improve the data integrity and analysis of resident services key performance indicators. (monthly and quarterly reports with trend analysis)",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r16"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r4",
+      "year": 2026,
+      "title": "Improve timeliness, communication and satisfaction with residents and departments around rehabiliation projects.",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r4"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r24",
+      "year": 2026,
+      "title": "Increase #Resident Service Coordinators Engaged in Leadership Development Plans",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r24"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r21",
+      "year": 2026,
+      "title": "Leverage strategic partnerships for housing stability, financial capability, health and wellness; develop a partnership impact map",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r21",
+        "workplan-resident-services-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r6",
+      "year": 2026,
+      "title": "Leverage Strategic Partnerships to offer support and services to residents in priority areas (Housing Stability/Financial Capability/Health & Wellness)-Programs & Services & Funds",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r6"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r17",
+      "year": 2026,
+      "title": "Optimize functionality of resident referral system to streamline process, follow up with residents, and close the loop to increase housing stability.",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r17"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r8",
+      "year": 2026,
+      "title": "Partner with CR on grant writing to bring contribute revenue for Resident Services",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r8"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r9",
+      "year": 2026,
+      "title": "Partner with CR on supporting the launch of a faith based giving H&O Fundraising Campaign",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r9"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r10",
+      "year": 2026,
+      "title": "Reduce accounts recieveable by working with residents who are behind to collect the rent through a documented and tracked referral process & Reduce number of troubled properties to <9. Collaborate with FIN and PM on developing a strategy for troubled properties - focusing on a detailed plan for 3 properties per quarter",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r10"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r15",
+      "year": 2026,
+      "title": "Resolve issues with tracking and follow-up with residents to service delivery partners and document outcomes. Implement referral management system to track residents connected to Service Delivery Partners that will create monthly reports and identify resident trends that might need to be addressed. (Res. Connect or TBD System)",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r15"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r26",
+      "year": 2026,
+      "title": "Retool and implement more streamlined and supportive onboarding experience",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r26",
+        "workplan-resident-services-p1-t1-r22"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r25",
+      "year": 2026,
+      "title": "Strengthen team building of department",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r25"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    },
+    {
+      "id": "2026-workplan-resident-services-p1-t1-r11",
+      "year": 2026,
+      "title": "Work with residents who are at risk of eviction or non-renewal to maintain housing stability.",
+      "department": "Resident Services",
+      "departmentIds": [
+        "Resident Services"
+      ],
+      "ownerPositionIds": [
+        "position-rs"
+      ],
+      "contributorPositionIds": [],
+      "enterpriseObjectiveIds": [],
+      "active": true,
+      "sourceFile": "Resident Services.pdf",
+      "sourceRefs": [
+        "workplan-resident-services-p1-t1-r11"
+      ],
+      "sourceBasis": "2026 department workplan; selectable work scope, not an imported target or progress record"
+    }
+  ],
   "confirmedOwnershipDecisions": [
     {
       "department": "Real Estate Development",

@@ -12,6 +12,7 @@
 - Q2ArchivedObjectives: 14
 - Q3Objectives: 14
 - Q1DepartmentPriorities: 40
+- DepartmentalPriorities: 180
 - draftWorkplanObjectives: 181
 - reportedFacts: 13
 - reviewItems: 2
@@ -136,6 +137,6 @@ No names or progress-owner columns from these PDFs are copied. Early draft numbe
 
 ## Deployment boundary
 
-The generated archive SQL and Admin archive reader support Q1/Q2 notes. The remaining seed is a structural import package: the next metric-entry pass must preserve manual statuses, lookback windows, component fields and opening-balance metadata. It is not a request to turn stored formula text into executable code.
+The generated archive SQL and Admin archive reader support Q1/Q2 notes. The department priority catalog supplies 180 selectable work scopes across six departments; it imports no targets or observations. Deploy that catalog with the separate 20260925 departmental priorities release. The remaining seed is a structural import package: the next metric-entry pass must preserve manual statuses, lookback windows, component fields and opening-balance metadata. It is not a request to turn stored formula text into executable code.
 
 Rebuild: `node scripts/build-2026-seed.mjs`. Validate: `node --test test/annual-seed.test.mjs`.

@@ -2,9 +2,37 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
-const fixture=()=>({week:'2026-09-14',startsOn:'2026-09-14',positionTitle:'Director, Finance',boundaries:{deadline_at:'2026-09-18T21:00:00Z',grace_at:'2026-09-21T13:00:00Z'},positions:[{id:'finance',title:'Director, Finance',canEdit:true,required:true,points:100}],objectives:[{id:'2026-Q3-7',title:'Advance College Ave Phase 2 Closing',period:'2026-Q3'}],records:[],events:[]});
+const fixture=()=>({week:'2026-09-14',startsOn:'2026-09-14',positionId:'finance',positionTitle:'Director, Finance',boundaries:{deadline_at:'2026-09-18T21:00:00Z',grace_at:'2026-09-21T13:00:00Z'},positions:[{id:'finance',title:'Director, Finance',department:'Finance',canEdit:true,required:true,points:100}],objectives:[{id:'2026-Q3-7',title:'Advance College Ave Phase 2 Closing',period:'2026-Q3'}],departmentalObjectives:[{id:'cr-work',title:'Retain corporate sponsors',department:'Community Relations',year:2026,active:true},{id:'fin-work',title:'Improve cash position',department:'Finance',year:2026,active:true},{id:'rs-work',title:'Improve service connections',department:'Resident Services',year:2026,active:true}],records:[],events:[]});
 const setup=()=>{const dom=new JSDOM('<button data-surface="weekly" aria-pressed="true"></button><div id="surface"></div>',{url:'http://localhost',runScripts:'outside-only'});
  dom.window.structuredClone=structuredClone;dom.window.eval(readFileSync('src/features/weekly-accountability/model.js','utf8'));dom.window.eval(readFileSync('src/features/weekly-accountability/view.js','utf8'));return dom;};
+
+test('department dropdown groups by owner, puts own department first, and persists cross-department selection',async()=>{
+ const dom=setup(),w=dom.window,root=w.document.querySelector('#surface'),data=fixture();let saved;
+ w.CompassMetricStore={session:async()=>({}),weekly:async()=>structuredClone(data),saveWeekly:async(payload)=>{
+  saved=payload;data.records=[{positionId:'finance',revision:1,submittedRevision:1,draft:payload.draft,submitted:payload.draft}];
+ }};
+ await w.CompassWeekly.mount(root);root.querySelector('[name="capacity"][value="capacity"]').checked=true;root.querySelector('[data-add]').click();
+ const select=root.querySelector('[data-field="departmentPriorityId"]');
+ assert.deepEqual([...select.querySelectorAll('optgroup')].map(g=>g.label),['Finance','Community Relations','Resident Services']);
+ assert.equal(root.querySelector('[data-field="objectiveId"]'),null);
+ select.value='cr-work';root.querySelector('[data-field="title"]').value='Follow up sponsorships';root.querySelector('[data-field="desiredResult"]').value='Renewals confirmed';
+ root.querySelector('#weekly-form').dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(saved.draft.entries[0].departmentPriorityId,'cr-work');assert.equal(saved.draft.entries[0].commitmentType,'department');assert.equal(saved.draft.entries[0].objectiveId,'');
+ assert.equal(root.querySelector('[data-field="departmentPriorityId"]').value,'cr-work');
+ root.querySelector('[data-view="rollup"]').click();assert.match(root.textContent,/Community Relations · Retain corporate sponsors/);dom.window.close();
+});
+
+test('switching priority type clears the opposite link and preserves text and action items',async()=>{
+ const dom=setup(),w=dom.window,root=w.document.querySelector('#surface');
+ w.CompassMetricStore={session:async()=>({}),weekly:async()=>fixture()};await w.CompassWeekly.mount(root);
+ root.querySelector('[data-add]').click();root.querySelector('[data-field="title"]').value='Keep priority';root.querySelector('[data-field="objectiveId"]').value='2026-Q3-7';
+ root.querySelector('[data-add-task]').click();root.querySelector('[data-task="0"][data-field="title"]').value='Keep action';
+ let type=root.querySelector('[data-field="commitmentType"]');type.value='department';type.dispatchEvent(new w.Event('change',{bubbles:true}));
+ root.querySelector('[data-field="departmentPriorityId"]').value='fin-work';
+ type=root.querySelector('[data-field="commitmentType"]');type.value='enterprise';type.dispatchEvent(new w.Event('change',{bubbles:true}));
+ assert.equal(root.querySelector('[data-field="objectiveId"]').value,'');assert.equal(root.querySelector('[data-field="title"]').value,'Keep priority');assert.equal(root.querySelector('[data-task="0"][data-field="title"]').value,'Keep action');
+ type=root.querySelector('[data-field="commitmentType"]');type.value='department';type.dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(root.querySelector('[data-field="departmentPriorityId"]').value,'');dom.window.close();
+});
 
 test('plus expands multiple priorities without losing fields, then submits and reloads all cards',async()=>{
  const dom=setup(),w=dom.window,root=w.document.querySelector('#surface'),data=fixture();let saved;

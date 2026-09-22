@@ -53,7 +53,8 @@ All boundaries use the organization’s IANA timezone. HDC defaults to `America/
 | Outcome | Boundary | Points |
 | --- | --- | ---: |
 | On-time enterprise priority | First valid submission at or before Friday 5:00 p.m. | +5 |
-| On-time opt-out | Explicit opt-out at or before Friday 5:00 p.m. | 0 |
+| On-time departmental work | Valid departmental-only priorities at or before Friday 5:00 p.m. | +3 once per position/week |
+| On-time opt-out | Explicit opt-out without priorities at or before Friday 5:00 p.m. | 0 |
 | Grace-window submission | After Friday 5:00 p.m. through Monday 9:00 a.m. | -3 |
 | Missed submission | No valid submission when Monday 9:00 a.m. passes | -10 |
 
@@ -117,3 +118,9 @@ Create these modules as accepted proof-of-concept surfaces move into React. The 
 4. Build the team rollup from submitted records and immutable revisions.
 5. Add project-plan and scorecard-domain migrations, then connect workplans, projects, and both scorecards.
 6. Add the Monday 9:00 a.m. scheduled assessment only after authenticated submission and retry tests pass.
+
+## Department workplan selections
+
+The 20260925 release adds a private department priority catalog with stable IDs, year, owning department and source references. Weekly entries declare `commitmentType` and link either `objectiveId` (enterprise) or `departmentPriorityId` (department workplan). The weekly context RPC returns the catalog for the selected year. New departmental submissions require an active, same-year link; earlier untyped records remain readable.
+
+The form groups choices inside the dropdown by owning department, placing the selected position’s department first. Cross-department selections retain the catalog owner. This catalog introduces no annual scorecard measures, targets or historical progress. Rebuild with `node scripts/build-departmental-priorities.mjs`; validate the hosted contract with `supabase/tests/departmental_priorities.sql` inside its rollback transaction.

@@ -17,7 +17,7 @@
   const millis = value => value instanceof Date ? value.getTime() : Date.parse(value);
   const deadline = week => localInstant(addDays(week, 4), '17:00:00');
   const graceEnd = week => localInstant(addDays(week, 7), '09:00:00');
-  const policy = Object.freeze({ startingPoints: 100, onTimePriority: 5, onTimeOptOut: 0, late: -3, missed: -10 });
+  const policy = Object.freeze({ startingPoints: 100, onTimePriority: 5, onTimeDepartmental: 3, onTimeOptOut: 0, late: -3, missed: -10 });
   const key = (week, position) => `${week}:${position}`;
   const empty = () => ({ version: 2, records: {}, events: [] });
   const freshDraft = () => ({ capacity: '', note: '', entries: [] });
@@ -43,11 +43,13 @@
     next.records[id] = { ...next.records[id], week, position, draft: clone(draft) };
     return next;
   };
-  const scoreEvent = (week, capacity, firstAt) => {
+  const scoreEvent = (week, capacity, firstAt, entries) => {
     if (millis(firstAt) <= millis(deadline(week))) {
       return capacity === 'enterprise'
         ? { type: 'on_time_priority', reason: 'On-time enterprise priority', points: policy.onTimePriority }
-        : { type: 'on_time_opt_out', reason: 'On-time enterprise opt-out', points: policy.onTimeOptOut };
+        : entries.some(e=>e.title.trim())
+          ? { type: 'on_time_departmental', reason: 'On-time departmental workplan priority', points: policy.onTimeDepartmental }
+          : { type: 'on_time_opt_out', reason: 'On-time opt-out', points: policy.onTimeOptOut };
     }
     if (millis(firstAt) <= millis(graceEnd(week))) return { type: 'late_submission', reason: 'Late weekly submission', points: policy.late };
     return { type: 'missed_submission', reason: 'Weekly submission missed grace window', points: policy.missed };
@@ -59,7 +61,7 @@
     const next = saveDraft(state, week, position, draft), record = next.records[key(week, position)];
     const firstAt = record.submitted?.firstAt || now.toISOString();
     record.submitted = { firstAt, updatedAt: now.toISOString(), snapshot: { ...clone(draft), entries: draft.entries.filter(e => e.title.trim()).map((e, index) => ({ ...clone(e), rank: index + 1 })) } };
-    const eventId = `${week}:${position}:weekly-score`, event = scoreEvent(week, draft.capacity, firstAt);
+    const eventId = `${week}:${position}:weekly-score`, event = scoreEvent(week, draft.capacity, firstAt, record.submitted.snapshot.entries);
     const existing = next.events.find(e => e.id === eventId);
     if (!existing) next.events.push({ id: eventId, week, position, recordedAt: firstAt, ...event });
     else if (millis(now) <= millis(deadline(week)) && millis(firstAt) <= millis(deadline(week))) Object.assign(existing, event, { updatedAt: now.toISOString() });

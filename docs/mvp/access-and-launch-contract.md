@@ -37,7 +37,7 @@ Use short labels, clear save/submission feedback, keyboard-accessible controls a
 
 Required role types: OLT, ELT and Executive. One obligation per accountable position per cycle, regardless of overlapping roles. Points are required in MVP: opening 100, carry forward, annual activity by position. Badges are deferred. A personal points number and authorized oversight views are sufficient; leaderboard scope is deferred.
 
-Use America/New_York with DST. Cycle opens Monday 00:00. Valid real priority through Friday 17:00:00 earns +5; on-time opt-out earns 0. After that cutoff through next Monday 09:00:00, either submission type earns -3. Missing after grace earns -10. Pre-deadline edits have no penalty. Freeze the scoring choice at cutoff. The scheduled assessment must be safe under retries and concurrent submissions.
+Use America/New_York with DST. Cycle opens Monday 00:00. A valid enterprise priority through Friday 17:00:00 earns +5; departmental-only priorities earn +3; an on-time opt-out without priorities earns 0. A mixed submission earns +5 total, never +8. After that cutoff through next Monday 09:00:00, either submission type earns -3. Missing after grace earns -10. Pre-deadline edits have no penalty. Freeze the scoring choice at cutoff. The scheduled assessment must be safe under retries and concurrent submissions.
 
 ## Hosted development reset and seed
 

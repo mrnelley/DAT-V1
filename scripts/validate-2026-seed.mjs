@@ -12,7 +12,7 @@ export function validateSeed(s){
  unique(s.strategicPlan.objectives,'strategic objectives');unique(s.kpiDefinitions,'KPI sources');unique(s.reviewItems,'review items');
  assert.equal(departments.size,6);assert.ok(!departments.has('Operations')&&!departments.has('Advocacy'));
  assert.equal(pillars.size,5);assert.equal(strategies.size,15);assert.equal(s.strategicPlan.targets.length,19);
- assert.equal(s.kpiDefinitions.length,66);assert.equal(allWorkplans.length,40);
+ assert.equal(s.kpiDefinitions.length,66);assert.equal(s.archives.flatMap(a=>a.departmentPriorities).length,40);assert.equal(s.departmentWorkplanPriorities.length,180);unique(allWorkplans,'workplan priorities');for(const row of s.departmentWorkplanPriorities){assert.ok(departments.has(row.department));assert.equal(row.year,2026);}
  const assertOwners=row=>{assert.ok(row.ownerPositionIds.length,`Owner missing: ${row.id}`);for(const id of [...row.ownerPositionIds,...row.contributorPositionIds])assert.ok(positions.has(id),`Unknown position ${id}`);};
  for(const p of s.positions){assert.equal(p.occupants.length,0);assert.ok(p.department===null||departments.has(p.department));assert.ok(!p.roles.includes('admin'));}
  for(const m of s.metricDefinitions){assertOwners(m);assert.ok(m.department===null||departments.has(m.department));assert.equal(m.executableFormula,null);}
@@ -37,6 +37,6 @@ export function validateSeed(s){
  for(const a of s.archives){assert.equal(a.readOnly,true);assert.equal(a.visibility,'admin-data-table-only');}
  assert.ok(s.quarterlyObjectives.every(o=>o.period==='2026-Q3'));
  assert.equal(s.openingMetricBalances[0].value,750000);
- return {positions:positions.size,departments:departments.size,pillars:pillars.size,strategies:strategies.size,strategicObjectives:s.strategicPlan.objectives.length,strategicTargets:s.strategicPlan.targets.length,KPISourceRows:s.kpiDefinitions.length,metricDefinitions:metrics.size,Q1ArchivedObjectives:s.archives[0].objectives.length,Q2ArchivedObjectives:s.archives[1].objectives.length,Q3Objectives:s.quarterlyObjectives.length,Q1DepartmentPriorities:allWorkplans.length,draftWorkplanObjectives:s.workplanReferences.reduce((n,d)=>n+d.objectives.length,0),reportedFacts:s.reportedFacts.length,reviewItems:s.reviewItems.length};
+ return {positions:positions.size,departments:departments.size,pillars:pillars.size,strategies:strategies.size,strategicObjectives:s.strategicPlan.objectives.length,strategicTargets:s.strategicPlan.targets.length,KPISourceRows:s.kpiDefinitions.length,metricDefinitions:metrics.size,Q1ArchivedObjectives:s.archives[0].objectives.length,Q2ArchivedObjectives:s.archives[1].objectives.length,Q3Objectives:s.quarterlyObjectives.length,Q1DepartmentPriorities:s.archives.flatMap(a=>a.departmentPriorities).length,DepartmentalPriorities:s.departmentWorkplanPriorities.length,draftWorkplanObjectives:s.workplanReferences.reduce((n,d)=>n+d.objectives.length,0),reportedFacts:s.reportedFacts.length,reviewItems:s.reviewItems.length};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)console.log(validateSeed(JSON.parse(readFileSync(new URL('../supabase/seeds/2026/compass-2026.seed.json',import.meta.url),'utf8'))));
