@@ -6,6 +6,40 @@ const fixture=()=>({week:'2026-09-14',startsOn:'2026-09-14',positionTitle:'Direc
 const setup=()=>{const dom=new JSDOM('<button data-surface="weekly" aria-pressed="true"></button><div id="surface"></div>',{url:'http://localhost',runScripts:'outside-only'});
  dom.window.structuredClone=structuredClone;dom.window.eval(readFileSync('src/features/weekly-accountability/model.js','utf8'));dom.window.eval(readFileSync('src/features/weekly-accountability/view.js','utf8'));return dom;};
 
+test('plus expands multiple priorities without losing fields, then submits and reloads all cards',async()=>{
+ const dom=setup(),w=dom.window,root=w.document.querySelector('#surface'),data=fixture();let saved;
+ w.CompassMetricStore={session:async()=>({}),weekly:async()=>structuredClone(data),saveWeekly:async(payload,finalizing)=>{
+  saved={payload,finalizing};data.records=[{positionId:'finance',revision:1,submittedRevision:1,draft:payload.draft,submitted:payload.draft,firstAt:'2026-09-16T12:00:00Z'}];
+ }};
+ await w.CompassWeekly.mount(root);root.querySelector('[value="enterprise"]').checked=true;
+ root.querySelector('[name="note"]').value='Keep weekly context';root.querySelector('[name="correctionReason"]').value='Keep correction';
+ for(let i=0;i<3;i++){
+  root.querySelector('[data-add]').click();const title=root.querySelector(`[data-entry="${i}"][data-field="title"]`);assert.equal(w.document.activeElement,title);
+  title.value=`Priority ${i+1} text`;root.querySelector(`[data-entry="${i}"][data-field="desiredResult"]`).value=`Result ${i+1}`;
+  root.querySelector(`[data-entry="${i}"][data-field="objectiveId"]`).value='2026-Q3-7';
+  if(i===0){root.querySelector('[data-add-task="0"]').click();root.querySelector('[data-task="0"][data-field="title"]').value='Keep nested task';}
+ }
+ assert.equal(root.querySelector('[data-entry="0"][data-field="title"]').value,'Priority 1 text');
+ assert.equal(root.querySelector('[data-task="0"][data-field="title"]').value,'Keep nested task');
+ assert.equal(root.querySelector('[name="correctionReason"]').value,'Keep correction');
+ root.querySelector('#weekly-form').dispatchEvent(new w.Event('submit',{cancelable:true}));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(saved.finalizing,true);assert.equal(saved.payload.draft.entries.length,3);assert.equal(new Set(saved.payload.draft.entries.map(e=>e.id)).size,3);
+ assert.equal(saved.payload.draft.note,'Keep weekly context');assert.equal(saved.payload.correctionReason,'Keep correction');
+ await w.CompassWeekly.mount(root);assert.equal(root.querySelectorAll('.entry-heading').length,3);
+ root.querySelector('[data-view="rollup"]').click();for(let i=1;i<=3;i++)assert.match(root.textContent,new RegExp(`Priority ${i} text`));
+ dom.window.close();
+});
+
+test('weekly add button observes the database limit and removal allows another card',async()=>{
+ const dom=setup(),w=dom.window,root=w.document.querySelector('#surface');
+ w.CompassMetricStore={session:async()=>({}),weekly:async()=>fixture()};await w.CompassWeekly.mount(root);
+ for(let i=0;i<12;i++)root.querySelector('[data-add]').click();
+ assert.equal(root.querySelectorAll('.entry-heading').length,12);assert.equal(root.querySelector('[data-add]').disabled,true);assert.match(root.querySelector('#priority-count').textContent,/Weekly limit reached/);
+ root.querySelector('[data-add]').click();assert.equal(root.querySelectorAll('.entry-heading').length,12);
+ root.querySelector('[data-remove="3"]').click();assert.equal(root.querySelector('[data-add]').disabled,false);root.querySelector('[data-add]').click();assert.equal(root.querySelectorAll('.entry-heading').length,12);
+ dom.window.close();
+});
+
 test('team rollup exposes submitted action details without edit controls',async()=>{
  const dom=setup(),w=dom.window,root=w.document.querySelector('#surface'),data=fixture();
  const entry={title:'Close financing',desiredResult:'Approval',objectiveId:'2026-Q3-7',due:'2026-09-18',projectReference:'Closing plan',tasks:[{title:'Review lender documents',owner:'finance',due:'2026-09-17',status:'in_progress'}]};
