@@ -14,7 +14,7 @@ const setup=(options={})=>{
  const admin={auth:{admin:{createUser:async data=>{calls.push({name:'createUser',data});account={id:'new-id',requestId:data.app_metadata.compass_provisioning_id,assigned:false,confirmed:false};return {data:{user:{id:'new-id'}}};},inviteUserByEmail:async(email,options)=>{calls.push({name:'invite',email,options});return {data:{}};}}}};
  const handler=createUserHandler({createClient:(_url,key)=>key==='server-only'?admin:user,env:key=>({SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only',COMPASS_APP_URL:options.appUrl})[key]});
  const send=(data=payload,headers={authorization:'Bearer verified','origin':'http://127.0.0.1:4174'})=>handler(new Request('https://example/functions/admin',{method:'POST',headers,body:JSON.stringify(data)}));
- return {send,calls};
+ return {send,calls,handler};
 };
 test('user creation never confirms email or sends an invitation implicitly',async()=>{const {send,calls}=setup();const response=await send();assert.equal(response.status,200);assert.equal(calls.find(c=>c.name==='createUser').data.email_confirm,false);assert.equal(calls.filter(c=>c.name==='invite').length,0);assert.deepEqual(calls.find(c=>c.name==='compass_set_metric_member').args.payload.roles,['director']);});
 test('same request retry returns the created account without replacing access',async()=>{const {send,calls}=setup();await send();await send();assert.equal(calls.filter(c=>c.name==='createUser').length,1);assert.equal(calls.filter(c=>c.name==='compass_set_metric_member').length,1);});
@@ -58,4 +58,20 @@ test('dev domain allows Admin requests and keeps invitations on the custom domai
  assert.equal(calls.find(c=>c.name==='invite').options.redirectTo,'https://hdc-compass.dev/auth/callback');
  const rejected=await send(payload,{authorization:'Bearer verified',origin:'https://old-deployment.vercel.app'});
  assert.equal(rejected.status,403);
+});
+
+test('apex and www preflights allow browser provisioning; unrelated origins stay denied',async()=>{
+ for(const appUrl of ['https://hdc-compass.dev','https://www.hdc-compass.dev']){
+  const {handler,send,calls}=setup({appUrl});
+  for(const origin of ['https://hdc-compass.dev','https://www.hdc-compass.dev']){
+   const response=await handler(new Request('https://example/functions/admin',{method:'OPTIONS',headers:{origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,apikey,content-type,x-client-info,x-retry-count'}}));
+   assert.equal(response.status,204);assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
+   for(const h of ['authorization','apikey','content-type','x-client-info','x-retry-count'])assert.ok(response.headers.get('Access-Control-Allow-Headers').split(',').map(s=>s.trim()).includes(h));
+   assert.equal((await send(payload,{origin,authorization:'Bearer verified'})).status,200);
+  }
+  assert.equal(calls.filter(c=>c.name==='createUser').length,1);
+  for(const origin of ['https://hdc-compass.dev.evil.invalid','https://preview.vercel.app']){
+   const rejected=await handler(new Request('https://example/functions/admin',{method:'OPTIONS',headers:{origin}}));assert.equal(rejected.status,403);assert.equal(rejected.headers.get('Access-Control-Allow-Origin'),null);
+  }
+ }
 });

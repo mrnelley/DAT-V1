@@ -28,3 +28,9 @@ Deploy function changes with `npx supabase functions deploy compass-admin-users 
 If Microsoft returns to an older deployment, compare the starting and return hostnames before debugging membership. A missing allowed callback can cause Supabase to fall back to Site URL. Browser verification storage does not travel between Vercel deployment hostnames; the old frontend also remains at its original deployment address. Fix the exact redirect allowlist, then start a fresh login from the stable address. Do not reuse the failed callback link or alter the user's roles to work around this.
 
 `test/auth-browser-lifecycle.test.mjs` runs the actual Supabase client and bundled frontend against controlled API responses. It verifies callback exchange, identity, metric form rendering, reload persistence, and explicit recovery when the browser verifier is missing. The live Microsoft return still needs the deployment check above.
+
+## Custom-domain aliases and user management
+
+Vercel currently redirects `hdc-compass.dev` to `www.hdc-compass.dev`. Register `https://www.hdc-compass.dev/auth/callback` as a Supabase Redirect URL as well as the apex callback. The user-management function accepts both exact origins when `COMPASS_APP_URL` is either one; other preview domains remain denied. Test CORS preflight from the actual browser origin, then test authenticated provisioning. An HTTP-only test without an Origin header does not catch browser CORS failures.
+
+Edge Function callers use `src/lib/edgeFunctions.js` with a purpose-specific action label. Errors carry the function name, operation, category and HTTP status when available. Connection failures cannot prove whether a write happened; keep the same request ID when retrying. Authorization is always checked inside the function.

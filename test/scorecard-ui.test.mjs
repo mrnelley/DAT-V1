@@ -49,10 +49,11 @@ test('hosted annual surface has ten signals and opens every configured priority'
 test('avatar opens the enabled position dashboard, profile edits persist, and Admin remains on the hub',async()=>{
  let name='Initial name',revision=null;
  const access=()=>({positionTitle:'Manager, Enterprise Initiatives',positionId:'mei',roles:['olt'],positions:[],admin:true,metrics:true,weekly:true,features:{myDashboard:true},profile:{displayName:name}});
- const dom=await setup('#learn',{access:async()=>access(),myWorkspace:async()=>({access:access(),profile:{displayName:name,email:'person@example.invalid',bio:'',photo:null,revision},weekly:{week:'2026-09-14',records:[{positionId:'mei',draft:{entries:[{title:'Review measures',desiredResult:'Validated definitions',due:'2026-09-18',status:'good',tasks:[]}]}}]},properties:[]}),saveProfile:async p=>{name=p.displayName;revision=1;return {...p,revision};}});
+ const dom=await setup('#learn',{access:async()=>access(),myWorkspace:async()=>({access:access(),profile:{displayName:name,email:'person@example.invalid',bio:'',photo:null,revision},weekly:{week:'2026-09-14',records:[{positionId:'mei',draft:{entries:[{title:'Review measures',desiredResult:'Validated definitions',due:'2026-09-18',status:'good',tasks:[]}]}}]},properties:[{name:"College Avenue Apartments",street:"213 College Ave",city:"Lancaster",state:"PA",postal_code:"17603"}]}),saveProfile:async p=>{name=p.displayName;revision=1;return {...p,revision};}});
  const w=dom.window,d=w.document;assert.equal(d.querySelector('.profile-link').disabled,false);d.querySelector('.profile-link').click();await tick();
  assert.match(d.querySelector('#surface').textContent,/Manager, Enterprise Initiatives/);assert.match(d.querySelector('#surface').textContent,/Review measures/);
  assert.equal(d.querySelector('[data-surface="admin"]').hidden,false);
+ const map=new URL(d.querySelector('.property-locations a').href);assert.equal(map.origin,'https://www.google.com');assert.equal(map.pathname,'/maps/search/');assert.equal(map.searchParams.get('api'),'1');assert.equal(map.searchParams.get('query'),'213 College Ave, Lancaster, PA, 17603');
  d.querySelector('[data-workspace-section="profile"]').click();const form=d.querySelector('#profile-form');form.elements.displayName.value='Updated name';await form.onsubmit({preventDefault(){}});await tick();
  assert.match(form.textContent,/Profile saved/);assert.equal(d.querySelector('.account strong').textContent,'Updated name');
  assert.equal(form.querySelector('[name="roles"]'),null);w.close();

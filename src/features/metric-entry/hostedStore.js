@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { authFlowForHash, signInWithMicrosoft } from './authFlow.js';
 import { createAuthSession, describeAuthCallback } from './authSession.js';
 import { createWorkspaceSession } from '../admin/workspaceSession.js';
+import { invokeEdgeFunction } from '../../lib/edgeFunctions.js';
 const callback = describeAuthCallback(location);
 const client = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY, {
   auth: { flowType: authFlowForHash(location.hash), storageKey: 'compass-hosted-auth' },
@@ -69,10 +70,9 @@ window.CompassMetricStore = {
   adminArchive: (period,search='') => rpc('compass_admin_archive',{archive_period:period,search_text:search}),
   async manageUser(payload) {
     if(workspace.current())throw new Error('Return to your Admin account to manage users.');
-    const {data,error}=await client.functions.invoke('compass-admin-users',{body:payload});
-    if(error){let message=error.message;try{const body=await error.context.json();message=body.error||message;}catch{/* Network errors have no response body. */}throw new Error(message);}
-    if(data?.error)throw new Error(data.error);
-    return data;
+    return invokeEdgeFunction(client,'compass-admin-users',{
+      action:payload.action==='invite'?'Send Compass invitation':'Connect person to position',body:payload,
+    });
   },
   list: department => rpc('compass_metric_entries', { target_department: department }),
   save: payload => rpc('compass_save_metric_entry', { payload }),

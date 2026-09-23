@@ -3,10 +3,14 @@ export function createUserHandler({createClient,env}) {
   const url=env('SUPABASE_URL'),anon=env('SUPABASE_ANON_KEY'),secret=env('SUPABASE_SERVICE_ROLE_KEY');
   const appUrl=new URL('/auth/callback',env('COMPASS_APP_URL')||'http://127.0.0.1:4174').href;
   const origins=new Set([new URL(appUrl).origin,'http://127.0.0.1:4174','http://localhost:4174']);
+  // Vercel serves the dev app on www and redirects the apex domain there.
+  if(origins.has('https://hdc-compass.dev')||origins.has('https://www.hdc-compass.dev')){
+    origins.add('https://hdc-compass.dev');origins.add('https://www.hdc-compass.dev');
+  }
   return async request=>{
     const origin=request.headers.get('origin');
     const headers={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin',
-      'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods':'POST, OPTIONS'};
+      'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type, x-retry-count', 'Access-Control-Allow-Methods':'POST, OPTIONS'};
     if(origin&&origins.has(origin))headers['Access-Control-Allow-Origin']=origin;
     const respond=(status,data)=>new Response(JSON.stringify(data),{status,headers});
     if(origin&&!origins.has(origin))return respond(403,{error:'This application address is not allowed.'});

@@ -5,6 +5,13 @@ import {join} from 'node:path';
 import {randomUUID,randomBytes} from 'node:crypto';
 import {createClient} from '@supabase/supabase-js';
 const ref='vbkjyiurvcnwnjxqvajr',url=`https://${ref}.supabase.co`;
+const origin='https://www.hdc-compass.dev';
+for(const address of ['https://hdc-compass.dev',origin]){
+ const preflight=await fetch(`${url}/functions/v1/compass-admin-users`,{method:'OPTIONS',headers:{Origin:address,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,apikey,content-type,x-client-info'}});
+ if(preflight.status!==204||preflight.headers.get('access-control-allow-origin')!==address)throw new Error(`User management blocks browser requests from ${address}.`);
+ const allowed=(preflight.headers.get('access-control-allow-headers')||'').split(',').map(s=>s.trim().toLowerCase());
+ if(['authorization','apikey','content-type','x-client-info'].some(h=>!allowed.includes(h)))throw new Error('User management preflight omits a required header.');
+}
 function cli(args){const out=spawnSync('npx.cmd',['supabase',...args],{encoding:'utf8',shell:true,windowsHide:true});if(out.status!==0)throw new Error('Supabase CLI operation failed.');return out.stdout;}
 // Keys remain inside this process and are never logged or written to files.
 const raw=cli(['projects','api-keys','--project-ref',ref,'--output','json']);
@@ -25,13 +32,14 @@ try{
  if(!/^[a-f0-9-]{36}$/.test(callerId))throw new Error('Invalid test identifier.');
  runSql(`insert into compass_private.members(user_id,position_title,roles,departments) values('${callerId}','Test caller ${nonce}',array['admin'],array['Finance']);`);
  const signed=await sessionClient.auth.signInWithPassword({email:callerEmail,password});if(signed.error)throw new Error('Could not authenticate test caller.');
- const headers={apikey:anonKey,Authorization:`Bearer ${signed.data.session.access_token}`,'Content-Type':'application/json'};
+ const headers={apikey:anonKey,Authorization:`Bearer ${signed.data.session.access_token}`,'Content-Type':'application/json',Origin:origin};
  const rpc=async(name,args)=>{const response=await sessionClient.rpc(name,args);if(response.error)throw new Error(`HTTP ${name}: ${response.error.message}`);return response.data;};
  await rpc('compass_admin_save_position',{payload:{id:positionId,title:`Test created ${nonce}`,department:'Finance',roles:['staff'],features:{annual:false}}});
  const before=await rpc('compass_admin_positions');if(!before.positions.some(p=>p.id===positionId&&p.occupants.length===0))throw new Error('Vacant position missing.');
  runSql(`insert into compass_private.metric_definitions(id,name,department,unit) values('${metricId}','Test metric ${nonce}','Finance','number');`);
  const payload={action:'create',email:createdEmail,positionIds:[positionId],requestId:randomUUID()};
  const response=await fetch(`${url}/functions/v1/compass-admin-users`,{method:'POST',headers,body:JSON.stringify(payload)});
+ if(response.headers.get('access-control-allow-origin')!==origin)throw new Error('Provisioning response is not readable by the hosted browser.');
  const result=await response.json();if(!response.ok)throw new Error(`Deployed function returned ${response.status}: ${result.error||result.message||'request rejected'}`);
  if(!/^[a-f0-9-]{36}$/.test(result.userId))throw new Error('Missing created user ID.');ids.push(result.userId);
  const account=await client.auth.admin.getUserById(result.userId);if(account.error||account.data.user.email_confirmed_at)throw new Error('New account verification state is wrong.');
