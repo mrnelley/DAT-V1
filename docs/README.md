@@ -4,7 +4,7 @@ Use this folder as the maintained operating record for the application.
 
 Hosted development releases: [Metric entry](database/hosted-metric-release.md) and [Weekly accountability](database/hosted-weekly-release.md).
 
-Latest confirmed decisions: [Access and development launch contract](mvp/access-and-launch-contract.md).
+Latest confirmed decisions: [September 29 direction and metric reconciliation](source-alignment/2026-09-29-confirmed-direction.md), superseding conflicting proposals in the [Access and development launch contract](mvp/access-and-launch-contract.md).
 
 Current application: [Rollups and Admin handoff](mvp/rollups-admin-handoff.md). The planning catalog and Dictionary are in the root application's Learn hub. Earlier metric proposals are superseded by [confirmed clarifications](mvp/confirmed-metric-clarifications.md).
 
