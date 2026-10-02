@@ -45,6 +45,21 @@ deliverables/
 # Non-runtime helper scripts and audit tools
 tools/
 
+# Local agent instructions and development notes (keep out of source control)
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+.agents/
+.codex/
+.claude/
+.gemini/
+/docs/
+/notes/
+/scratch/
+/tmp/
+supabase/seeds/**/RECONCILIATION.md
+
 # OS/editor noise
 .DS_Store
 Thumbs.db

@@ -5,6 +5,30 @@ import {buildSync} from 'esbuild';
 import {JSDOM} from 'jsdom';
 const code=buildSync({stdin:{contents:"import {mountPositions,mountMetricGovernance} from './src/features/admin/positions.js';window.positionUI={mountPositions,mountMetricGovernance};",resolveDir:process.cwd()},bundle:true,write:false,format:'iife'}).outputFiles[0].text;
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
+
+test('delete archives the selected position with its revision and allows restoration',async()=>{
+ const dom=new JSDOM('<section></section>',{runScripts:'outside-only'}),w=dom.window,panel=w.document.querySelector('section');w.eval(code);
+ const position={id:'a',title:'Finance lead',department:'Finance',roles:['director'],features:{annual:false},read_scorecards:true,active:true,revision:3,occupants:[{userId:'person'}]};
+ const data={positions:[position],metrics:[],grants:[]};let saved,changes=0,approved=false;
+ w.confirm=()=>approved;
+ const store={positions:async()=>data,savePosition:async payload=>{saved=payload;Object.assign(position,payload,{read_scorecards:payload.readScorecards,revision:4});return position;}};
+ await w.positionUI.mountPositions(panel,store,{departments:['Finance']},()=>{changes++;});panel.querySelector('[data-position="a"]').click();
+ panel.querySelector('#delete-position').click();await tick();assert.equal(saved,undefined);
+ approved=true;panel.querySelector('#delete-position').click();await tick();
+ assert.equal(saved.active,false);assert.equal(saved.expectedRevision,3);assert.equal(saved.id,'a');assert.deepEqual([...saved.roles],['director']);assert.equal(saved.readScorecards,true);assert.equal(position.occupants.length,1);assert.equal(changes,1);
+ assert.equal(panel.querySelector('[data-position="a"]'),null);assert.match(panel.textContent,/Position deleted/);
+ const toggle=panel.querySelector('#show-archived-positions');toggle.checked=true;toggle.dispatchEvent(new w.Event('change'));panel.querySelector('[data-position="a"]').click();
+ assert.equal(panel.querySelector('#delete-position'),null);panel.querySelector('[name="active"]').checked=true;await panel.querySelector('form').onsubmit({preventDefault(){}});
+ assert.equal(saved.active,true);assert.equal(saved.expectedRevision,4);assert.ok(panel.querySelector('#delete-position'));dom.window.close();
+});
+
+test('failed position deletion preserves the editor and permits retry',async()=>{
+ const dom=new JSDOM('<section></section>',{runScripts:'outside-only'}),w=dom.window,panel=w.document.querySelector('section');w.eval(code);w.confirm=()=>true;
+ const position={id:'a',title:'Finance lead',roles:['director'],active:true,revision:3,occupants:[]};
+ await w.positionUI.mountPositions(panel,{positions:async()=>({positions:[position]}),savePosition:async()=>{throw new Error('Position changed; reload before saving');}},{departments:['Finance']});
+ panel.querySelector('[data-position="a"]').click();panel.querySelector('#delete-position').click();await tick();
+ assert.match(panel.textContent,/Position changed/);assert.equal(panel.querySelector('#delete-position').disabled,false);assert.equal(position.active,true);dom.window.close();
+});
 test('a vacant position is configured without collecting an email or creating an account',async()=>{
  const dom=new JSDOM('<section></section>',{url:'https://hdc-compass.dev',runScripts:'outside-only'}),w=dom.window,panel=w.document.querySelector('section');w.eval(code);
  const data={positions:[],metrics:[],grants:[]},saved=[];

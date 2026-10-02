@@ -5,3 +5,4 @@
 .workspace-banner button{flex-shrink:0}
 @media(max-width:600px){.workspace-banner{padding:16px}.workspace-banner button{width:100%}}
 .position-switch{display:flex;flex-direction:column;gap:4px;font-size:12px;max-width:300px}.position-switch select{font:inherit;font-size:14px;max-width:100%;padding:8px;border:1px solid #aebfc3;border-radius:6px;background:white}
+.position-delete{color:var(--hdc-brick-ink);border-color:var(--hdc-brick);margin-left:12px}

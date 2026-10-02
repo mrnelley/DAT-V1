@@ -1,0 +1,19 @@
+# Local instructions, internal notes, and review artifacts are not deployment inputs.
+**/AGENTS.md
+**/AGENTS.override.md
+**/CLAUDE.md
+**/GEMINI.md
+.agents/
+.codex/
+.claude/
+.gemini/
+docs/
+notes/
+scratch/
+tmp/
+tools/
+deliverables/
+supabase/seeds/**/RECONCILIATION.md
+coverage/
+.nyc_output/
+*.log
