@@ -14,6 +14,8 @@ do $$ declare cycle date; boundary record; item jsonb; entries jsonb; payload js
  payload:=jsonb_set(payload,'{expectedRevision}',saved->'revision');
  perform compass_private.save_weekly(payload,true,boundary.deadline_at);
  if (select jsonb_array_length(submitted->'entries') from compass_private.weekly_records where position_id='test-multiple-priorities' and week=cycle)<>3 then raise exception 'Multiple priorities did not persist'; end if;
+ if exists(select 1 from compass_private.weekly_points where position_id='test-multiple-priorities') then raise exception 'Entry scored points'; end if;
+ perform compass_private.evaluate_weekly_points(boundary.grace_at);
  if (select count(*) from compass_private.weekly_points where position_id='test-multiple-priorities')<>1
  or (select points from compass_private.weekly_points where position_id='test-multiple-priorities' and week=cycle)<>5 then raise exception 'Priorities multiplied the weekly award'; end if;
  select jsonb_agg(item||jsonb_build_object('id','priority-'||n)) into entries from generate_series(1,12) n;

@@ -15,8 +15,8 @@
     return new Date(`${date}T${time}${offsetName.replace('GMT', '') || '+00:00'}`).toISOString();
   };
   const millis = value => value instanceof Date ? value.getTime() : Date.parse(value);
-  const deadline = week => localInstant(addDays(week, 4), '17:00:00');
-  const graceEnd = week => localInstant(addDays(week, 7), '09:00:00');
+  const deadline = week => localInstant(addDays(week, -3), '17:00:00');
+  const graceEnd = week => localInstant(week, '09:00:00');
   const policy = Object.freeze({ startingPoints: 100, onTimePriority: 5, onTimeDepartmental: 3, onTimeOptOut: 0, late: -3, missed: -10 });
   const key = (week, position) => `${week}:${position}`;
   const empty = () => ({ version: 2, records: {}, events: [] });
@@ -57,31 +57,34 @@
   const submit = (state, week, position, draft, initiatives, now = new Date()) => {
     const error = validate(draft, initiatives);
     if (error) throw new Error(error);
-    if (week > weekOf(now)) throw new Error('You can save a future draft; submit it when that week begins.');
     const next = saveDraft(state, week, position, draft), record = next.records[key(week, position)];
     const firstAt = record.submitted?.firstAt || now.toISOString();
     record.submitted = { firstAt, updatedAt: now.toISOString(), snapshot: { ...clone(draft), entries: draft.entries.filter(e => e.title.trim()).map((e, index) => ({ ...clone(e), rank: index + 1 })) } };
-    const eventId = `${week}:${position}:weekly-score`, event = scoreEvent(week, draft.capacity, firstAt, record.submitted.snapshot.entries);
-    const existing = next.events.find(e => e.id === eventId);
-    if (!existing) next.events.push({ id: eventId, week, position, recordedAt: firstAt, ...event });
-    else if (millis(now) <= millis(deadline(week)) && millis(firstAt) <= millis(deadline(week))) Object.assign(existing, event, { updatedAt: now.toISOString() });
+    record.history = [...(record.history || []), { recordedAt: now.toISOString(), snapshot: clone(record.submitted.snapshot) }];
     return next;
   };
-  const assessMissed = (state, week, positions, now = new Date()) => {
-    if (millis(now) <= millis(graceEnd(week))) throw new Error('Missed submissions are assessed after Monday at 9 a.m. Eastern.');
+  const evaluate = (state, week, positions = [], now = new Date()) => {
     const next = clone(state);
-    for (const item of positions) {
-      const position = typeof item === 'string' ? item : item.id, eventId = `${week}:${position}:weekly-score`;
-      if (!next.records[key(week, position)]?.submitted && !next.events.some(e => e.id === eventId)) {
-        next.events.push({ id: eventId, week, position, type: 'missed_submission', reason: 'Weekly submission missed grace window', recordedAt: now.toISOString(), points: policy.missed });
-      }
+    if (millis(now) < millis(graceEnd(week))) return next;
+    const owners = new Set([...positions.map(p => typeof p === 'string' ? p : p.id), ...Object.values(next.records).filter(r => r.week === week && r.submitted).map(r => r.position)]);
+    for (const position of owners) {
+      const eventId = `${week}:${position}:weekly-score`;
+      if (next.events.some(e => e.id === eventId)) continue;
+      const history = next.records[key(week, position)]?.history || [];
+      const onTime = history.filter(r => millis(r.recordedAt) <= millis(deadline(week))).at(-1);
+      const grace = history.find(r => millis(r.recordedAt) <= millis(graceEnd(week)));
+      const event = onTime ? scoreEvent(week, onTime.snapshot.capacity, onTime.recordedAt, onTime.snapshot.entries)
+        : grace ? {type:'late_submission',reason:'Late weekly submission',points:policy.late}
+        : {type:'missed_submission',reason:'Weekly submission missed grace window',points:policy.missed};
+      next.events.push({id:eventId,week,position,recordedAt:now.toISOString(),...event});
     }
     return next;
   };
+  const assessMissed = evaluate;
   const score = (state, position) => policy.startingPoints + state.events.filter(e => e.position === position).reduce((sum, e) => sum + e.points, 0);
   const carry = (draft, fromWeek, toWeek, position) => ({ capacity: '', note: '', entries: draft.entries.map(e => ({
     ...clone(e), id: crypto.randomUUID(), carriedFrom: e.id, owner: position, status: 'watch', due: addDays(toWeek, 4),
     tasks: e.tasks.filter(t => !['complete', 'cancelled'].includes(t.status)).map(t => ({ ...t, id: crypto.randomUUID(), carriedFrom: t.id, due: addDays(toWeek, 4), status: 'open' })),
   })) });
-  globalThis.CompassWeeklyModel = { zone, policy, clone, day, addDays, weekOf, deadline, graceEnd, key, empty, freshDraft, entry, validate, saveDraft, submit, assessMissed, score, carry };
+  globalThis.CompassWeeklyModel = { zone, policy, clone, day, addDays, weekOf, deadline, graceEnd, key, empty, freshDraft, entry, validate, saveDraft, submit, evaluate, assessMissed, score, carry };
 })();
