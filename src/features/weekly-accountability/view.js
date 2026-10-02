@@ -3,7 +3,7 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
   const option=(id,title,value)=>`<option value="${esc(id)}" ${id===value?'selected':''}>${esc(title)}</option>`;
   const instant=v=>new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'}).format(new Date(v));
-  let root, data, selected='', workingPosition='', view='mine', draft, dirty=false, busy=false, generation=0, correctionReason='';
+  let root, data, selected='', workingPosition='', view='rollup', draft, dirty=false, busy=false, generation=0, correctionReason='', draftRevision=0, refreshedAt=null, loading=false, departmentFilter='', search='';
   const maxPriorities=12;
   const store=()=>window.CompassMetricStore;
   const record=()=>data.records.find(r=>r.positionId===selected);
@@ -13,7 +13,11 @@
   function actionDetails(e){return `${e.projectReference?`<p>Project or workplan: ${esc(e.projectReference)}</p>`:''}${e.tasks.length?`<details><summary>View action items</summary><ul>${e.tasks.map(t=>`<li><strong>${esc(t.title)}</strong><p>${esc(data.positions.find(p=>p.id===t.owner)?.title||t.owner)} · Due ${esc(t.due)} · ${esc(t.status.replaceAll('_',' '))}</p></li>`).join('')}</ul></details>`:''}`;}
   const entryType=e=>e.commitmentType||(e.objectiveId?'enterprise':'department');
   const entry=()=>({id:crypto.randomUUID(),title:'',desiredResult:'',commitmentType:draft.capacity==='capacity'?'department':'enterprise',objectiveId:'',departmentPriorityId:'',projectReference:'',due:M.addDays(data.week,4),status:'good',support:'',tasks:[]});
-  function resetDraft(){draft=structuredClone(record()?.draft||fresh());for(const e of draft.entries)e.commitmentType=entryType(e);dirty=false;correctionReason='';}
+  function resetDraft(){draft=structuredClone(record()?.draft||fresh());draftRevision=record()?.revision||0;for(const e of draft.entries)e.commitmentType=entryType(e);dirty=false;correctionReason='';}
+  const dateLabel=value=>new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(value+'T12:00:00Z'));
+  const progressLabels={good:'On track',watch:'Watch',risk:'Off track',not_started:'Not started'};
+  const sharedDocument=r=>r?.submitted;
+
   function departmentOptions(value){
     const rows=(data.departmentalObjectives||[]).filter(o=>o.active!==false||o.id===value);
     const own=position()?.department;
@@ -44,18 +48,25 @@
   const area=(e,i,key,label)=>`<label class="field span-two">${label}<textarea data-entry="${i}" data-field="${key}" maxlength="2000">${esc(e[key])}</textarea></label>`;
   function formEntry(e,i){return `<section class="entry-form" aria-labelledby="priority-heading-${i}"><div class="entry-heading"><h3 id="priority-heading-${i}">Priority ${i+1}</h3><button type="button" class="quiet-button" data-remove="${i}">Remove priority</button></div><div class="form-grid">${field(e,i,'title','Weekly priority')}${area(e,i,'desiredResult','Desired result')}${commitmentFields(e,i)}${field(e,i,'projectReference','Project or workplan reference (optional)')}${field(e,i,'due','Due date','date')}<label class="field">Progress<select data-entry="${i}" data-field="status">${[['good','On track'],['watch','Watch'],['risk','Off track']].map(([v,l])=>option(v,l,e.status)).join('')}</select></label>${area(e,i,'support','Support or risk')}</div><h4>Action items</h4>${e.tasks.map((t,j)=>`<div class="task-form"><label class="field span-two">Action item<input data-entry="${i}" data-task="${j}" data-field="title" value="${esc(t.title)}" maxlength="250"></label><label class="field">Responsible position<select data-entry="${i}" data-task="${j}" data-field="owner">${data.positions.map(p=>option(p.id,p.title,t.owner)).join('')}</select></label><label class="field">Due date<input type="date" data-entry="${i}" data-task="${j}" data-field="due" value="${esc(t.due)}"></label><label class="field">Status<select data-entry="${i}" data-task="${j}" data-field="status">${['open','in_progress','complete','blocked','cancelled'].map(s=>option(s,s.replaceAll('_',' '),t.status)).join('')}</select></label><button type="button" class="quiet-button" data-remove-task="${j}" data-parent="${i}">Remove action item</button></div>`).join('')}<button type="button" class="quiet-button" data-add-task="${i}">Add action item</button></section>`;}
   function mine(){
-    if(!position()?.canEdit)return '<p>Select an assigned position to edit, or use Team rollup to review submissions.</p>';
+    if(!position()?.canEdit)return '<p>Select an assigned position to edit, or use Everyone’s priorities to review submissions.</p>';
     const r=record();
     return `<div class="weekly-layout"><form id="weekly-form" class="weekly-panel"><fieldset class="capacity"><legend>Can you prioritize an enterprise initiative this week?</legend><label><input type="radio" name="capacity" value="enterprise" ${draft.capacity==='enterprise'?'checked':''}> Yes, I can make an enterprise commitment.</label><label><input type="radio" name="capacity" value="capacity" ${draft.capacity==='capacity'?'checked':''}> I can’t prioritize an enterprise initiative this week.</label></fieldset><label class="field">Context (optional)<textarea name="note" maxlength="2000">${esc(draft.note)}</textarea></label>${draft.entries.map(formEntry).join('')}<div class="priority-expansion"><button type="button" class="add-priority-button" data-add ${draft.entries.length>=maxPriorities?'disabled':''} aria-describedby="priority-count"><span aria-hidden="true">+</span> Add priority</button><p id="priority-count" class="weekly-note" role="status">${draft.entries.length} of ${maxPriorities} priorities${draft.entries.length>=maxPriorities?' · Weekly limit reached':''}</p></div><div class="form-footer"><button type="button" class="quiet-button" data-carry>Bring forward last week</button></div><label class="field">Correction reason (required after grace)<input name="correctionReason" maxlength="1000" value="${esc(correctionReason)}"></label><p class="weekly-note">${r?.firstAt?`Submitted ${esc(instant(r.firstAt))}. ${r.revision!==r.submittedRevision?'Unpublished draft changes.':''}`:'Not yet submitted.'}</p><div class="form-footer"><button type="button" class="quiet-button" data-save-draft>Save draft</button><button type="submit" class="primary-button">${r?.firstAt?'Update submission':'Submit this week'}</button></div></form><aside class="weekly-side"><section class="weekly-panel"><p class="eyebrow">Position points</p><div class="score-value">${position().points??'—'}</div><p>Starts at 100 and carries forward.</p><dl><dt>On-time enterprise priority</dt><dd>+5</dd><dt>On-time department workplan priority</dt><dd>+3</dd><dt>On-time opt-out without priorities</dt><dd>0</dd><dt>Submitted during grace</dt><dd>−3</dd><dt>Missed after grace</dt><dd>−10</dd></dl><p class="weekly-note">Grace ends ${esc(instant(data.boundaries.grace_at))}. One award per week: +5 for enterprise work, otherwise +3 for departmental work. Edits do not earn a second award.</p></section></aside></div>`;
   }
-  function rollup(){return `<div class="rollup-list">${data.positions.map(p=>{
-    const r=data.records.find(x=>x.positionId===p.id),s=r?.submitted;
-    const status=r?.exempt?'Exempt':s?(s.capacity==='capacity'?(s.entries.length?'Departmental priorities submitted':'No enterprise capacity'):'Submitted'):r?.expected?'Not submitted':'No required submission';
-    return `<article class="rollup-card"><h3>${esc(p.title)}</h3><p>${esc(status)}${r?.firstAt?' · '+esc(instant(r.firstAt)):''}</p>${s?`<p>${esc(s.note)}</p>${s.entries.map(e=>`<div class="rollup-entry"><strong>${esc(e.title)}</strong><p>${esc(e.desiredResult)}</p><p>${esc(commitmentLabel(e))} · Due ${esc(e.due)}</p><p>${e.tasks.filter(t=>t.status==='complete').length} / ${e.tasks.length} action items complete</p>${actionDetails(e)}${e.support?`<p>Support: ${esc(e.support)}</p>`:''}</div>`).join('')}`:''}${r?.draft&&r.revision!==r.submittedRevision?'<p class="weekly-note">Unpublished draft exists.</p>':''}</article>`;
-    }).join('')}</div>`;}
+  function boardCards(){
+    const rows=data.positions.filter(p=>!departmentFilter||(p.department||'Organization-wide')===departmentFilter).map(p=>({p,r:data.records.find(x=>x.positionId===p.id)})).filter(({p,r})=>`${p.title} ${p.department||''} ${JSON.stringify(sharedDocument(r)||{})}`.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>Number(!!sharedDocument(b.r))-Number(!!sharedDocument(a.r))||a.p.title.localeCompare(b.p.title));
+    return rows.length?rows.map(({p,r},index)=>{
+      const s=sharedDocument(r),entries=s?.entries||[];
+      const status=r?.exempt?'Exempt':s?(s.capacity==='capacity'&&!entries.length?'No enterprise capacity':'Submitted'):r?.expected?'Not submitted':'No priorities yet';
+      return `<article class="rollup-card" style="--card-accent:${['#318c80','#bd7b28','#786493','#4b829f'][index%4]}"><header class="rollup-head"><div class="position-monogram" aria-hidden="true">${esc(p.title.split(/[ ,]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join(''))}</div><div class="rollup-owner"><p class="weekly-eyebrow">${esc(p.department||'Organization-wide')}</p><h3>${esc(p.title)}</h3></div><span class="submission-tag ${s?'submitted':'waiting'}">${esc(status)}</span></header>${s?.note?`<p class="rollup-context">${esc(s.note)}</p>`:''}${entries.map((e,i)=>`<section class="rollup-entry"><div class="priority-heading"><span class="priority-number">${i+1}</span><h4>${esc(e.title||'Untitled priority')}</h4><span class="priority-progress ${Object.hasOwn(progressLabels,e.status)?e.status:'pending'}">${esc(progressLabels[e.status]||'Not assessed')}</span></div><p class="priority-result">${esc(e.desiredResult||'Desired result to follow.')}</p><p class="priority-alignment"><span>${entryType(e)==='enterprise'?'Enterprise':'Department'}</span>${esc(commitmentLabel(e))}</p><div class="priority-meta"><span>Due ${esc(e.due||'Not set')}</span><span>${(e.tasks||[]).filter(t=>t.status==='complete').length} / ${(e.tasks||[]).length} action items complete</span></div>${actionDetails({...e,tasks:e.tasks||[]})}${e.support?`<p class="priority-support"><strong>Support needed</strong> ${esc(e.support)}</p>`:''}</section>`).join('')}${!entries.length?`<p class="board-empty-owner">${s?'No priority commitments recorded for this week.':'Their priorities will appear here when submitted.'}</p>`:''}<footer class="rollup-footer"><span>${r?.lastAt?'Updated '+esc(instant(r.lastAt)):r?.firstAt?'Submitted '+esc(instant(r.firstAt)):'Awaiting an update'}</span></footer></article>`;
+    }).join(''):'<div class="board-empty"><h3>No matching priorities</h3><p>Try another department or search term.</p></div>';
+  }
+  function rollup(){
+    const docs=data.records.map(sharedDocument).filter(Boolean),entries=docs.flatMap(s=>s.entries||[]),tasks=entries.flatMap(e=>e.tasks||[]);
+    return `<section class="weekly-board" aria-label="Everyone’s priorities"><div class="board-summary"><div><strong>${entries.length}</strong><span>Priorities in focus</span></div><div><strong>${docs.length}<small> / ${data.positions.length}</small></strong><span>Positions sharing work</span></div><div><strong>${tasks.filter(t=>t.status==='complete').length}<small> / ${tasks.length}</small></strong><span>Actions completed</span></div></div><div class="board-filterbar"><label class="field board-search">Find a priority or position<input id="weekly-search" type="search" placeholder="Search the week…" value="${esc(search)}"></label><label class="field">Department<select id="weekly-department"><option value="">All departments</option>${[...new Set(data.positions.map(p=>p.department||'Organization-wide'))].sort().map(d=>option(d,d,departmentFilter)).join('')}</select></label><p class="board-sharing-note">Submitted priorities only. Drafts stay in your workspace.</p></div><div class="rollup-list" id="weekly-board-cards">${boardCards()}</div></section>`;
+  }
   function review(){return `<section class="weekly-panel"><h3>${esc(data.week.slice(0,4))} position review</h3><div class="review-table"><table><thead><tr><th>Position</th><th>Year change</th><th>Current points</th></tr></thead><tbody>${data.positions.filter(p=>p.points!==null).map(p=>`<tr><td>${esc(p.title)}</td><td>${data.events.filter(e=>e.positionId===p.id).reduce((s,e)=>s+e.points,0)}</td><td>${p.points}</td></tr>`).join('')}</tbody></table></div><p>Annual totals follow the cycle’s Monday date. Points never reset automatically.</p></section>`;}
   function render(){
-    root.innerHTML=`<div id="weekly-workspace"><div class="hero"><div><h2>Weekly accountability</h2><p>Due ${esc(instant(data.boundaries.deadline_at))}</p></div></div><div class="weekly-toolbar"><div class="weekly-controls"><label class="field">Week beginning<input type="date" id="weekly-week" value="${esc(data.week)}" min="${esc(data.startsOn)}" step="7"></label><label class="field">Position<select id="weekly-position">${data.positions.map(p=>option(p.id,p.title,selected)).join('')}</select></label></div><nav class="weekly-subnav" aria-label="Weekly views">${[['mine','My priorities'],['rollup','Team rollup'],['review','Annual review']].map(([id,label])=>`<button type="button" class="quiet-button" data-view="${id}" aria-pressed="${view===id}">${label}</button>`).join('')}</nav></div><div id="weekly-message" class="weekly-message" role="status" hidden></div>${view==='mine'?mine():view==='rollup'?rollup():review()}</div>`;
+    root.innerHTML=`<div id="weekly-workspace"><div class="weekly-hero"><div><p class="weekly-eyebrow">Our week, together</p><h2>${view==='rollup'?'Everyone’s priorities':view==='mine'?'Make room for what matters.':'A look at the year.'}</h2><p>See the work. Find the connections. Move it forward.</p><span class="weekly-deadline">Commitments due ${esc(instant(data.boundaries.deadline_at))}</span></div><div class="weekly-hero-week"><span>Week of</span><strong>${esc(dateLabel(data.week))}</strong><span>through ${esc(dateLabel(M.addDays(data.week,4)))}</span></div></div><div class="weekly-toolbar"><nav class="weekly-subnav" aria-label="Weekly views">${[['rollup','Everyone’s priorities'],['mine','My priorities'],['review','Annual review']].map(([id,label])=>`<button type="button" class="quiet-button" data-view="${id}" aria-pressed="${view===id}">${label}</button>`).join('')}</nav><div class="weekly-freshness"><span id="weekly-refreshed" role="status">${loading?'Refreshing…':refreshedAt?'Refreshed '+esc(instant(refreshedAt)):''}</span><button type="button" class="quiet-button" data-refresh ${loading?'disabled':''}>↻ Refresh</button></div></div><div class="weekly-controls"><div class="week-picker"><button type="button" class="quiet-button" data-week-step="-7" aria-label="Previous week" ${M.addDays(data.week,-7)<data.startsOn?'disabled':''}>←</button><label class="field">Week beginning<input type="date" id="weekly-week" value="${esc(data.week)}" min="${esc(data.startsOn)}" step="7"></label><button type="button" class="quiet-button" data-week-step="7" aria-label="Next week">→</button></div>${view==='mine'?`<label class="field">Your position<select id="weekly-position">${data.positions.filter(p=>p.canEdit||p.id===selected).map(p=>option(p.id,p.title,selected)).join('')}</select></label><p class="weekly-entry-hint">Save your draft, then submit to share your commitments.</p>`:''}</div><div id="weekly-message" class="weekly-message" role="status" hidden></div>${view==='mine'?mine():view==='rollup'?rollup():review()}</div>`;
     const form=root.querySelector('#weekly-form');
     if(form){form.oninput=()=>{dirty=true;};form.onchange=event=>{
       dirty=true;
@@ -70,10 +81,14 @@
       message('Viewing only. Return to Admin and enable saving to test changes.');
     }
     root.querySelector('#weekly-week').onchange=async e=>{if(dirty&&!confirm('Discard unsaved changes?')){e.target.value=data.week;return;}await load(e.target.value);};
-    root.querySelector('#weekly-position').onchange=e=>{if(dirty&&!confirm('Discard unsaved changes?')){e.target.value=selected;return;}selected=e.target.value;resetDraft();render();};
+    const picker=root.querySelector('#weekly-position');if(picker)picker.onchange=e=>{if(dirty&&!confirm('Discard unsaved changes?')){e.target.value=selected;return;}selected=e.target.value;resetDraft();render();};
+    const searchInput=root.querySelector('#weekly-search');if(searchInput)searchInput.oninput=e=>{search=e.target.value;root.querySelector('#weekly-board-cards').innerHTML=boardCards();};
+    const filter=root.querySelector('#weekly-department');if(filter)filter.onchange=e=>{departmentFilter=e.target.value;root.querySelector('#weekly-board-cards').innerHTML=boardCards();};
     root.querySelector('#weekly-workspace').onclick=async event=>{
       const b=event.target.closest('button');if(!b||b.disabled||busy)return;
-      if(b.dataset.view){collect();view=b.dataset.view;render();return;}
+      if(b.dataset.view){collect();view=b.dataset.view;render();await load(data.week,true);return;}
+      if(b.hasAttribute('data-refresh')){collect();await load(data.week,true);return;}
+      if(b.dataset.weekStep){if(dirty&&!confirm('Discard unsaved changes?'))return;await load(M.addDays(data.week,Number(b.dataset.weekStep)));return;}
       if(b.hasAttribute('data-save-draft')){await save(false);return;}
       collect();
       if(b.hasAttribute('data-add')){
@@ -98,27 +113,31 @@
   }
   async function save(finalizing){
     if(busy)return;collect();
-    const payload={positionId:selected,week:data.week,expectedRevision:record()?.revision||0,draft:structuredClone(draft),correctionReason};
+    const payload={positionId:selected,week:data.week,expectedRevision:draftRevision,draft:structuredClone(draft),correctionReason};
     busy=true;root.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=true);
-    try{await store().saveWeekly(payload,finalizing);dirty=false;await load(data.week);message(finalizing?'Submitted to Compass.':'Draft saved to Compass.');}
+    try{await store().saveWeekly(payload,finalizing);dirty=false;const loaded=await load(data.week);if(loaded)message(finalizing?'Submitted to Compass.':'Draft saved to Compass.');else message('Saved to Compass, but the latest data could not be loaded. Refresh before editing again.',true);}
     catch(error){render();message(error.message,true);}
     finally{busy=false;}
   }
-  async function load(week){
-    const token=++generation;
+  async function load(week,preserveDraft=false){
+    const token=++generation,priorPosition=workingPosition,priorSelected=selected;loading=true;
+    const refresh=root.querySelector('[data-refresh]');if(refresh)refresh.disabled=true;
+    const indicator=root.querySelector('#weekly-refreshed');if(indicator)indicator.textContent='Refreshing…';
     try{
-      const result=await store().weekly(week);if(token!==generation||!active())return;
+      const result=await store().weekly(week);if(token!==generation||!active())return false;
+      if(preserveDraft)collect();
       data=result;if(workingPosition!==data.positionId||!data.positions.some(p=>p.id===selected))selected=data.positions.find(p=>p.id===data.positionId)?.id||data.positions.find(p=>p.title===data.positionTitle)?.id||data.positions.find(p=>p.canEdit)?.id||data.positions[0]?.id||'';
       workingPosition=data.positionId;
-      resetDraft();render();
-    }catch(error){if(root.querySelector('#weekly-message'))message(error.message,true);else root.innerHTML=`<p role="alert">${esc(error.message)}</p>`;}
+      if(!preserveDraft||!dirty||priorPosition!==workingPosition||priorSelected!==selected)resetDraft();
+      refreshedAt=new Date().toISOString();loading=false;render();return true;
+    }catch(error){if(token!==generation||!active())return false;loading=false;const currentRefresh=root.querySelector('[data-refresh]');if(currentRefresh)currentRefresh.disabled=false;const status=root.querySelector('#weekly-refreshed');if(status)status.textContent='Refresh failed · showing last loaded data';if(root.querySelector('#weekly-message'))message(error.message,true);else root.innerHTML=`<p role="alert">${esc(error.message)}</p>`;return false;}
   }
   window.CompassWeekly={async mount(target){
-    root=target;root.innerHTML='<p role="status">Loading weekly accountability…</p>';
-    try{if(!store()||!await store().session()){root.innerHTML='<p>Sign in through Record progress to access weekly accountability.</p>';return;}await load();}
-    catch(error){root.innerHTML=`<p role="alert">${esc(error.message)}</p>`;}
+    const mountToken=++generation;root=target;data=null;view='rollup';dirty=false;busy=false;loading=false;search='';departmentFilter='';refreshedAt=null;root.innerHTML='<p role="status">Loading everyone’s priorities…</p>';
+    try{const session=store()&&await store().session();if(mountToken!==generation)return;if(!session){root.innerHTML='<p>Sign in through Record progress to access weekly accountability.</p>';return;}await load();}
+    catch(error){if(mountToken===generation)root.innerHTML=`<p role="alert">${esc(error.message)}</p>`;}
   },selectInitiative(){}};
-  document.addEventListener('click',event=>{const tab=event.target.closest('[data-surface]');if(tab&&tab.dataset.surface!=='weekly'&&active()){
+  document.addEventListener('click',event=>{const tab=event.target.closest('[data-surface]');if(tab&&active()){
     if(busy||(dirty&&!confirm('Discard unsaved weekly changes?'))){event.preventDefault();event.stopImmediatePropagation();}
     else{dirty=false;generation++;}
   }},true);
