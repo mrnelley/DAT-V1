@@ -13,7 +13,7 @@ export function mountSignIn(root, store) {
     </section>
     <section class="signin-entry" aria-labelledby="signin-title">
       <div class="signin-entry-inner"><span class="signin-compass-mark" aria-hidden="true">✦</span><p class="eyebrow">Your HDC workspace</p>
-        <h2 id="signin-title">Welcome to<br>Compass.</h2>
+        <h2 id="signin-title">Welcome to<br> Compass.</h2>
         <p class="signin-description">Connect the big picture to this week’s priorities. Your team’s next steps start here.</p>
         <button type="button" class="primary-button" id="microsoft-signin"><span class="microsoft-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Sign in with Microsoft<span aria-hidden="true">↗</span></button>
         <p class="signin-account-hint">Use your HDC Microsoft account.</p>

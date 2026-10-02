@@ -120,6 +120,7 @@ async function render(){
   try{
     await identity(current);if(current!==token)return;
     document.body.classList.toggle('signin-mode',!access);
+    document.body.classList.toggle('weekly-mode',!!access&&view==='weekly');
     if(!access){
       data=null;groups=[];if(dialog.open)dialog.close();
       document.querySelector('.account strong').textContent='Your workspace';document.querySelector('.account small').textContent='Signed out';document.querySelector('.avatar').textContent='';
