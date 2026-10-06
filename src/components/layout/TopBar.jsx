@@ -80,10 +80,10 @@ const TopBar = ({ onMenuClick }) => {
         <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 2, minWidth: 0 }}>
           <Box
             component="img"
-            src={brandAssets.logoIcon}
+            src={brandAssets.compassPrimary}
             alt=""
             aria-hidden="true"
-            sx={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
+            sx={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
           />
           <Typography variant="h3" color="primary" sx={{ whiteSpace: 'nowrap' }}>HDC Compass</Typography>
         </Stack>

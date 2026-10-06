@@ -46,9 +46,9 @@ const LoginPage = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: { xs: 5, md: 8 } }}>
             <Box
               component="img"
-              src={brandAssets.logoHorizontalReverse}
-              alt="HDC MidAtlantic"
-              sx={{ width: { xs: 210, md: 270 }, height: 'auto', display: 'block' }}
+              src={brandAssets.compassReverse}
+              alt=""
+              sx={{ width: { xs: 72, md: 88 }, height: 'auto', display: 'block' }}
             />
             <Box>
               <Typography variant="h3" color="inherit">HDC Compass</Typography>
@@ -92,9 +92,9 @@ const LoginPage = () => {
         <Box sx={{ width: '100%', maxWidth: 470, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: { xs: 2, md: 3 } }}>
           <Box
             component="img"
-            src={brandAssets.logoVerticalFullColor}
-            alt="HDC MidAtlantic"
-            sx={{ width: 118, height: 'auto', display: 'block', mb: 2 }}
+            src={brandAssets.compassPrimary}
+            alt="Compass"
+            sx={{ width: 64, height: 'auto', display: 'block', mb: 2 }}
           />
           <Typography variant="overline" color="primary">Strategy demo</Typography>
           <Typography variant="h2">Choose a dashboard</Typography>
